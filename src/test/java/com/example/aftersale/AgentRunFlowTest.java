@@ -1,7 +1,9 @@
 package com.example.aftersale;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -42,6 +45,45 @@ class AgentRunFlowTest {
 
     @Autowired
     private ToolRegistry toolRegistry;
+
+    @Test
+    void demoFlowCreatesTicketRunsAgentUpdatesTicketAndExposesTrace() throws Exception {
+        MvcResult ticketResult = mockMvc.perform(post("/api/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": "U-DEMO-1",
+                                  "orderId": "O202605130001",
+                                  "message": "我买的耳机有质量问题，左耳没声音，想退货退款。"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.status").value("CREATED"))
+                .andReturn();
+        String ticketId = JsonPath.read(ticketResult.getResponse().getContentAsString(), "$.data.ticketId");
+
+        MvcResult agentRunResult = mockMvc.perform(post("/api/tickets/{ticketId}/agent-runs", ticketId))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
+                .andExpect(jsonPath("$.data.intent").value("RETURN_AND_REFUND"))
+                .andExpect(jsonPath("$.data.toolCalls", hasItems("search_aftersale_policy", "add_ticket_note")))
+                .andReturn();
+        String runId = JsonPath.read(agentRunResult.getResponse().getContentAsString(), "$.data.runId");
+
+        mockMvc.perform(get("/api/tickets/{ticketId}", ticketId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("RESOLVED"))
+                .andExpect(jsonPath("$.data.intentType").value("RETURN_AND_REFUND"))
+                .andExpect(jsonPath("$.data.internalNote", containsString("RETURN_AND_REFUND")))
+                .andExpect(jsonPath("$.data.agentSuggestion", containsString("RETURN_AND_REFUND")));
+
+        mockMvc.perform(get("/api/agent-runs/{runId}/traces", runId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[*].toolName", hasItems("search_aftersale_policy", "add_ticket_note")))
+                .andExpect(jsonPath("$.data[*].status", hasItems("SUCCEEDED")));
+    }
 
     @Test
     void triggerAgentRunSucceedsAndReturnsStructuredOutput() throws Exception {
@@ -85,8 +127,13 @@ class AgentRunFlowTest {
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 .andExpect(jsonPath("$.data[*].toolName", hasItems("search_aftersale_policy", "add_ticket_note")))
                 .andExpect(jsonPath("$.data[0].runId").value(runId))
-                .andExpect(jsonPath("$.data[0].inputJson", containsString("query")))
-                .andExpect(jsonPath("$.data[0].status").value("SUCCEEDED"));
+                .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].inputJson",
+                        hasItem(containsString("\"query\""))))
+                .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].outputJson",
+                        hasItem(containsString("\"results\""))))
+                .andExpect(jsonPath("$.data[?(@.toolName == 'add_ticket_note')].inputJson",
+                        hasItem(containsString("\"note\""))))
+                .andExpect(jsonPath("$.data[*].status", hasItems("SUCCEEDED", "SUCCEEDED")));
     }
 
     @Test
@@ -114,5 +161,17 @@ class AgentRunFlowTest {
         assertThat(traces.get(0).getToolName()).isEqualTo("add_ticket_note");
         assertThat(traces.get(0).getStatus()).isEqualTo(ToolCallStatus.FAILED);
         assertThat(traces.get(0).getErrorMessage()).contains("T-MISSING-M7");
+    }
+
+    @Test
+    void toolTraceContextClearsRunIdAfterActionFails() {
+        assertThat(ToolTraceContext.currentRunId()).isEmpty();
+
+        assertThatThrownBy(() -> ToolTraceContext.runWith("RUN-CLEANUP-TEST", () -> {
+            assertThat(ToolTraceContext.currentRunId()).contains("RUN-CLEANUP-TEST");
+            throw new IllegalStateException("boom");
+        })).isInstanceOf(IllegalStateException.class);
+
+        assertThat(ToolTraceContext.currentRunId()).isEmpty();
     }
 }
