@@ -1,7 +1,7 @@
 # Agent Tool Contracts
 
-M5 defines the first executable tool layer. Agent orchestration is not implemented yet; future Agent code must call
-tools through `ToolRegistry`.
+M5 defines the first executable tool layer. M7 Agent orchestration calls tools through `ToolRegistry` and records
+ToolCallTrace entries for each tool call executed inside an AgentRun context.
 
 ## Common Contract
 
@@ -49,3 +49,16 @@ Failures must include `errorCode` and `message`. High-risk tools are stopped bef
 - Input: `ticketId`, `note`
 - Output: `ticketId`, `status`, `internalNote`
 - Business path: `ToolRegistry -> AddTicketNoteTool -> TicketApplicationService`
+
+## M6 Tools
+
+### search_aftersale_policy
+
+- Risk: `LOW`
+- Requires approval: `false`
+- Input: `query`
+- Output: `results`
+- Each result contains: `policyId`, `category`, `matchedText`, `matchReason`
+- Empty result output: `results` is empty and `message` explains that no policy matched
+- Business path: `ToolRegistry -> SearchAfterSalePolicyTool -> PolicyApplicationService`
+- Storage: V1 in-memory policy repository

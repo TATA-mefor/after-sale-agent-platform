@@ -30,6 +30,13 @@ curl -X POST http://localhost:8080/api/tickets \
 curl http://localhost:8080/api/tickets/{ticketId}
 ```
 
+Agent run APIs:
+
+```bash
+curl -X POST http://localhost:8080/api/tickets/{ticketId}/agent-runs
+curl http://localhost:8080/api/agent-runs/{runId}/traces
+```
+
 API responses use a shared envelope:
 
 ```json

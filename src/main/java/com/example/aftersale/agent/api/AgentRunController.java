@@ -1,0 +1,32 @@
+package com.example.aftersale.agent.api;
+
+import com.example.aftersale.agent.application.AgentApplicationService;
+import com.example.aftersale.agent.application.AgentRunResult;
+import com.example.aftersale.common.api.ApiResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/tickets/{ticketId}/agent-runs")
+public class AgentRunController {
+
+    private final AgentApplicationService agentApplicationService;
+
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "Spring constructor injection intentionally stores the application service dependency.")
+    public AgentRunController(AgentApplicationService agentApplicationService) {
+        this.agentApplicationService = agentApplicationService;
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<AgentRunResponse>> createAgentRun(@PathVariable String ticketId) {
+        AgentRunResult result = agentApplicationService.runForTicket(ticketId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(AgentRunResponse.from(result)));
+    }
+}

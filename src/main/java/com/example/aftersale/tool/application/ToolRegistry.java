@@ -43,10 +43,11 @@ public class ToolRegistry {
     }
 
     public ToolOutput execute(String toolName, ToolInput input) {
+        long startedAt = System.nanoTime();
         ToolExecutor executor = executors.get(toolName);
         if (executor == null) {
             ToolOutput output = ToolOutput.failure(toolName, TOOL_NOT_FOUND, "Unknown tool: " + toolName);
-            trace(toolName, input, output);
+            trace(toolName, input, output, startedAt);
             return output;
         }
 
@@ -55,26 +56,37 @@ public class ToolRegistry {
             ToolOutput output = ToolOutput.requiresApproval(
                     definition.toolName(),
                     "Tool requires human approval: " + definition.toolName());
-            trace(definition.toolName(), input, output);
+            trace(definition.toolName(), input, output, startedAt);
             return output;
         }
 
         try {
             ToolOutput output = executor.execute(input);
-            trace(definition.toolName(), input, output);
+            trace(definition.toolName(), input, output, startedAt);
             return output;
         } catch (RuntimeException exception) {
             ToolOutput output = ToolOutput.failure(
                     definition.toolName(),
                     TOOL_EXECUTION_FAILED,
                     failureMessage(exception));
-            trace(definition.toolName(), input, output);
+            trace(definition.toolName(), input, output, startedAt);
             return output;
         }
     }
 
-    private void trace(String toolName, ToolInput input, ToolOutput output) {
-        traceRecorder.record(new ToolTraceRecord(toolName, input, output, Instant.now()));
+    private void trace(String toolName, ToolInput input, ToolOutput output, long startedAt) {
+        ToolTraceContext.currentRunId()
+                .ifPresent(runId -> traceRecorder.record(new ToolTraceRecord(
+                        runId,
+                        toolName,
+                        input,
+                        output,
+                        elapsedMillis(startedAt),
+                        Instant.now())));
+    }
+
+    private static long elapsedMillis(long startedAt) {
+        return Math.max(0, (System.nanoTime() - startedAt) / 1_000_000);
     }
 
     private static Map<String, ToolExecutor> indexByToolName(List<ToolExecutor> toolExecutors) {

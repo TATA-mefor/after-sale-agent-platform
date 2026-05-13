@@ -1,6 +1,7 @@
 package com.example.aftersale.ticket.application;
 
 import com.example.aftersale.common.exception.ResourceNotFoundException;
+import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.Ticket;
 import com.example.aftersale.ticket.domain.TicketRepository;
 import com.example.aftersale.ticket.domain.TicketStatus;
@@ -34,6 +35,12 @@ public class TicketApplicationService {
     public Ticket addTicketNote(String ticketId, String note) {
         Ticket ticket = getTicket(ticketId);
         ticket.addInternalNote(note, Instant.now());
+        return ticketRepository.save(ticket);
+    }
+
+    public Ticket classifyTicketIntent(String ticketId, IntentType intentType) {
+        Ticket ticket = getTicket(ticketId);
+        ticket.classifyIntent(intentType, Instant.now());
         return ticketRepository.save(ticket);
     }
 

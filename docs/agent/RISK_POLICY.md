@@ -10,6 +10,7 @@ Examples:
 
 - `create_aftersale_ticket`
 - `add_ticket_note`
+- `search_aftersale_policy`
 
 ## MEDIUM
 
