@@ -288,6 +288,7 @@ agent:
       provider: openai
       model: ${AFTERSALE_LLM_MODEL:gpt-4o-mini}
       api-key: ${OPENAI_API_KEY:}
+      endpoint: ${OPENAI_RESPONSES_ENDPOINT:https://api.openai.com/v1/responses}
       timeout-seconds: 30
 ```
 
@@ -295,8 +296,10 @@ If `agent.planner.mode=llm` is selected without `agent.planner.llm.api-key` / `O
 clear configuration error. The default `mvn test` path uses `rule` or `fake` and does not require a real LLM, API Key,
 or external network.
 
-Current V2.1 status: the LLM adapter boundary and configuration validation are implemented. The real provider call is
-intentionally left as a follow-up TODO; the system does not pretend that a real LLM call succeeded.
+Current V2.1.1 status: the LLM adapter can call an OpenAI-compatible Responses endpoint when `llm` mode is explicitly
+enabled and configuration is complete. The LLM must return structured JSON, which the Java backend parses, validates,
+and then executes only through `ToolRegistry`. Tests still use `rule`, `fake`, or a fake `LlmClient`; they never require
+a real LLM, API Key, or external network.
 
 ### V2 后续方向
 
@@ -307,14 +310,15 @@ intentionally left as a follow-up TODO; the system does not pretend that a real 
 - Vector or Hybrid Policy Retrieval；
 - Docker Compose and Observability。
 
-### 当前说明
+### 真实 LLM 本地运行说明
 
-当前 V1 尚未接入真实 LLM。
-
-如果需要运行真实 LLM Planner，请在后续补齐真实 provider 调用后，根据配置文档设置环境变量，例如：
+默认本地运行仍使用 `rule` 模式。若要手动启用真实 LLM Planner，请只在本机环境变量或本地未提交配置中设置：
 
 ```text
 OPENAI_API_KEY
+AFTERSALE_LLM_MODEL
+OPENAI_RESPONSES_ENDPOINT
 ```
 
-不要将真实 API Key 写入代码、README 或提交历史。
+`AFTERSALE_LLM_MODEL` 和 `OPENAI_RESPONSES_ENDPOINT` 可选；未设置时分别使用 `gpt-4o-mini` 和 OpenAI Responses
+API 默认 endpoint。不要将真实 API Key 写入代码、测试、README、docs、`application.yml` 或提交历史。

@@ -15,4 +15,5 @@ agent:
       provider: openai
       model: ${AFTERSALE_LLM_MODEL:gpt-4o-mini}
       api-key: ${OPENAI_API_KEY:}
+      endpoint: ${OPENAI_RESPONSES_ENDPOINT:https://api.openai.com/v1/responses}
       timeout-seconds: 30

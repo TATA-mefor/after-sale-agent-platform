@@ -40,6 +40,8 @@ public class AgentPlannerProperties {
 
         private String apiKey = "";
 
+        private String endpoint = "https://api.openai.com/v1/responses";
+
         private int timeoutSeconds = 30;
 
         public String getProvider() {
@@ -64,6 +66,14 @@ public class AgentPlannerProperties {
 
         public void setApiKey(String apiKey) {
             this.apiKey = apiKey;
+        }
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
         }
 
         public int getTimeoutSeconds() {

@@ -56,10 +56,11 @@ public interface AgentPlanner {
 - 已提供 `LlmAgentPlanner` adapter 边界；
 - 已提供 planner mode 配置读取；
 - 已提供缺少 API Key 时的清晰错误；
-- 尚未接入真实 provider SDK；
-- 真实 LLM 调用和 AgentPlan JSON 解析是后续 TODO。
+- 已接入轻量 OpenAI-compatible Responses provider client；
+- 已实现结构化 AgentPlan JSON 解析；
+- 已实现 AgentPlan 校验。
 
-`LlmAgentPlanner` 不得伪造真实调用成功。
+`LlmAgentPlanner` 不得伪造真实调用成功。默认测试仍不得访问真实网络或依赖 API Key。
 
 ### 3.3 FakeAgentPlanner
 
@@ -134,6 +135,32 @@ plannedTools
     {
       "toolName": "add_ticket_note",
       "reason": "写入 Agent 处理建议"
+    }
+  ]
+}
+```
+
+LLM 原始输出必须是一个 JSON object，不得包裹 Markdown 代码块，不得附加自然语言解释。示例：
+
+```json
+{
+  "intent": "RETURN_AND_REFUND",
+  "riskLevel": "MEDIUM",
+  "policyQuery": "质量问题 退货 退款",
+  "noteToAdd": "用户反馈商品存在质量问题，建议根据退货退款政策进入人工审核。",
+  "finalSuggestion": "建议先检索质量问题退货退款政策，并提示用户补充故障凭证。",
+  "evidenceHints": [
+    "用户描述商品存在质量问题",
+    "需要检索退货退款政策"
+  ],
+  "plannedTools": [
+    {
+      "toolName": "search_aftersale_policy",
+      "reason": "检索售后政策"
+    },
+    {
+      "toolName": "add_ticket_note",
+      "reason": "写入处理建议"
     }
   ]
 }
@@ -223,6 +250,25 @@ update_ticket_status
 
 Planner 不得生成未知工具名。
 
+### 6.8 解析失败处理
+
+以下情况必须返回清晰错误，并阻止后续工具执行：
+
+- LLM 返回的内容不是合法 JSON；
+- JSON 缺少必填字段；
+- 字段类型不符合契约；
+- `intent` 或 `riskLevel` 不是系统枚举；
+- `policyQuery`、`noteToAdd`、`finalSuggestion` 为空；
+- `plannedTools` 为空或包含未知工具；
+- `noteToAdd` / `finalSuggestion` 声称已经完成退款、补偿、关闭争议等未执行事实。
+
+不可接受行为：
+
+- 抛出 `NullPointerException`；
+- 静默忽略非法字段；
+- 将非法 AgentPlan 降级为成功计划；
+- 在解析失败后继续执行工具。
+
 ## 7. 执行边界
 
 LLM 不得：
@@ -311,6 +357,7 @@ agent:
       provider: openai
       model: ${AFTERSALE_LLM_MODEL:gpt-4o-mini}
       api-key: ${OPENAI_API_KEY:}
+      endpoint: ${OPENAI_RESPONSES_ENDPOINT:https://api.openai.com/v1/responses}
       timeout-seconds: 30
 ```
 

@@ -10,6 +10,7 @@ import com.example.aftersale.agent.application.planner.FakeAgentPlanner;
 import com.example.aftersale.agent.application.planner.RuleBasedAgentPlanner;
 import com.example.aftersale.agent.infrastructure.llm.AgentPlannerConfiguration;
 import com.example.aftersale.agent.infrastructure.llm.LlmAgentPlanner;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.TicketStatus;
 import com.example.aftersale.tool.domain.ToolRiskLevel;
@@ -23,7 +24,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 class AgentPlannerTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withUserConfiguration(AgentPlannerConfiguration.class);
+            .withUserConfiguration(AgentPlannerConfiguration.class)
+            .withBean(ObjectMapper.class);
 
     @Test
     void ruleBasedPlannerGeneratesV1EquivalentPlan() {

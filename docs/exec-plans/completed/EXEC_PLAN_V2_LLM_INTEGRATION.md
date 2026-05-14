@@ -4,7 +4,8 @@ Date: 2026-05-14
 
 ## Scope
 
-This record closes V2.1: LLM Planner Adapter.
+This record closes V2.1 and V2.1.1: LLM Planner Adapter plus real provider-call boundary and structured AgentPlan
+parsing.
 
 The task introduced a Planner boundary without expanding into V2.2 order tools, V2.3 persistence, V2.4 approval APIs,
 vector retrieval, real refunds, or multi-Agent orchestration.
@@ -19,6 +20,11 @@ vector retrieval, real refunds, or multi-Agent orchestration.
 - Moved V1 rule-based intent and planning behavior into `RuleBasedAgentPlanner`.
 - Added `FakeAgentPlanner` for deterministic tests.
 - Added `LlmAgentPlanner` boundary and configuration validation.
+- Added `LlmClient`, `LlmRequest`, and `LlmResponse`.
+- Added a lightweight OpenAI-compatible Responses client.
+- Added centralized planner prompt construction.
+- Added structured AgentPlan JSON parsing.
+- Added AgentPlan validation for enum values, required fields, registered tools, and unsafe completion claims.
 - Added `agent.planner.mode=rule|fake|llm`.
 - Kept default mode as `rule`.
 - Refactored `AgentApplicationService` to depend on `AgentPlanner` and continue executing tools through `ToolRegistry`.
@@ -26,15 +32,21 @@ vector retrieval, real refunds, or multi-Agent orchestration.
 
 ## LLM Boundary
 
-V2.1 does not perform a real LLM provider call.
+V2.1.1 can perform a real LLM provider call only when `agent.planner.mode=llm` is explicitly selected and a valid API Key
+is provided through environment or local configuration.
 
 The `LlmAgentPlanner` currently:
 
-- reads configured LLM settings;
+- builds a centralized planner prompt;
+- calls `LlmClient`;
+- parses the raw LLM JSON output into `AgentPlan`;
+- validates the plan before any tool execution;
 - fails clearly when `agent.planner.mode=llm` has no API Key;
-- throws an explicit TODO for real provider calls.
+- never executes tools directly.
 
-It does not fake a successful LLM response.
+All tool execution remains in `AgentApplicationService` through `ToolRegistry`, and trace recording remains unchanged.
+Default tests use rule/fake planners or a fake `LlmClient`; they do not use real network, real API Keys, or paid LLM
+calls.
 
 ## Validation
 
@@ -51,8 +63,9 @@ Final results are recorded in the Review Packet for this task.
 
 ## Known Limitations
 
-- Real LLM provider SDK integration is not implemented.
-- LLM response JSON parsing is not implemented.
+- Real LLM calls are not exercised by automated tests.
+- The provider client is intentionally lightweight and currently targets an OpenAI-compatible Responses endpoint.
+- Prompt regression tests and live provider smoke tests remain future work.
 - Order query tools remain V2.2.
 - MySQL persistence remains V2.3.
 - Approval APIs remain V2.4.

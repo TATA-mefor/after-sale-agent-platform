@@ -147,14 +147,15 @@ V2.1 已完成：
 - `agent.planner.mode=rule|fake|llm` 配置选择；
 - 默认 rule 模式；
 - llm 模式缺少 API Key 时的清晰错误；
+- V2.1.1 真实 LLM provider client 边界；
+- 结构化 AgentPlan JSON 解析；
+- AgentPlan 枚举、必填字段、工具名和未执行事实声明校验；
 - AgentRun 继续通过 ToolRegistry 执行工具并记录 ToolCallTrace；
 - README planner mode 配置说明；
 - Planner 相关测试与架构边界测试。
 
-V2.1 未完成且不伪装完成：
+V2.1 不包含且不伪装完成：
 
-- 真实 LLM provider SDK 调用；
-- LLM 响应 JSON 解析；
 - Order Query Tools；
 - MySQL Persistence；
 - Approval APIs。

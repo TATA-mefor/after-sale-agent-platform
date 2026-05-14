@@ -145,7 +145,7 @@ V2 质量目标聚焦真实 LLM 接入后的可控性。
 
 ### V2.1 Current Status
 
-Status: completed for adapter boundary.
+Status: completed for adapter boundary and V2.1.1 structured LLM provider-call boundary.
 
 Completed:
 
@@ -153,10 +153,15 @@ Completed:
 - `RuleBasedAgentPlanner` preserves V1 deterministic behavior.
 - `FakeAgentPlanner` supports deterministic AgentRun tests.
 - `LlmAgentPlanner` validates required API Key configuration and does not fake a provider call.
+- `LlmClient` / `LlmRequest` / `LlmResponse` isolate provider calls from Agent orchestration.
+- The OpenAI-compatible provider client is implemented behind `LlmClient`.
+- AgentPlan JSON parsing and validation are implemented.
+- Planner prompt construction is centralized under `agent/prompt`.
 - Default tests run without real LLM, API Key, or external network.
 - Tool execution remains behind `ToolRegistry`.
 - ToolCallTrace remains in the AgentRun flow.
 
 Remaining V2.1 follow-up:
 
-- Implement a real provider client and structured AgentPlan parser behind the existing `LlmAgentPlanner` boundary.
+- Add live provider smoke tests that are explicitly opt-in and never part of default `mvn test`.
+- Add prompt regression fixtures and broader malformed-output cases.
