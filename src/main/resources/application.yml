@@ -7,3 +7,12 @@ management:
     web:
       exposure:
         include: health,info
+
+agent:
+  planner:
+    mode: rule
+    llm:
+      provider: openai
+      model: ${AFTERSALE_LLM_MODEL:gpt-4o-mini}
+      api-key: ${OPENAI_API_KEY:}
+      timeout-seconds: 30

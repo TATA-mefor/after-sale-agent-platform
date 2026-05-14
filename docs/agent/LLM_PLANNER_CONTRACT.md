@@ -51,6 +51,16 @@ public interface AgentPlanner {
 - 只负责规划，不执行工具；
 - 不直接修改 Ticket、AgentRun、ToolCallTrace。
 
+当前 V2.1 实现状态：
+
+- 已提供 `LlmAgentPlanner` adapter 边界；
+- 已提供 planner mode 配置读取；
+- 已提供缺少 API Key 时的清晰错误；
+- 尚未接入真实 provider SDK；
+- 真实 LLM 调用和 AgentPlan JSON 解析是后续 TODO。
+
+`LlmAgentPlanner` 不得伪造真实调用成功。
+
 ### 3.3 FakeAgentPlanner
 
 测试 Planner。
@@ -311,6 +321,8 @@ agent:
   planner:
     mode: fake
 ```
+
+默认模式必须是 `rule`，以保证本地启动和 `mvn test` 不依赖真实 LLM、API Key 或外部网络。
 
 ## 12. 成功标准
 

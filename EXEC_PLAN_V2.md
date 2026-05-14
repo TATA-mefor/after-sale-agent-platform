@@ -130,6 +130,35 @@ mvn spotbugs:check
 mvn test -Dtest=ArchitectureTest
 ```
 
+## 4.7 当前状态
+
+```text
+COMPLETED
+```
+
+V2.1 已完成：
+
+- `AgentPlanner` 抽象；
+- `AgentPlanningContext`；
+- `AgentPlan`；
+- `RuleBasedAgentPlanner`；
+- `FakeAgentPlanner`；
+- `LlmAgentPlanner` adapter 边界；
+- `agent.planner.mode=rule|fake|llm` 配置选择；
+- 默认 rule 模式；
+- llm 模式缺少 API Key 时的清晰错误；
+- AgentRun 继续通过 ToolRegistry 执行工具并记录 ToolCallTrace；
+- README planner mode 配置说明；
+- Planner 相关测试与架构边界测试。
+
+V2.1 未完成且不伪装完成：
+
+- 真实 LLM provider SDK 调用；
+- LLM 响应 JSON 解析；
+- Order Query Tools；
+- MySQL Persistence；
+- Approval APIs。
+
 ---
 
 # 5. V2.2：Order Query Tools

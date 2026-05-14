@@ -142,3 +142,21 @@ V2 质量目标聚焦真实 LLM 接入后的可控性。
 - API Key 出现在仓库；
 - 高风险动作被自动执行；
 - README 把计划能力写成已完成能力。
+
+### V2.1 Current Status
+
+Status: completed for adapter boundary.
+
+Completed:
+
+- `AgentApplicationService` now depends on `AgentPlanner`.
+- `RuleBasedAgentPlanner` preserves V1 deterministic behavior.
+- `FakeAgentPlanner` supports deterministic AgentRun tests.
+- `LlmAgentPlanner` validates required API Key configuration and does not fake a provider call.
+- Default tests run without real LLM, API Key, or external network.
+- Tool execution remains behind `ToolRegistry`.
+- ToolCallTrace remains in the AgentRun flow.
+
+Remaining V2.1 follow-up:
+
+- Implement a real provider client and structured AgentPlan parser behind the existing `LlmAgentPlanner` boundary.

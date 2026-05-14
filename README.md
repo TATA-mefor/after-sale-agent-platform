@@ -262,6 +262,42 @@ V2 的第一优先级是接入真实 LLM Planner Adapter。
 - 默认测试不依赖真实 LLM；
 - API Key 只能来自环境变量或本地配置。
 
+### Planner Mode Configuration
+
+The application selects the Agent planner with:
+
+```yaml
+agent:
+  planner:
+    mode: rule
+```
+
+Supported modes:
+
+- `rule`: default mode. Uses `RuleBasedAgentPlanner`, preserves V1 behavior, and requires no API Key.
+- `fake`: deterministic test mode. Uses `FakeAgentPlanner` and does not call any external network.
+- `llm`: LLM adapter mode. Requires an API Key from environment or local configuration.
+
+Example local LLM configuration:
+
+```yaml
+agent:
+  planner:
+    mode: llm
+    llm:
+      provider: openai
+      model: ${AFTERSALE_LLM_MODEL:gpt-4o-mini}
+      api-key: ${OPENAI_API_KEY:}
+      timeout-seconds: 30
+```
+
+If `agent.planner.mode=llm` is selected without `agent.planner.llm.api-key` / `OPENAI_API_KEY`, startup fails with a
+clear configuration error. The default `mvn test` path uses `rule` or `fake` and does not require a real LLM, API Key,
+or external network.
+
+Current V2.1 status: the LLM adapter boundary and configuration validation are implemented. The real provider call is
+intentionally left as a follow-up TODO; the system does not pretend that a real LLM call succeeded.
+
 ### V2 后续方向
 
 - Order Query Tools；
@@ -275,7 +311,7 @@ V2 的第一优先级是接入真实 LLM Planner Adapter。
 
 当前 V1 尚未接入真实 LLM。
 
-如果需要运行真实 LLM Planner，请等待 V2.1 代码完成后，根据配置文档设置环境变量，例如：
+如果需要运行真实 LLM Planner，请在后续补齐真实 provider 调用后，根据配置文档设置环境变量，例如：
 
 ```text
 OPENAI_API_KEY

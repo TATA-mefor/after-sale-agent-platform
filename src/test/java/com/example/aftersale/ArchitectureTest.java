@@ -90,4 +90,43 @@ class ArchitectureTest {
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
+
+    @Test
+    void agentApplicationServiceMustNotDependOnLlmInfrastructure() {
+        noClasses()
+                .that()
+                .haveSimpleName("AgentApplicationService")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("..agent.infrastructure.llm..")
+                .because("AgentApplicationService must depend on AgentPlanner, not LLM infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void apiLayerMustNotDependOnLlmPlanner() {
+        noClasses()
+                .that()
+                .resideInAPackage("..api..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("LlmAgentPlanner")
+                .because("Controllers must not select or call concrete LLM planner implementations.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void llmInfrastructureMustNotAccessRepositories() {
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.infrastructure.llm..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("LLM adapters must only plan and must not access persistence directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
 }
