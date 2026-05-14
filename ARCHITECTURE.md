@@ -609,3 +609,18 @@ V1 架构成功的标志：
 * ArchUnit 能阻止关键违规；
 * 项目能一键测试；
 * 后续智能体能根据文档继续开发。
+
+## 19. V1 最终实现说明
+
+最终 V1 采用内存仓储和规则式 Agent 编排，不接入真实 LLM、真实数据库、Redis、支付、物流或库存系统。
+
+Demo AgentRun 的实际工具链为：
+
+```text
+search_aftersale_policy
+add_ticket_note
+```
+
+订单上下文在 V1 中保留为工单上的 `orderId`。可执行的 `get_order_by_id` 和 `get_user_orders` 工具未进入最终
+V1，作为 V2 扩展方向。该收口不改变架构边界：Agent 仍只能通过工具访问业务能力，工具仍不能直接访问
+Repository，高风险动作仍必须进入人工确认边界。

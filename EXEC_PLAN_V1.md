@@ -96,7 +96,7 @@ docs/agent/EVALUATION.md
 ### 4.4 状态
 
 ```text
-IN_PROGRESS
+COMPLETED
 ```
 
 ## 5. M1：Spring Boot 项目初始化
@@ -147,6 +147,12 @@ mvn spring-boot:run
 * 应用可以本地启动；
 * 包结构符合 ARCHITECTURE.md。
 
+### 5.6 状态
+
+```text
+COMPLETED
+```
+
 ## 6. M2：架构约束与质量门禁
 
 ### 6.1 目标
@@ -189,6 +195,12 @@ mvn test -Dtest=ArchitectureTest
 * 至少 3 条规则可运行；
 * 质量检查命令可执行；
 * 失败信息能指导修复。
+
+### 6.6 状态
+
+```text
+COMPLETED
+```
 
 ## 7. M3：核心领域模型
 
@@ -248,6 +260,12 @@ ToolCallTrace 记录成功/失败
 * 状态流转不散落在 Controller；
 * domain 层无 Spring Web 依赖。
 
+### 7.6 状态
+
+```text
+COMPLETED
+```
+
 ## 8. M4：售后工单基础闭环
 
 ### 8.1 目标
@@ -281,6 +299,12 @@ GET /api/tickets/{ticketId}
 * 初始状态为 CREATED；
 * Controller 不包含业务逻辑；
 * api 层不直接访问 repository。
+
+### 8.5 状态
+
+```text
+COMPLETED
+```
 
 ## 9. M5：Agent 工具系统
 
@@ -331,6 +355,12 @@ add_ticket_note
 工具调用失败有错误信息
 ```
 
+### 9.6 状态
+
+```text
+COMPLETED
+```
+
 ## 10. M6：售后政策检索
 
 ### 10.1 目标
@@ -367,6 +397,12 @@ add_ticket_note
 * 检索结果包含 policyId；
 * Agent 建议能引用政策依据；
 * 检索失败时有明确错误。
+
+### 10.5 状态
+
+```text
+COMPLETED
+```
 
 ## 11. M7：Agent 编排与执行轨迹
 
@@ -434,6 +470,17 @@ GET /api/agent-runs/{runId}/traces
 * 最终建议包含依据；
 * 失败时 AgentRun 状态为 FAILED。
 
+### 11.6 状态
+
+```text
+COMPLETED
+```
+
+### 11.7 V1 实际收口说明
+
+最终 V1 AgentRun 已实现可演示的政策检索、低风险工具调用、处理建议写入和 trace 查询。订单上下文在
+V1 中通过工单 `orderId` 保留，未新增真实订单查询工具；`get_order_by_id` 和 `get_user_orders` 进入 V2 候选。
+
 ## 12. M8：V1 演示闭环
 
 ### 12.1 目标
@@ -480,8 +527,19 @@ GET /api/agent-runs/{runId}/traces
 
 * 工单状态从 CREATED 变化为 AGENT_RUNNING，再变为 WAITING_HUMAN_APPROVAL 或 RESOLVED；
 * Agent 输出 intent、plan、finalSuggestion；
-* trace 中能看到 get_order_by_id、search_aftersale_policy、add_ticket_note；
-* 最终建议引用订单和政策依据。
+* trace 中能看到 search_aftersale_policy、add_ticket_note；
+* 最终建议引用政策依据。
+
+### 12.4 状态
+
+```text
+COMPLETED
+```
+
+### 12.5 V1 实际收口说明
+
+最终 V1 Demo trace 包含 `search_aftersale_policy` 和 `add_ticket_note`。订单查询工具未进入最终 V1，
+不影响当前 API-only demo 的政策依据、工具边界和 trace 展示。
 
 ## 13. M9：测试、文档、Review Packet
 
@@ -515,8 +573,10 @@ ARCHITECTURE.md
 docs/agent/TOOL_CONTRACTS.md
 docs/agent/RISK_POLICY.md
 docs/quality/QUALITY_SCORE.md
-docs/exec-plans/completed/EXEC_PLAN_V1.md
+docs/exec-plans/completed/EXEC_PLAN_V1_REVIEW.md
 ```
+
+其中 SPEC.md 和 WORKFLOW.md 作为 V1 目标与流程基线检查；若未发现与当前收口冲突的内容，不做无意义改写。
 
 ### 13.4 Review Packet
 
@@ -541,6 +601,12 @@ V1 完成时必须输出：
 
 ### Completion Signal
 TASK_COMPLETE
+```
+
+### 13.5 状态
+
+```text
+COMPLETED
 ```
 
 ## 14. 风险清单
@@ -603,18 +669,17 @@ V1 完成后，V2 可选择：
 
 ## 17. 当前下一步
 
-当前应进入：
+当前状态：
 
 ```text
-M1：Spring Boot 项目初始化
+M9：测试、文档、Review Packet 已完成，V1 进入完成审查态
 ```
 
-执行前必须确认：
+V1 收口产物：
 
-* SPEC.md 已存在；
-* WORKFLOW.md 已存在；
-* AGENTS.md 已存在；
-* ARCHITECTURE.md 已存在；
-* 本执行计划已存在。
-
-确认后再开始写代码。
+```text
+docs/quality/QUALITY_SCORE.md
+docs/exec-plans/completed/EXEC_PLAN_V1_REVIEW.md
+README.md Demo Walkthrough
+最终 Review Packet
+```
