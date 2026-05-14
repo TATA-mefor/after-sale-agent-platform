@@ -224,3 +224,61 @@ Start with these project documents:
 - `AGENTS.md`
 - `ARCHITECTURE.md`
 - `EXEC_PLAN_V1.md`
+
+## V2 Roadmap
+
+V1 当前是规则型 AgentRun 闭环，已经支持：
+
+```text
+创建售后工单
+触发 AgentRun
+检索售后政策
+写入工单备注
+记录 ToolCallTrace
+查询执行轨迹
+```
+
+V2 的第一优先级是接入真实 LLM Planner Adapter。
+
+### V2.1 LLM Planner Adapter
+
+目标：
+
+```text
+用户售后问题
+→ Ticket
+→ LLM Planner 生成结构化 AgentPlan
+→ Java 后端校验 AgentPlan
+→ ToolRegistry 执行工具
+→ ToolCallTrace 记录轨迹
+```
+
+设计边界：
+
+- LLM 只负责规划；
+- Java 后端负责执行；
+- ToolRegistry 仍然是唯一工具执行入口；
+- 高风险动作仍然需要审批；
+- 默认测试不依赖真实 LLM；
+- API Key 只能来自环境变量或本地配置。
+
+### V2 后续方向
+
+- Order Query Tools；
+- MySQL Persistence；
+- Approval APIs；
+- Agent Evaluation Dataset；
+- Vector or Hybrid Policy Retrieval；
+- Docker Compose and Observability。
+
+### 当前说明
+
+当前 V1 尚未接入真实 LLM。
+
+如果需要运行真实 LLM Planner，请等待 V2.1 代码完成后，根据配置文档设置环境变量，例如：
+
+```text
+OPENAI_API_KEY
+```
+
+不要将真实 API Key 写入代码、README 或提交历史。

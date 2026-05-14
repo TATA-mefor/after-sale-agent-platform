@@ -106,3 +106,39 @@ Current gaps:
 - Add an Agent evaluation dataset for intent, tool selection, and final suggestion quality.
 - Add Docker Compose for repeatable local demos.
 - Add observability metrics for AgentRun and tool latency.
+
+## V2 Quality Targets
+
+V2 质量目标聚焦真实 LLM 接入后的可控性。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| LLM 接入质量 | LLM 只作为 Planner，不直接执行工具 | 代码结构 + 测试 + 文档检查 |
+| Planner 抽象质量 | AgentApplicationService 依赖 AgentPlanner 抽象 | 单元测试 + 架构检查 |
+| 测试确定性 | 默认测试不依赖真实 LLM/API Key/外部网络 | `mvn test` 离线通过 |
+| 安全边界 | LLM 不得绕过 ToolRegistry 或审批边界 | 代码检查 + AgentPlan 校验 |
+| 可回滚性 | RuleBasedAgentPlanner 保留 | 配置切换测试 |
+| 可配置性 | planner mode 可配置 | 配置测试 |
+| Trace 完整性 | 工具调用仍记录 ToolCallTrace | AgentRunFlowTest |
+| 文档一致性 | README 不夸大未完成能力 | M9/V2 review 检查 |
+
+### V2.1 目标评分
+
+| 项目 | 目标分 |
+|---|---:|
+| Planner 抽象 | 90 |
+| LLM 接入边界 | 85 |
+| 测试确定性 | 95 |
+| 安全边界 | 90 |
+| 文档一致性 | 90 |
+| 可演示性 | 85 |
+
+### V2.1 不接受的退化
+
+- V1 demo 不能跑；
+- 默认测试需要 API Key；
+- ToolCallTrace 丢失；
+- Agent 绕过 ToolRegistry；
+- API Key 出现在仓库；
+- 高风险动作被自动执行；
+- README 把计划能力写成已完成能力。

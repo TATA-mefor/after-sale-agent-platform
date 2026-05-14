@@ -363,3 +363,45 @@ V1 最低质量门禁：
 本项目要证明：
 
 > 在明确上下文、机械化约束和反馈回路下，Agent 可以参与企业级 Java 后端系统的构建，并在业务边界内完成可追踪、可审计、可回滚的智能执行。
+
+## 15. V2 外部模型接入规则
+
+任何接入外部 LLM、Embedding、向量库、外部 Agent SDK 的任务，必须先满足：
+
+1. 已有决策日志；
+2. 已有契约文档；
+3. 已有本地降级路径；
+4. 已有 fake 或 rule 测试实现；
+5. 默认测试不依赖外部网络；
+6. API Key 不进入仓库；
+7. 失败行为可解释；
+8. 不破坏 V1 demo。
+
+涉及 LLM Planner 的任务必须阅读：
+
+```text
+docs/decisions/DECISION_LLM_PLANNER_ADAPTER.md
+docs/agent/LLM_PLANNER_CONTRACT.md
+EXEC_PLAN_V2.md
+```
+
+### 15.1 LLM 任务完成标准
+
+LLM 相关任务只有在以下条件满足时才可完成：
+
+- `mvn test` 通过；
+- `mvn checkstyle:check` 通过；
+- `mvn spotbugs:check` 通过；
+- `mvn test -Dtest=ArchitectureTest` 通过；
+- 无真实 API Key 被提交；
+- 默认测试可离线运行；
+- RuleBased 或 Fake Planner 可用；
+- Review Packet 说明 LLM 边界、失败处理和测试策略。
+
+### 15.2 禁止行为
+
+- 为了接入 LLM 删除 V1 测试；
+- 让真实 LLM 成为默认测试依赖；
+- 在文档中声称未完成能力已经完成；
+- 让 LLM 绕过 ToolRegistry；
+- 让 LLM 直接执行高风险业务动作。

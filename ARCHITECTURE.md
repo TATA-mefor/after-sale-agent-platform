@@ -624,3 +624,77 @@ add_ticket_note
 订单上下文在 V1 中保留为工单上的 `orderId`。可执行的 `get_order_by_id` 和 `get_user_orders` 工具未进入最终
 V1，作为 V2 扩展方向。该收口不改变架构边界：Agent 仍只能通过工具访问业务能力，工具仍不能直接访问
 Repository，高风险动作仍必须进入人工确认边界。
+
+## 20. V2 Planner 架构边界
+
+V2 引入 `AgentPlanner` 抽象。
+
+推荐结构：
+
+```text
+agent
+├── api
+├── application
+│   ├── AgentApplicationService
+│   ├── planner
+│   │   ├── AgentPlanner
+│   │   ├── AgentPlanningContext
+│   │   ├── AgentPlan
+│   │   ├── RuleBasedAgentPlanner
+│   │   └── FakeAgentPlanner
+│   ├── validation
+│   │   └── AgentPlanValidator
+│   └── ...
+├── infrastructure
+│   └── llm
+│       ├── LlmAgentPlanner
+│       ├── LlmClientAdapter
+│       └── LlmPlannerProperties
+└── prompt
+```
+
+### 20.1 依赖规则
+
+允许：
+
+```text
+AgentApplicationService → AgentPlanner
+RuleBasedAgentPlanner → domain / planner DTO
+FakeAgentPlanner → planner DTO
+LlmAgentPlanner → LlmClientAdapter
+LlmClientAdapter → external LLM SDK / Spring AI
+AgentApplicationService → ToolRegistry
+```
+
+禁止：
+
+```text
+AgentApplicationService → concrete LLM SDK
+Controller → LlmAgentPlanner
+LLM SDK adapter → TicketRepository
+LLM SDK adapter → ToolRegistry
+LLM → direct tool execution
+LLM → direct business state mutation
+```
+
+### 20.2 设计原则
+
+- `AgentApplicationService` 依赖 `AgentPlanner` 抽象，不依赖具体 LLM SDK；
+- `RuleBasedAgentPlanner` 保留 V1 规则行为；
+- `FakeAgentPlanner` 用于测试；
+- `LlmAgentPlanner` 只生成 `AgentPlan`；
+- `AgentPlan` 必须被 Java 后端校验；
+- ToolRegistry 仍然是唯一工具执行入口；
+- LLM Provider 归入 infrastructure / adapter 边界；
+- 所有工具调用继续记录 ToolCallTrace。
+
+### 20.3 V2 ArchUnit 候选规则
+
+后续可以增加：
+
+```text
+AgentApplicationService 不得依赖 ..infrastructure..llm..
+..api.. 不得依赖 LlmAgentPlanner
+..infrastructure..llm.. 不得依赖 ..repository..
+..agent..prompt.. 不得依赖 ..repository..
+```

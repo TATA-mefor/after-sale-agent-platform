@@ -243,3 +243,34 @@ TASK_COMPLETE
 当前 V1 已收口为 API-only 后端 Demo：创建工单、触发规则式 AgentRun、检索售后政策、写入工单备注、
 记录 ToolCallTrace 并查询执行轨迹。V1 不接入真实 LLM、真实数据库、真实退款、真实物流、复杂前端或多
 Agent。订单查询工具未进入最终 V1，作为 V2 候选方向保留。
+
+## 15. V2 LLM / Planner 任务规则
+
+涉及 LLM、Planner、模型调用、结构化输出的任务，必须额外阅读：
+
+```text
+docs/agent/LLM_PLANNER_CONTRACT.md
+docs/decisions/DECISION_LLM_PLANNER_ADAPTER.md
+EXEC_PLAN_V2.md
+```
+
+V2 任务必须遵守：
+
+1. 禁止把真实 API Key 写入代码、测试、README 或提交历史；
+2. 禁止让测试依赖真实 LLM、API Key 或外部网络；
+3. 禁止让 LLM 绕过 ToolRegistry；
+4. 禁止让 LLM 直接修改 Ticket、Order、AgentRun 或 ToolCallTrace；
+5. 禁止让 LLM 直接执行退款、补偿、关闭争议工单等高风险动作；
+6. 默认测试必须可离线运行；
+7. LLM 只能生成结构化 AgentPlan；
+8. Java 后端必须校验 AgentPlan，并通过 ToolRegistry 执行工具；
+9. RuleBasedAgentPlanner 必须保留；
+10. FakeAgentPlanner 必须用于确定性测试。
+
+如果修改了 Planner 行为，必须同步更新：
+
+```text
+docs/agent/LLM_PLANNER_CONTRACT.md
+docs/agent/TOOL_CONTRACTS.md
+docs/agent/RISK_POLICY.md
+```

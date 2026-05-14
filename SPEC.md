@@ -388,3 +388,50 @@ V1 的目标是：
 * 架构面试官能看到模块边界、状态流转、风险控制；
 * 项目组能看到真实落地价值；
 * Harness 思想能作为项目差异化被讲清楚。
+
+## 16. V2 目标：真实 LLM Planner Adapter
+
+V1 使用规则型 Agent 完成售后工单处理闭环。
+
+V2 的第一目标是引入真实 LLM Planner Adapter，使 Agent 能够更好地理解用户自然语言售后诉求，并生成结构化处理计划。
+
+V2.1 采用以下边界：
+
+```text
+LLM 负责规划
+Java 后端负责执行
+ToolRegistry 负责工具调用
+RiskPolicy 负责风险边界
+ToolCallTrace 负责审计记录
+```
+
+V2.1 不要求 LLM 直接调用工具。
+
+V2.1 不改变高风险动作边界。
+
+V2.1 不要求接入真实退款、真实补偿、真实物流或真实订单中心。
+
+### 16.1 V2.1 必须保持的能力
+
+- V1 demo 继续可运行；
+- RuleBasedAgentPlanner 继续可用；
+- 默认测试不依赖真实 LLM；
+- LLM API Key 不得进入代码仓库；
+- ToolRegistry 仍然是唯一工具执行入口；
+- 所有工具调用继续记录 trace；
+- 高风险动作仍然进入人工确认边界。
+
+### 16.2 V2 后续方向
+
+V2 后续可以逐步扩展：
+
+```text
+Order Query Tools
+MySQL Persistence
+Approval APIs
+Agent Evaluation Dataset
+Vector or Hybrid Policy Retrieval
+Docker Compose and Observability
+```
+
+但 V2.1 不同时扩大到这些方向。
