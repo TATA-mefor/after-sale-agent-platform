@@ -327,6 +327,20 @@ Java 后端必须：
 - LLM 配置缺失时有清晰行为；
 - V1 demo 流程继续通过。
 
+Live smoke test 只能显式 opt-in 运行，例如：
+
+```bash
+mvn test -Dtest=LlmPlannerLiveSmokeTest -Dlive.llm=true
+```
+
+要求：
+
+- 默认 `mvn test` 不运行真实 LLM；
+- 缺少 `OPENAI_API_KEY` 时跳过或给出清晰提示；
+- 只验证 LLM provider 调用、AgentPlan 解析和校验；
+- 不执行业务工具；
+- 不创建或修改 Ticket、AgentRun、ToolCallTrace。
+
 ## 10. Prompt 管理
 
 LLM Planner prompt 必须集中管理。

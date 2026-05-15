@@ -301,6 +301,33 @@ enabled and configuration is complete. The LLM must return structured JSON, whic
 and then executes only through `ToolRegistry`. Tests still use `rule`, `fake`, or a fake `LlmClient`; they never require
 a real LLM, API Key, or external network.
 
+### LLM Planner Live Smoke Test
+
+The live smoke test is explicit opt-in. It is not part of the default `mvn test` path.
+
+To run it locally:
+
+```bash
+mvn test -Dtest=LlmPlannerLiveSmokeTest -Dlive.llm=true
+```
+
+Required local environment:
+
+```text
+OPENAI_API_KEY
+```
+
+Optional local environment:
+
+```text
+AFTERSALE_LLM_MODEL
+OPENAI_RESPONSES_ENDPOINT
+```
+
+If `-Dlive.llm=true` is omitted, the test is disabled. If `OPENAI_API_KEY` is missing, the live test is skipped with a
+clear message. The smoke test calls only `LlmAgentPlanner` and validates the returned `AgentPlan`; it does not execute
+business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
+
 ### V2 后续方向
 
 - Order Query Tools；

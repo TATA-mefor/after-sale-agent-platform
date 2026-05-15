@@ -150,6 +150,7 @@ V2.1 已完成：
 - V2.1.1 真实 LLM provider client 边界；
 - 结构化 AgentPlan JSON 解析；
 - AgentPlan 枚举、必填字段、工具名和未执行事实声明校验；
+- V2.1.2 显式 opt-in live smoke test；
 - AgentRun 继续通过 ToolRegistry 执行工具并记录 ToolCallTrace；
 - README planner mode 配置说明；
 - Planner 相关测试与架构边界测试。
