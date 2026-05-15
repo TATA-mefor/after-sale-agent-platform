@@ -383,24 +383,27 @@ priority order, and trace `inputJson` includes subtask metadata such as `subtask
 
 V2.3 remains a single-process planning and execution design. It does not add multi-Agent microservices, queues, parallel
 execution, voting consensus, a full coupon system, real refunds, real exchanges, real logistics, or real payment
-integration. Specialist handlers and Execution Tree remain future work.
+integration. V2.4 now adds handler-based dispatch on top of this subtask model; Execution Tree remains future work.
 
-### V2.4 Roadmap: Specialist Agent Handler
+### V2.4 Specialist Agent Handler
 
-The next planned stage is Specialist Agent Handler. It is not implemented yet.
+V2.4 adds Specialist Agent Handler dispatch for multi-intent subtasks while preserving the V2.2 single-intent flow and
+the V2.3 sequential execution model.
 
-Target flow:
+Implemented flow:
 
 ```text
-AgentSubtask
+AgentPlan with subtasks
+→ AgentApplicationService
 → SpecialistAgentHandlerRegistry
 → SpecialistAgentHandler
 → ToolRegistry
 → ToolCallTrace
 → SubtaskExecutionResult
+→ final summary
 ```
 
-Candidate handlers:
+Implemented handlers:
 
 - `ReturnAgentHandler`
 - `ExchangeAgentHandler`
@@ -409,9 +412,13 @@ Candidate handlers:
 - `GeneralConsultationHandler`
 - `HumanEscalationHandler`
 
-V2.4 remains a modular-monolith strategy-class design. It will not add multi-Agent microservices, queues, parallel
-execution, voting consensus, real refunds, real exchanges, real coupon compensation, real logistics, or real payment
-integration. Handlers must still call tools through `ToolRegistry`.
+Each handler declares the `SubtaskType` it supports, and `SpecialistAgentHandlerRegistry` rejects duplicate coverage.
+Unsupported subtask types return a structured failed `SubtaskExecutionResult`. Handlers call only registered tools
+through `ToolRegistry`, so `ToolCallTrace` continues to record handler-triggered calls.
+
+V2.4 remains a modular-monolith strategy-class design. It does not add multi-Agent microservices, queues, parallel
+execution, voting consensus, real refunds, real exchanges, real coupon compensation, real logistics, real payment
+integration, or a real LLM dependency in default tests.
 
 ### 真实 LLM 本地运行说明
 

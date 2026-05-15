@@ -115,7 +115,7 @@ integration.
 
 ## V2.4 Specialist Handler Tool Boundary
 
-V2.4 may add Specialist Agent Handlers for subtask execution. Handler introduction does not change the tool contract:
+V2.4 adds Specialist Agent Handlers for subtask execution. Handler introduction does not change the tool contract:
 
 - handlers must call tools through `ToolRegistry`;
 - handlers cannot call business repositories directly;

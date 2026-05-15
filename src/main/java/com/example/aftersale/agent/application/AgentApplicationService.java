@@ -2,13 +2,15 @@ package com.example.aftersale.agent.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.aftersale.agent.application.handler.SpecialistAgentHandlerRegistry;
+import com.example.aftersale.agent.application.handler.SubtaskExecutionContext;
+import com.example.aftersale.agent.application.handler.SubtaskExecutionResult;
 import com.example.aftersale.agent.application.planner.AgentPlan;
 import com.example.aftersale.agent.application.planner.AgentPlanValidator;
 import com.example.aftersale.agent.application.planner.AgentPlanner;
 import com.example.aftersale.agent.application.planner.AgentPlanningContext;
 import com.example.aftersale.agent.application.planner.AgentSubtask;
 import com.example.aftersale.agent.application.planner.PlannedToolCall;
-import com.example.aftersale.agent.application.planner.SubtaskStatus;
 import com.example.aftersale.agent.domain.AgentRun;
 import com.example.aftersale.agent.domain.AgentRunRepository;
 import com.example.aftersale.common.exception.ResourceNotFoundException;
@@ -45,6 +47,7 @@ public class AgentApplicationService {
     private final AgentRunRepository agentRunRepository;
     private final TicketApplicationService ticketApplicationService;
     private final ToolRegistry toolRegistry;
+    private final SpecialistAgentHandlerRegistry specialistAgentHandlerRegistry;
     private final AgentPlanner agentPlanner;
     private final ObjectMapper objectMapper;
 
@@ -55,11 +58,13 @@ public class AgentApplicationService {
             AgentRunRepository agentRunRepository,
             TicketApplicationService ticketApplicationService,
             ToolRegistry toolRegistry,
+            SpecialistAgentHandlerRegistry specialistAgentHandlerRegistry,
             AgentPlanner agentPlanner,
             ObjectMapper objectMapper) {
         this.agentRunRepository = agentRunRepository;
         this.ticketApplicationService = ticketApplicationService;
         this.toolRegistry = toolRegistry;
+        this.specialistAgentHandlerRegistry = specialistAgentHandlerRegistry;
         this.agentPlanner = agentPlanner;
         this.objectMapper = objectMapper;
     }
@@ -171,17 +176,18 @@ public class AgentApplicationService {
                         .thenComparing(AgentSubtask::subtaskId))
                 .toList();
         for (AgentSubtask subtask : sortedSubtasks) {
-            List<String> subtaskEvidence = new ArrayList<>();
-            for (PlannedToolCall plannedTool : subtask.plannedTools()) {
-                executePlannedTool(runId, ticket, plan, subtask, plannedTool, subtaskEvidence, toolCalls);
-            }
-            evidence.addAll(subtaskEvidence);
-            AgentSubtask completedSubtask = subtask.withStatus(SubtaskStatus.SUCCEEDED);
-            results.add(new SubtaskExecutionResult(
-                    completedSubtask,
-                    subtaskEvidence,
-                    completedSubtask.subtaskId() + " " + completedSubtask.type().name()
-                            + " succeeded with " + subtaskEvidence.size() + " evidence item(s)."));
+            SubtaskExecutionContext context = new SubtaskExecutionContext(
+                    runId,
+                    ticket,
+                    plan,
+                    subtask,
+                    availableToolNames(),
+                    RISK_POLICY_SUMMARY,
+                    results);
+            SubtaskExecutionResult result = specialistAgentHandlerRegistry.handle(context);
+            evidence.addAll(result.evidence());
+            toolCalls.addAll(result.toolCalls());
+            results.add(result);
         }
         return results;
     }
@@ -339,9 +345,7 @@ public class AgentApplicationService {
         value.put("evidenceHints", plan.evidenceHints());
         value.put("plannedTools", plan.plannedTools());
         value.put("subtasks", plan.subtasks());
-        value.put("completedSubtasks", subtaskResults.stream()
-                .map(SubtaskExecutionResult::subtask)
-                .toList());
+        value.put("completedSubtasks", subtaskResults);
         value.put("subtaskSummaries", subtaskResults.stream()
                 .map(SubtaskExecutionResult::summary)
                 .toList());
@@ -374,8 +378,5 @@ public class AgentApplicationService {
             return exception.getClass().getSimpleName();
         }
         return message;
-    }
-
-    private record SubtaskExecutionResult(AgentSubtask subtask, List<String> evidence, String summary) {
     }
 }

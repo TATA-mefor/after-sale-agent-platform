@@ -129,4 +129,27 @@ class ArchitectureTest {
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
+
+    @Test
+    void specialistHandlersMustNotAccessRepositoriesOrLlmInfrastructure() {
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.handler..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("specialist handlers must use ToolRegistry instead of repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.handler..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("..agent.infrastructure.llm..", "org.springframework.web..")
+                .because("specialist handlers must not call LLM infrastructure or depend on HTTP concerns.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
 }

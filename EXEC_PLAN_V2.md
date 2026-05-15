@@ -765,8 +765,21 @@ mvn test -Dtest=ArchitectureTest
 ### 8.10 状态
 
 ```text
-PLANNED
+COMPLETED
 ```
+
+V2.4 已完成：
+
+- 新增 `SpecialistAgentHandler`、`SpecialistAgentHandlerRegistry`、`SubtaskExecutionContext` 和
+  `SubtaskExecutionResult`；
+- 新增 `ReturnAgentHandler`、`ExchangeAgentHandler`、`CouponAgentHandler`、`LogisticsAgentHandler`、
+  `GeneralConsultationHandler` 和 `HumanEscalationHandler`；
+- `AgentApplicationService` 已通过 registry 调度多意图 subtasks；
+- handler 内部工具调用仍统一通过 `ToolRegistry`；
+- `ToolCallTrace` 继续记录 handler 内部工具调用，trace inputJson 保留 subtask metadata；
+- registry 对重复 handler coverage 直接拒绝，对未覆盖 subtask type 返回结构化失败结果；
+- ArchUnit 已约束 handler 不得依赖 Repository、LLM infrastructure 或 Spring Web；
+- 默认测试仍离线运行，不依赖真实 LLM、API Key 或外部网络。
 
 ---
 
@@ -952,7 +965,7 @@ V2.1.1 Structured LLM Planner Client ✅
 V2.1.2 LLM Live Smoke Test ✅
 V2.2 Order Query Tools ✅
 V2.3 Multi-Intent Planning ✅
-V2.4 Specialist Agent Handler
+V2.4 Specialist Agent Handler ✅
 V2.5 Shared Workspace / Memory
 V2.6 Approval APIs
 V2.7 Execution Tree
