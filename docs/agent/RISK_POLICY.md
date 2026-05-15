@@ -44,3 +44,20 @@ V2.2 adds low-risk order query tools backed by in-memory demo data. They read de
 to a real order center, logistics provider, payment provider, database, refund system, or inventory system.
 
 Closing a ticket through `update_ticket_status` remains blocked with `REQUIRES_APPROVAL`.
+
+## V2.3 Multi-Intent Risk Boundary
+
+V2.3 introduces planned subtasks for complex after-sale messages. Risk is evaluated per subtask and per planned tool.
+
+Rules:
+
+- `LOW` subtasks may plan read-only tools or low-risk note writing;
+- `MEDIUM` subtasks may plan controlled ticket lifecycle actions, but not funds, inventory, coupons, payment, or dispute
+  closure;
+- `HIGH` subtasks must stop at planning or approval handoff and cannot be executed automatically;
+- subtask `riskLevel` must be one of `LOW`, `MEDIUM`, or `HIGH`;
+- subtask output must not claim that refund, exchange, coupon compensation, payment change, or dispute closure has
+  already completed;
+- ToolRegistry and the existing tool risk contract remain the execution boundary.
+
+V2.3 does not implement real refund, real exchange, real coupon compensation, real logistics, or real payment actions.

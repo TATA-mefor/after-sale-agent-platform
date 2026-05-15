@@ -701,7 +701,7 @@ AgentApplicationService 不得依赖 ..infrastructure..llm..
 
 ## 21. V2.3 Multi-Intent Planning 架构边界
 
-V2.3 计划引入 Multi-Intent Planning，用于把一个复杂售后 Ticket 拆解为多个结构化子任务。
+V2.3 引入 Multi-Intent Planning，用于把一个复杂售后 Ticket 拆解为多个结构化子任务。
 
 目标链路：
 
@@ -774,3 +774,15 @@ AgentRun
 ```
 
 但在 V2.3 中，trace list 必须足以看出每个工具调用的输入、输出、状态和失败原因。
+
+### 21.5 V2.3 Current Boundary
+
+V2.3 当前实现 Multi-Intent Planning 的基础链路，后续扩展必须保持：
+
+- `Supervisor Planner` 只生成 `MultiIntentAgentPlan`；
+- `AgentApplicationService` 负责校验子任务类型、工具名、风险等级和依赖关系；
+- 当前阶段使用单进程顺序执行，不做并行调度；
+- Specialist Agent Handler 属于 V2.4，不在 V2.3 实现；
+- ToolRegistry 仍然是所有工具调用的唯一入口；
+- ToolCallTrace 继续记录每个实际工具调用；
+- 后续可以扩展 Execution Tree，但 V2.3 不要求替换现有 trace list。

@@ -458,7 +458,7 @@ V2.3 计划支持：
 
 - 一个 Ticket 对应多个 `AgentSubtask`；
 - 子任务类型包括 `RETURN`、`EXCHANGE`、`COUPON_CONSULTATION`、`LOGISTICS_ISSUE`、`GENERAL_CONSULTATION`；
-- 每个子任务有独立目标、用户原文片段、优先级、风险等级、政策检索 query、计划工具和依赖；
+- 每个子任务有独立目标对象、用户原文片段、优先级、风险等级、政策检索 query、计划工具和依赖；
 - Java 后端校验子任务类型、工具名、风险等级和依赖关系；
 - ToolRegistry 继续作为唯一工具执行入口；
 - ToolCallTrace 继续记录工具调用。
@@ -468,6 +468,10 @@ V2.3 仍然不做：
 - 真实退款；
 - 真实换货；
 - 真实优惠券补偿；
+- 完整优惠券系统；
 - 真实物流或支付系统接入；
 - 多 Agent 微服务；
 - 并行执行或消息队列。
+
+V2.3 已在模块化单体内实现结构化多意图规划、顺序子任务执行和 trace 可观测性。Execution Tree、
+Specialist Handler、真实退款、真实换货、真实优惠券补偿、真实物流和真实支付仍属于后续阶段或非目标。

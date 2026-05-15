@@ -8,6 +8,7 @@ import com.example.aftersale.agent.application.planner.AgentPlanner;
 import com.example.aftersale.agent.application.planner.AgentPlanningContext;
 import com.example.aftersale.agent.application.planner.FakeAgentPlanner;
 import com.example.aftersale.agent.application.planner.RuleBasedAgentPlanner;
+import com.example.aftersale.agent.application.planner.SubtaskType;
 import com.example.aftersale.agent.infrastructure.llm.AgentPlannerConfiguration;
 import com.example.aftersale.agent.infrastructure.llm.LlmAgentPlanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,24 @@ class AgentPlannerTest {
         assertThat(plan.plannedTools())
                 .extracting("toolName")
                 .containsExactly("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
+    }
+
+    @Test
+    void ruleBasedPlannerSplitsComplexAfterSaleMessageIntoSubtasks() {
+        AgentPlanningContext context = planningContext(
+                "我买了三件衣服，其中一件有污渍要退货，另一件要换尺码，还有一张优惠券没用上怎么退？");
+
+        AgentPlan plan = new RuleBasedAgentPlanner().plan(context);
+
+        assertThat(plan.intent()).isEqualTo(IntentType.MULTI_INTENT);
+        assertThat(plan.hasSubtasks()).isTrue();
+        assertThat(plan.subtasks())
+                .extracting("type")
+                .containsExactly(SubtaskType.RETURN, SubtaskType.EXCHANGE, SubtaskType.COUPON_CONSULTATION);
+        assertThat(plan.subtasks())
+                .allSatisfy(subtask -> assertThat(subtask.plannedTools())
+                        .extracting("toolName")
+                        .containsExactly("get_order_by_id", "search_aftersale_policy", "add_ticket_note"));
     }
 
     @Test

@@ -117,6 +117,52 @@ class AgentRunFlowTest {
     }
 
     @Test
+    void multiIntentAgentRunExecutesSubtasksSequentiallyAndRecordsTraceContext() throws Exception {
+        Ticket ticket = ticketApplicationService.createTicket(
+                "U-MULTI-1",
+                "O202605130001",
+                "我买了三件衣服，其中一件有污渍要退货，另一件要换尺码，还有一张优惠券没用上怎么退？");
+
+        MvcResult result = mockMvc.perform(post("/api/tickets/{ticketId}/agent-runs", ticket.getTicketId()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
+                .andExpect(jsonPath("$.data.intent").value("MULTI_INTENT"))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("RETURN")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("EXCHANGE")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("COUPON_CONSULTATION")))
+                .andExpect(jsonPath("$.data.plan", containsString("completedSubtasks")))
+                .andExpect(jsonPath("$.data.toolCalls", hasItems("get_order_by_id", "search_aftersale_policy",
+                        "add_ticket_note")))
+                .andReturn();
+
+        String runId = JsonPath.read(result.getResponse().getContentAsString(), "$.data.runId");
+        List<ToolCallTrace> traces = traceApplicationService.findByRunId(runId);
+        assertThat(traces).hasSize(9);
+        assertThat(traces)
+                .extracting(ToolCallTrace::getInputJson)
+                .anySatisfy(inputJson -> assertThat(inputJson).contains("subtask-1", "RETURN"))
+                .anySatisfy(inputJson -> assertThat(inputJson).contains("subtask-2", "EXCHANGE"))
+                .anySatisfy(inputJson -> assertThat(inputJson).contains("subtask-3", "COUPON_CONSULTATION"));
+        assertThat(traces)
+                .extracting(ToolCallTrace::getToolName)
+                .contains(
+                        "get_order_by_id",
+                        "search_aftersale_policy",
+                        "add_ticket_note",
+                        "get_order_by_id",
+                        "search_aftersale_policy",
+                        "add_ticket_note",
+                        "get_order_by_id",
+                        "search_aftersale_policy",
+                        "add_ticket_note");
+
+        mockMvc.perform(get("/api/tickets/{ticketId}", ticket.getTicketId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("RESOLVED"))
+                .andExpect(jsonPath("$.data.agentSuggestion", containsString("Subtask summary")));
+    }
+
+    @Test
     void traceQueryReturnsToolCallRecords() throws Exception {
         Ticket ticket = ticketApplicationService.createTicket(
                 "U-7002",

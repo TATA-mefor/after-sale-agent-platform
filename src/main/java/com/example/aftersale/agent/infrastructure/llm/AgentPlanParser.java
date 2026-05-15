@@ -2,7 +2,9 @@ package com.example.aftersale.agent.infrastructure.llm;
 
 import com.example.aftersale.agent.application.planner.AgentPlan;
 import com.example.aftersale.agent.application.planner.AgentPlanValidationException;
+import com.example.aftersale.agent.application.planner.AgentSubtask;
 import com.example.aftersale.agent.application.planner.PlannedToolCall;
+import com.example.aftersale.agent.application.planner.SubtaskType;
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.tool.domain.ToolRiskLevel;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,7 +34,8 @@ public class AgentPlanParser {
                 requireText(root, "noteToAdd"),
                 requireText(root, "finalSuggestion"),
                 parseStringArray(root, "evidenceHints"),
-                parsePlannedTools(root));
+                parsePlannedTools(root, "plannedTools"),
+                parseSubtasks(root));
     }
 
     private JsonNode parseJson(String rawContent) {
@@ -76,15 +79,59 @@ public class AgentPlanParser {
         return result;
     }
 
-    private static List<PlannedToolCall> parsePlannedTools(JsonNode root) {
-        JsonNode value = root.get("plannedTools");
+    private static List<AgentSubtask> parseSubtasks(JsonNode root) {
+        JsonNode value = root.get("subtasks");
+        if (value == null) {
+            return List.of();
+        }
+        if (!value.isArray()) {
+            throw new AgentPlanValidationException("subtasks must be an array");
+        }
+        List<AgentSubtask> result = new ArrayList<>();
+        for (JsonNode item : value) {
+            if (!item.isObject()) {
+                throw new AgentPlanValidationException("subtasks entries must be objects");
+            }
+            result.add(new AgentSubtask(
+                    requireText(item, "subtaskId"),
+                    parseSubtaskType(item),
+                    requireText(item, "target"),
+                    requireText(item, "userMessageFragment"),
+                    parsePriority(item),
+                    parseRiskLevel(item),
+                    requireText(item, "policyQuery"),
+                    parsePlannedTools(item, "plannedTools"),
+                    parseStringArray(item, "dependencies")));
+        }
+        return result;
+    }
+
+    private static SubtaskType parseSubtaskType(JsonNode root) {
+        String value = requireText(root, "type");
+        try {
+            return SubtaskType.valueOf(value);
+        } catch (IllegalArgumentException exception) {
+            return SubtaskType.UNKNOWN;
+        }
+    }
+
+    private static int parsePriority(JsonNode root) {
+        JsonNode value = root.get("priority");
+        if (value == null || !value.canConvertToInt()) {
+            throw new AgentPlanValidationException("priority must be an integer");
+        }
+        return value.asInt();
+    }
+
+    private static List<PlannedToolCall> parsePlannedTools(JsonNode root, String fieldName) {
+        JsonNode value = root.get(fieldName);
         if (value == null || !value.isArray() || value.isEmpty()) {
-            throw new AgentPlanValidationException("plannedTools must be a non-empty array");
+            throw new AgentPlanValidationException(fieldName + " must be a non-empty array");
         }
         List<PlannedToolCall> result = new ArrayList<>();
         for (JsonNode item : value) {
             if (!item.isObject()) {
-                throw new AgentPlanValidationException("plannedTools entries must be objects");
+                throw new AgentPlanValidationException(fieldName + " entries must be objects");
             }
             result.add(new PlannedToolCall(
                     requireText(item, "toolName"),

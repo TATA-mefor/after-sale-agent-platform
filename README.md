@@ -331,7 +331,8 @@ business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
 
 ### V2 后续方向
 
-- Multi-Intent Planning；
+- Specialist Agent Handler；
+- Execution Tree；
 - MySQL Persistence；
 - Approval APIs；
 - Agent Evaluation Dataset；
@@ -349,20 +350,20 @@ The rule-based AgentRun now plans `get_order_by_id` before policy retrieval, so 
 both order facts and policy evidence. This is still demo data only; the project does not connect to a real order center,
 real logistics provider, real payment provider, or real database.
 
-### V2.3 Roadmap: Multi-Intent Planning
+### V2.3 Multi-Intent Planning
 
-The next planned stage is Multi-Intent Planning. It is not implemented yet.
+V2.3 adds Multi-Intent Planning while preserving the V2.2 single-intent flow.
 
-Target flow:
+Implemented flow:
 
 ```text
 complex after-sale message
-→ Supervisor Planner
-→ MultiIntentAgentPlan
-→ structured AgentSubtasks
+→ RuleBasedAgentPlanner / LLM AgentPlan with subtasks
+→ structured AgentSubtask list
 → Java validation
 → sequential ToolRegistry execution
-→ ToolCallTrace
+→ ToolCallTrace with subtask metadata
+→ summarized final suggestion
 ```
 
 Example user message:
@@ -377,9 +378,12 @@ Expected subtask types:
 - `EXCHANGE`
 - `COUPON_CONSULTATION`
 
-V2.3 remains a single-process planning and execution design. It will not add multi-Agent microservices, queues,
-parallel execution, voting consensus, a full coupon system, real refunds, real exchanges, real logistics, or real payment
-integration.
+The rule-based planner detects this pattern and creates multiple subtasks. Each subtask uses ToolRegistry tools in
+priority order, and trace `inputJson` includes subtask metadata such as `subtaskId` and `subtaskType`.
+
+V2.3 remains a single-process planning and execution design. It does not add multi-Agent microservices, queues, parallel
+execution, voting consensus, a full coupon system, real refunds, real exchanges, real logistics, or real payment
+integration. Specialist handlers and Execution Tree remain future work.
 
 ### 真实 LLM 本地运行说明
 

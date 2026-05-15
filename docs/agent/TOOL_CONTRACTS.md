@@ -95,3 +95,20 @@ The V2.2 Agent demo invokes:
 
 The order tools use in-memory demo data only. They do not connect to a real order center, logistics provider, payment
 system, or database. They provide order facts so Agent suggestions can cite both order evidence and policy evidence.
+
+## V2.3 Multi-Intent Planning Tool Boundary
+
+V2.3 allows `AgentPlan` / `MultiIntentAgentPlan` to contain multiple subtasks. Each subtask can declare
+`plannedTools`, but the contract does not change:
+
+- every planned tool must be registered in `ToolRegistry`;
+- LLM output cannot create ad hoc tool names;
+- subtasks cannot execute tools directly;
+- `AgentApplicationService` must execute planned tools through `ToolRegistry`;
+- every actual tool call must continue to produce a `ToolCallTrace`;
+- trace input JSON includes subtask metadata for multi-intent runs;
+- no subtask may declare real refund, real exchange, coupon compensation, payment change, or dispute closure as already
+  completed.
+
+V2.3 does not add a full coupon system, real refund tool, real exchange tool, real logistics integration, or real payment
+integration.

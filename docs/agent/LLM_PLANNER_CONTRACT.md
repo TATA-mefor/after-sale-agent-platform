@@ -363,9 +363,23 @@ docs/agent/
 
 ## 11. V2.3 Multi-Intent Planning 契约
 
-V2.3 允许 `AgentPlan` 增加 `subtasks` 字段，用于表达复杂售后诉求的结构化拆解。
+V2.3 允许 `AgentPlan` 增加 `subtasks` 字段，用于表达复杂售后诉求的结构化拆解。没有 `subtasks` 时，计划仍按现有单意图 `AgentPlan` 契约处理；包含 `subtasks` 时，整体计划可视为 `MultiIntentAgentPlan`。
 
 LLM 可以规划子任务，但不得执行子任务。Java 后端必须校验子任务结构，再通过现有执行边界顺序处理。
+
+示例复杂售后问题：
+
+```text
+我买了三件衣服，其中一件有污渍要退货，另一件要换尺码，还有一张优惠券没用上怎么退？
+```
+
+期望子任务类型：
+
+```text
+RETURN
+EXCHANGE
+COUPON_CONSULTATION
+```
 
 每个 subtask 至少包含：
 
@@ -407,9 +421,12 @@ dependencies
 ```text
 RETURN
 EXCHANGE
+REFUND_ONLY
+REPAIR
 COUPON_CONSULTATION
 LOGISTICS_ISSUE
 GENERAL_CONSULTATION
+HUMAN_ESCALATION
 UNKNOWN
 ```
 
@@ -418,7 +435,7 @@ UNKNOWN
 - `type` 必须是系统支持的 `SubtaskType`；
 - `riskLevel` 必须是系统支持的风险等级；
 - `priority` 必须可排序；
-- `plannedTools` 只能包含 ToolRegistry 已注册工具；
+- `plannedTools` 只能包含 ToolRegistry 已注册工具，且工具名必须按现有 `plannedTools.toolName` 契约校验；
 - `dependencies` 只能引用同一计划内已存在的 `subtaskId`；
 - 不允许循环依赖；
 - 子任务不能声明退款、换货、优惠券补偿、争议关闭等高风险动作已经完成；
@@ -433,6 +450,14 @@ UNKNOWN
 - ToolCallTrace 继续记录每个工具调用。
 
 V2.3 不实现多 Agent 微服务、消息队列、并行执行、投票共识、完整优惠券系统、真实退款、真实换货、真实物流或真实支付。
+
+当前实现说明：
+
+- `AgentPlan` 已支持 `subtasks`；
+- `RuleBasedAgentPlanner` 已支持退货、换货、优惠券咨询组合诉求的确定性拆解；
+- `AgentApplicationService` 按 `priority` 顺序执行 subtasks；
+- ToolCallTrace 暂不改模型，但工具 inputJson 会带上 `subtaskId`、`subtaskType`、`subtaskTarget`；
+- Execution Tree 和 Specialist Handler 留到后续阶段。
 
 ## 12. 配置建议
 

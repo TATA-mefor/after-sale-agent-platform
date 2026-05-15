@@ -6,7 +6,9 @@ import com.example.aftersale.agent.application.planner.AgentPlan;
 import com.example.aftersale.agent.application.planner.AgentPlanValidator;
 import com.example.aftersale.agent.application.planner.AgentPlanner;
 import com.example.aftersale.agent.application.planner.AgentPlanningContext;
+import com.example.aftersale.agent.application.planner.AgentSubtask;
 import com.example.aftersale.agent.application.planner.PlannedToolCall;
+import com.example.aftersale.agent.application.planner.SubtaskStatus;
 import com.example.aftersale.agent.domain.AgentRun;
 import com.example.aftersale.agent.domain.AgentRunRepository;
 import com.example.aftersale.common.exception.ResourceNotFoundException;
@@ -23,6 +25,8 @@ import com.example.aftersale.tool.domain.ToolOutput;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -77,12 +81,19 @@ public class AgentApplicationService {
             ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.AGENT_RUNNING, null);
 
             List<String> evidence = new ArrayList<>();
-            for (PlannedToolCall plannedTool : plan.plannedTools()) {
-                executePlannedTool(agentRun.getRunId(), ticket, plan, plannedTool, evidence, toolCalls);
+            List<SubtaskExecutionResult> subtaskResults = List.of();
+            String finalSuggestion;
+            if (plan.hasSubtasks()) {
+                subtaskResults = executeSubtasks(agentRun.getRunId(), ticket, plan, evidence, toolCalls);
+                finalSuggestion = buildMultiIntentFinalSuggestion(plan, subtaskResults, evidence);
+            } else {
+                for (PlannedToolCall plannedTool : plan.plannedTools()) {
+                    executePlannedTool(agentRun.getRunId(), ticket, plan, plannedTool, evidence, toolCalls);
+                }
+                finalSuggestion = buildFinalSuggestion(plan, evidence);
             }
 
-            String finalSuggestion = buildFinalSuggestion(plan, evidence);
-            String completedPlanJson = completedPlanJson(plan, finalSuggestion, evidence, toolCalls);
+            String completedPlanJson = completedPlanJson(plan, finalSuggestion, evidence, toolCalls, subtaskResults);
             agentRun.succeed(completedPlanJson, finalSuggestion, Instant.now());
             agentRunRepository.save(agentRun);
             ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.RESOLVED, finalSuggestion);
@@ -128,50 +139,106 @@ public class AgentApplicationService {
             PlannedToolCall plannedTool,
             List<String> evidence,
             List<String> toolCalls) {
+        executePlannedTool(runId, ticket, plan, null, plannedTool, evidence, toolCalls);
+    }
+
+    private void executePlannedTool(
+            String runId,
+            Ticket ticket,
+            AgentPlan plan,
+            AgentSubtask subtask,
+            PlannedToolCall plannedTool,
+            List<String> evidence,
+            List<String> toolCalls) {
         switch (plannedTool.toolName()) {
-            case GET_ORDER_BY_ID_TOOL -> executeOrderLookup(runId, ticket, evidence, toolCalls);
-            case SEARCH_POLICY_TOOL -> executePolicySearch(runId, plan, evidence, toolCalls);
-            case ADD_TICKET_NOTE_TOOL -> executeTicketNote(runId, ticket, plan, evidence, toolCalls);
+            case GET_ORDER_BY_ID_TOOL -> executeOrderLookup(runId, ticket, subtask, evidence, toolCalls);
+            case SEARCH_POLICY_TOOL -> executePolicySearch(runId, plan, subtask, evidence, toolCalls);
+            case ADD_TICKET_NOTE_TOOL -> executeTicketNote(runId, ticket, plan, subtask, evidence, toolCalls);
             default -> throw new IllegalArgumentException(
                     "AgentRun does not support executing planned tool: " + plannedTool.toolName());
         }
     }
 
+    private List<SubtaskExecutionResult> executeSubtasks(
+            String runId,
+            Ticket ticket,
+            AgentPlan plan,
+            List<String> evidence,
+            List<String> toolCalls) {
+        List<SubtaskExecutionResult> results = new ArrayList<>();
+        List<AgentSubtask> sortedSubtasks = plan.subtasks().stream()
+                .sorted(Comparator.comparingInt(AgentSubtask::priority)
+                        .thenComparing(AgentSubtask::subtaskId))
+                .toList();
+        for (AgentSubtask subtask : sortedSubtasks) {
+            List<String> subtaskEvidence = new ArrayList<>();
+            for (PlannedToolCall plannedTool : subtask.plannedTools()) {
+                executePlannedTool(runId, ticket, plan, subtask, plannedTool, subtaskEvidence, toolCalls);
+            }
+            evidence.addAll(subtaskEvidence);
+            AgentSubtask completedSubtask = subtask.withStatus(SubtaskStatus.SUCCEEDED);
+            results.add(new SubtaskExecutionResult(
+                    completedSubtask,
+                    subtaskEvidence,
+                    completedSubtask.subtaskId() + " " + completedSubtask.type().name()
+                            + " succeeded with " + subtaskEvidence.size() + " evidence item(s)."));
+        }
+        return results;
+    }
+
     private void executeOrderLookup(
             String runId,
             Ticket ticket,
+            AgentSubtask subtask,
             List<String> evidence,
             List<String> toolCalls) {
-        ToolOutput orderOutput = executeTool(runId, GET_ORDER_BY_ID_TOOL, ToolInput.of(Map.of(
-                "orderId", ticket.getOrderId())));
+        ToolOutput orderOutput = executeTool(runId, GET_ORDER_BY_ID_TOOL, tracedInput(Map.of(
+                "orderId", ticket.getOrderId()), subtask));
         toolCalls.add(GET_ORDER_BY_ID_TOOL);
         ensureToolSucceeded(orderOutput);
-        evidence.add(orderEvidence(orderOutput));
+        evidence.add(evidencePrefix(subtask) + orderEvidence(orderOutput));
     }
 
     private void executePolicySearch(
             String runId,
             AgentPlan plan,
+            AgentSubtask subtask,
             List<String> evidence,
             List<String> toolCalls) {
-        ToolOutput policyOutput = executeTool(runId, SEARCH_POLICY_TOOL, ToolInput.of(Map.of(
-                "query", plan.policyQuery())));
+        String policyQuery = subtask == null ? plan.policyQuery() : subtask.policyQuery();
+        ToolOutput policyOutput = executeTool(runId, SEARCH_POLICY_TOOL, tracedInput(Map.of(
+                "query", policyQuery), subtask));
         toolCalls.add(SEARCH_POLICY_TOOL);
         ensureToolSucceeded(policyOutput);
-        evidence.addAll(extractEvidence(policyOutput));
+        evidence.addAll(extractEvidence(policyOutput).stream()
+                .map(item -> evidencePrefix(subtask) + item)
+                .toList());
     }
 
     private void executeTicketNote(
             String runId,
             Ticket ticket,
             AgentPlan plan,
+            AgentSubtask subtask,
             List<String> evidence,
             List<String> toolCalls) {
-        ToolOutput noteOutput = executeTool(runId, ADD_TICKET_NOTE_TOOL, ToolInput.of(Map.of(
+        String note = subtask == null ? buildNoteToAdd(plan, evidence) : buildSubtaskNote(plan, subtask, evidence);
+        ToolOutput noteOutput = executeTool(runId, ADD_TICKET_NOTE_TOOL, tracedInput(Map.of(
                 "ticketId", ticket.getTicketId(),
-                "note", buildNoteToAdd(plan, evidence))));
+                "note", note), subtask));
         toolCalls.add(ADD_TICKET_NOTE_TOOL);
         ensureToolSucceeded(noteOutput);
+    }
+
+    private static ToolInput tracedInput(Map<String, Object> arguments, AgentSubtask subtask) {
+        if (subtask == null) {
+            return ToolInput.of(arguments);
+        }
+        Map<String, Object> tracedArguments = new LinkedHashMap<>(arguments);
+        tracedArguments.put("subtaskId", subtask.subtaskId());
+        tracedArguments.put("subtaskType", subtask.type().name());
+        tracedArguments.put("subtaskTarget", subtask.target());
+        return ToolInput.of(tracedArguments);
     }
 
     private ToolOutput executeTool(String runId, String toolName, ToolInput input) {
@@ -214,6 +281,17 @@ public class AgentApplicationService {
         return plan.noteToAdd() + " Evidence: " + String.join("; ", evidence);
     }
 
+    private static String buildSubtaskNote(AgentPlan plan, AgentSubtask subtask, List<String> evidence) {
+        String note = "Subtask " + subtask.subtaskId()
+                + " " + subtask.type().name()
+                + " target=" + subtask.target()
+                + ". " + plan.noteToAdd();
+        if (evidence.isEmpty()) {
+            return note;
+        }
+        return note + " Evidence: " + String.join("; ", evidence);
+    }
+
     private static String buildFinalSuggestion(AgentPlan plan, List<String> evidence) {
         if (evidence.isEmpty()) {
             return plan.finalSuggestion();
@@ -221,21 +299,55 @@ public class AgentApplicationService {
         return plan.finalSuggestion() + " Evidence: " + String.join("; ", evidence);
     }
 
+    private static String buildMultiIntentFinalSuggestion(
+            AgentPlan plan,
+            List<SubtaskExecutionResult> subtaskResults,
+            List<String> evidence) {
+        String subtaskSummary = subtaskResults.stream()
+                .map(SubtaskExecutionResult::summary)
+                .toList()
+                .stream()
+                .reduce((left, right) -> left + " | " + right)
+                .orElse("No subtasks executed.");
+        if (evidence.isEmpty()) {
+            return plan.finalSuggestion() + " Subtask summary: " + subtaskSummary;
+        }
+        return plan.finalSuggestion()
+                + " Subtask summary: " + subtaskSummary
+                + " Evidence: " + String.join("; ", evidence);
+    }
+
+    private static String evidencePrefix(AgentSubtask subtask) {
+        if (subtask == null) {
+            return "";
+        }
+        return "[" + subtask.subtaskId() + " " + subtask.type().name() + "] ";
+    }
+
     private String completedPlanJson(
             AgentPlan plan,
             String finalSuggestion,
             List<String> evidence,
-            List<String> toolCalls) {
-        return toJson(Map.of(
-                "intent", plan.intent().name(),
-                "riskLevel", plan.riskLevel().name(),
-                "policyQuery", plan.policyQuery(),
-                "noteToAdd", plan.noteToAdd(),
-                "finalSuggestion", finalSuggestion,
-                "evidenceHints", plan.evidenceHints(),
-                "plannedTools", plan.plannedTools(),
-                "evidence", evidence,
-                "toolCalls", toolCalls));
+            List<String> toolCalls,
+            List<SubtaskExecutionResult> subtaskResults) {
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("intent", plan.intent().name());
+        value.put("riskLevel", plan.riskLevel().name());
+        value.put("policyQuery", plan.policyQuery());
+        value.put("noteToAdd", plan.noteToAdd());
+        value.put("finalSuggestion", finalSuggestion);
+        value.put("evidenceHints", plan.evidenceHints());
+        value.put("plannedTools", plan.plannedTools());
+        value.put("subtasks", plan.subtasks());
+        value.put("completedSubtasks", subtaskResults.stream()
+                .map(SubtaskExecutionResult::subtask)
+                .toList());
+        value.put("subtaskSummaries", subtaskResults.stream()
+                .map(SubtaskExecutionResult::summary)
+                .toList());
+        value.put("evidence", evidence);
+        value.put("toolCalls", toolCalls);
+        return toJson(value);
     }
 
     private String failurePlan(IntentType intent, String failureMessage) {
@@ -262,5 +374,8 @@ public class AgentApplicationService {
             return exception.getClass().getSimpleName();
         }
         return message;
+    }
+
+    private record SubtaskExecutionResult(AgentSubtask subtask, List<String> evidence, String summary) {
     }
 }

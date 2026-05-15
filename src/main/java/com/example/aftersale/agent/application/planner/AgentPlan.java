@@ -12,7 +12,8 @@ public record AgentPlan(
         String noteToAdd,
         String finalSuggestion,
         List<String> evidenceHints,
-        List<PlannedToolCall> plannedTools) {
+        List<PlannedToolCall> plannedTools,
+        List<AgentSubtask> subtasks) {
 
     public AgentPlan {
         intent = Objects.requireNonNull(intent, "intent must not be null");
@@ -22,9 +23,25 @@ public record AgentPlan(
         finalSuggestion = requireText(finalSuggestion, "finalSuggestion");
         evidenceHints = List.copyOf(Objects.requireNonNull(evidenceHints, "evidenceHints must not be null"));
         plannedTools = List.copyOf(Objects.requireNonNull(plannedTools, "plannedTools must not be null"));
-        if (plannedTools.isEmpty()) {
-            throw new IllegalArgumentException("plannedTools must not be empty");
+        subtasks = List.copyOf(Objects.requireNonNull(subtasks, "subtasks must not be null"));
+        if (plannedTools.isEmpty() && subtasks.isEmpty()) {
+            throw new IllegalArgumentException("plannedTools must not be empty when subtasks are empty");
         }
+    }
+
+    public AgentPlan(
+            IntentType intent,
+            ToolRiskLevel riskLevel,
+            String policyQuery,
+            String noteToAdd,
+            String finalSuggestion,
+            List<String> evidenceHints,
+            List<PlannedToolCall> plannedTools) {
+        this(intent, riskLevel, policyQuery, noteToAdd, finalSuggestion, evidenceHints, plannedTools, List.of());
+    }
+
+    public boolean hasSubtasks() {
+        return !subtasks.isEmpty();
     }
 
     private static String requireText(String value, String fieldName) {

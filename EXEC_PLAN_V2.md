@@ -4,231 +4,225 @@
 
 ## 1. V2 总目标
 
-V1 已完成一个可本地演示的售后工单 Agent 后端闭环：
+AfterSale-Agent V1 已完成一个可本地演示的售后工单 Agent 后端闭环：
 
 ```text
 创建售后工单
 → 触发规则型 AgentRun
-→ 检索售后政策
+→ 售后政策检索
 → 写入工单备注
 → 记录 ToolCallTrace
 → 查询执行轨迹
 ```
 
-V2 的目标是在不破坏 V1 工程边界的前提下，把项目从“规则型 Agent Demo”升级为“可接入真实 LLM、可扩展真实业务系统、可评测、可部署的企业级 Agent 平台雏形”。
+V2 的目标是在不破坏 V1 工程边界的前提下，将项目从“规则型单任务售后 Agent”升级为：
 
-V2 的第一优先级是：
+> 可接入真实 LLM、能基于订单事实和政策依据生成计划、支持复杂售后诉求拆解、具备多任务编排雏形的企业级 Agent 平台。
 
-> 接入真实 LLM Planner Adapter，但仍然由 Java 后端控制工具执行。
-
-## 2. V2 核心原则
-
-1. LLM 只负责生成结构化计划，不直接执行业务动作；
-2. Java 后端仍然通过 ToolRegistry 执行工具；
-3. 高风险动作仍然必须进入审批边界；
-4. 测试不得依赖真实 LLM、API Key 或外部网络；
-5. RuleBasedAgentPlanner 必须保留，保证本地可演示和测试可确定；
-6. FakeAgentPlanner 必须用于测试边界；
-7. ToolCallTrace 机制必须继续保留；
-8. V2 不允许绕过 V1 已建立的 ArchUnit、Checkstyle、SpotBugs、JUnit 质量门禁。
-
-## 3. V2 里程碑
+V2 不追求一次性做成完整生产系统，而是分阶段增强：
 
 ```text
 V2.1 LLM Planner Adapter
 V2.2 Order Query Tools
 V2.3 Multi-Intent Planning
-V2.4 Approval APIs / Specialist Handler
-V2.5 MySQL Persistence
-V2.6 Agent Evaluation Dataset
-V2.7 Docker Compose and Observability
+V2.4 Specialist Agent Handler
+V2.5 Shared Workspace / Memory
+V2.6 Approval APIs
+V2.7 Execution Tree
+V2.8 Evaluation Dataset
+V2.9 Robustness
 ```
 
-V2.1 是第一优先级。
+MySQL、Docker Compose、完整可观测性和部署能力暂时下沉到 V3。
 
 ---
 
-# 4. V2.1：LLM Planner Adapter
+## 2. V2 核心原则
 
-## 4.1 目标
+1. LLM 只负责生成结构化计划，不直接执行业务动作；
+2. Java 后端负责校验计划、执行工具、维护状态；
+3. ToolRegistry 仍然是唯一工具执行入口；
+4. 高风险动作仍然必须进入审批边界；
+5. 默认测试不得依赖真实 LLM、API Key 或外部网络；
+6. RuleBasedAgentPlanner 必须保留，保证本地演示和测试确定性；
+7. FakeAgentPlanner 必须用于测试边界；
+8. ToolCallTrace 必须持续记录工具调用；
+9. 所有阶段必须通过 ArchUnit、Checkstyle、SpotBugs、JUnit 质量门禁；
+10. 任何阶段变更范围前，必须先更新 Harness 文档。
 
-引入真实 LLM 规划能力，使 Agent 可以基于用户售后问题生成结构化计划。
+---
 
-但 LLM 不直接调用工具、不直接修改业务状态、不直接生成不可追踪的最终结果。
+## 3. V2.1：LLM Planner Adapter
+
+### 3.1 目标
+
+引入 Planner 抽象，使 Agent 的计划生成能力可由规则、Fake 或 LLM 实现。
 
 目标链路：
 
 ```text
 Ticket
 → AgentApplicationService
-→ AgentPlanner 抽象
-→ RuleBasedAgentPlanner / LlmAgentPlanner / FakeAgentPlanner
+→ AgentPlanner
 → AgentPlan
 → ToolRegistry
 → ToolCallTrace
-→ Ticket note / final suggestion
 ```
 
-## 4.2 必做
+### 3.2 已完成能力
 
-- 新增 `AgentPlanner` 抽象接口；
-- 新增 `AgentPlanningContext`；
-- 新增 `AgentPlan`；
-- 将 V1 规则型逻辑迁移到 `RuleBasedAgentPlanner`；
-- 新增 `LlmAgentPlanner`；
-- 新增 `FakeAgentPlanner` 或测试专用 planner；
-- 通过配置选择 planner：
-  - `agent.planner.mode=rule`
-  - `agent.planner.mode=llm`
-  - `agent.planner.mode=fake`
-- 默认测试环境必须使用 rule 或 fake；
-- LLM API Key 只能来自环境变量或本地配置；
-- 新增决策日志；
-- 更新 README 的 LLM Planner 配置说明。
+- `AgentPlanner` 抽象；
+- `RuleBasedAgentPlanner`；
+- `FakeAgentPlanner`；
+- `LlmAgentPlanner` 边界；
+- `agent.planner.mode=rule|fake|llm`；
+- 默认 `rule` 模式；
+- 测试不依赖真实 LLM；
+- 缺少 API Key 时有清晰错误。
 
-## 4.3 AgentPlan 字段
-
-`AgentPlan` 至少包含：
-
-```text
-intent
-riskLevel
-policyQuery
-noteToAdd
-finalSuggestion
-evidenceHints
-plannedTools
-```
-
-## 4.4 不做
+### 3.3 不做
 
 - 不让 LLM 直接执行工具；
 - 不让 LLM 直接修改 Ticket；
 - 不接真实退款；
 - 不接真实数据库；
 - 不接向量库；
-- 不做多 Agent；
-- 不让测试依赖外部网络；
-- 不把 API Key 写入代码、测试或 README。
+- 不做多 Agent。
 
-## 4.5 验收标准
-
-- `AgentApplicationService` 依赖 `AgentPlanner` 抽象；
-- V1 端到端测试继续通过；
-- `RuleBasedAgentPlanner` 能生成 V1 等价计划；
-- `FakeAgentPlanner` 能驱动 AgentRun 测试；
-- `agent.planner.mode=llm` 时缺少配置有清晰错误；
-- 默认 `mvn test` 不需要 API Key；
-- ToolRegistry 仍是唯一工具执行入口；
-- ToolCallTrace 继续记录工具调用。
-
-## 4.6 验证命令
-
-```bash
-mvn test
-mvn checkstyle:check
-mvn spotbugs:check
-mvn test -Dtest=ArchitectureTest
-```
-
-## 4.7 当前状态
+### 3.4 状态
 
 ```text
 COMPLETED
 ```
 
-V2.1 已完成：
+---
 
-- `AgentPlanner` 抽象；
-- `AgentPlanningContext`；
-- `AgentPlan`；
-- `RuleBasedAgentPlanner`；
-- `FakeAgentPlanner`；
-- `LlmAgentPlanner` adapter 边界；
-- `agent.planner.mode=rule|fake|llm` 配置选择；
-- 默认 rule 模式；
-- llm 模式缺少 API Key 时的清晰错误；
-- V2.1.1 真实 LLM provider client 边界；
-- 结构化 AgentPlan JSON 解析；
-- AgentPlan 枚举、必填字段、工具名和未执行事实声明校验；
-- V2.1.2 显式 opt-in live smoke test；
-- AgentRun 继续通过 ToolRegistry 执行工具并记录 ToolCallTrace；
-- README planner mode 配置说明；
-- Planner 相关测试与架构边界测试。
+## 4. V2.1.1：Structured LLM Planner Client
 
-V2.1 不包含且不伪装完成：
+### 4.1 目标
 
-- Order Query Tools；
-- MySQL Persistence；
-- Approval APIs。
+让 `LlmAgentPlanner` 在配置完整时可以真实调用 OpenAI-compatible LLM，并解析结构化 `AgentPlan`。
+
+### 4.2 已完成能力
+
+- `LlmClient`；
+- `LlmRequest`；
+- `LlmResponse`；
+- `OpenAiLlmClient`；
+- `AgentPlanParser`；
+- `AgentPlanValidator`；
+- `AgentPlannerPromptFactory`；
+- 结构化 JSON 输出解析；
+- 非法 intent / riskLevel / toolName / policyQuery 校验；
+- 不安全表述校验，例如“已退款”“已补偿”。
+
+### 4.3 不做
+
+- 不让真实 LLM 成为默认测试依赖；
+- 不提交 API Key；
+- 不让 LLM 直接调用工具。
+
+### 4.4 状态
+
+```text
+COMPLETED
+```
 
 ---
 
-# 5. V2.2：Order Query Tools
+## 5. V2.1.2：LLM Planner Live Smoke Test
 
-## 5.1 目标
+### 5.1 目标
 
-让 Agent 的处理建议同时基于售后政策和订单事实。
+提供显式 opt-in 的 live smoke test，用于本地验证真实 LLM Planner 可调用。
 
-## 5.2 必做
+### 5.2 已完成能力
 
-- 新增或完善订单 demo 数据；
-- 实现 `get_order_by_id` 工具；
-- 实现 `get_user_orders` 工具；
-- 工具输出包含订单状态、支付时间、签收时间、售后截止时间；
-- AgentPlan 中可以声明订单查询工具；
-- ToolCallTrace 中能看到订单工具调用。
+- `LlmPlannerLiveSmokeTest`；
+- 默认 `mvn test` 不运行 live test；
+- 通过 `-Dlive.llm=true` 显式开启；
+- 缺少 API Key 时不污染默认测试；
+- live smoke 只验证 Planner，不执行工具、不写业务状态。
 
-## 5.3 不做
+### 5.3 使用方式
+
+```bash
+mvn test -Dtest=LlmPlannerLiveSmokeTest -Dlive.llm=true
+```
+
+需要本地环境变量：
+
+```text
+OPENAI_API_KEY
+```
+
+### 5.4 状态
+
+```text
+COMPLETED
+```
+
+---
+
+## 6. V2.2：Order Query Tools
+
+### 6.1 目标
+
+让 Agent 的处理建议同时基于订单事实和售后政策。
+
+### 6.2 已完成能力
+
+- `get_order_by_id` 工具；
+- `get_user_orders` 工具；
+- 订单 demo 数据；
+- `OrderApplicationService`；
+- `OrderRepository` 内存实现；
+- 订单工具通过 ToolRegistry 暴露；
+- AgentRun 默认 trace 包含：
+
+```text
+get_order_by_id
+search_aftersale_policy
+add_ticket_note
+```
+
+### 6.3 当前链路
+
+```text
+Ticket
+→ Planner
+→ get_order_by_id
+→ search_aftersale_policy
+→ add_ticket_note
+→ ToolCallTrace
+→ 基于订单事实和政策依据的处理建议
+```
+
+### 6.4 不做
 
 - 不接真实订单中心；
 - 不接真实物流；
 - 不接真实支付；
-- 不修改订单核心数据。
+- 不修改订单核心数据；
+- 不接真实数据库。
 
-## 5.4 验收标准
-
-- AgentRun trace 中包含订单查询工具；
-- 最终建议包含订单依据和政策依据；
-- 订单工具为 LOW 风险；
-- Agent 不直接访问 OrderRepository。
-
-## 5.5 当前状态
+### 6.5 状态
 
 ```text
 COMPLETED
 ```
 
-V2.2 已完成：
-
-- 内存 demo 订单数据；
-- `OrderApplicationService`；
-- `get_order_by_id` 工具；
-- `get_user_orders` 工具；
-- 订单工具通过 `ToolRegistry` 暴露；
-- `RuleBasedAgentPlanner` 默认规划 `get_order_by_id`；
-- AgentRun trace 记录订单工具调用；
-- Agent 最终建议同时包含订单依据和政策依据；
-- README、工具契约、风险策略和 LLM Planner Contract 已同步。
-
-V2.2 不包含且不伪装完成：
-
-- 真实订单中心；
-- 真实数据库；
-- 真实物流；
-- 真实支付；
-- 退款或补偿执行。
-
 ---
 
-# 6. V2.3：Multi-Intent Planning
+## 7. V2.3：Multi-Intent Planning
 
-## 6.1 目标
+### 7.1 目标
 
-支持复杂售后诉求拆解为多个结构化子任务，让一个 Ticket 可以表达多个售后意图，并在同一个受控
-AgentRun 中按顺序规划、校验和执行。
+支持复杂售后问题拆解。
 
-示例复杂售后问题：
+当前 AgentRun 主要处理单一售后诉求。V2.3 要支持用户一次表达多个售后意图，并将其拆成多个结构化子任务。
+
+示例输入：
 
 ```text
 我买了三件衣服，其中一件有污渍要退货，另一件要换尺码，还有一张优惠券没用上怎么退？
@@ -237,37 +231,212 @@ AgentRun 中按顺序规划、校验和执行。
 期望拆解：
 
 ```text
-RETURN 子任务
-EXCHANGE 子任务
-COUPON_CONSULTATION 子任务
+子任务 1：退货处理
+子任务 2：换货处理
+子任务 3：优惠券咨询
 ```
 
-V2.3 的目标不是引入多 Agent 平台，而是在现有 `AgentPlanner -> AgentPlan -> ToolRegistry -> ToolCallTrace`
-链路上增加可校验的多意图计划结构。
+V2.3 的目标不是实现复杂多 Agent 微服务，而是在当前 Java 模块化单体中建立多任务规划模型。
 
-## 6.2 必做
+---
 
-- 定义核心模型契约：
-  - `AgentSubtask`
-  - `SubtaskType`
-  - `SubtaskStatus`
-  - `SubtaskPlan`
-  - `MultiIntentAgentPlan`
-- 让 Planner 能输出包含 `subtasks` 的结构化计划；
-- 支持至少以下子任务类型：
-  - `RETURN`
-  - `EXCHANGE`
-  - `COUPON_CONSULTATION`
-  - `LOGISTICS_ISSUE`
-  - `GENERAL_CONSULTATION`
-- 每个子任务至少包含目标对象、用户原文片段、优先级、风险等级、政策检索 query、计划工具和依赖；
-- Java 后端校验子任务类型、风险等级、工具名、依赖关系和高风险声明；
-- `AgentApplicationService` 在单进程内按顺序执行子任务计划；
-- ToolRegistry 仍然是唯一工具执行入口；
-- ToolCallTrace 继续记录每个工具调用；
-- 默认测试仍不依赖真实 LLM。
+### 7.2 核心模型
 
-## 6.3 不做
+V2.3 计划新增或扩展以下模型：
+
+```text
+AgentSubtask
+SubtaskType
+SubtaskStatus
+SubtaskPlan
+MultiIntentAgentPlan
+```
+
+#### 7.2.1 AgentSubtask
+
+表示一个可执行的售后子任务。
+
+字段建议：
+
+```text
+subtaskId
+type
+target
+userMessageFragment
+priority
+riskLevel
+policyQuery
+plannedTools
+dependencies
+status
+```
+
+#### 7.2.2 SubtaskType
+
+建议枚举：
+
+```text
+RETURN
+EXCHANGE
+REFUND_ONLY
+REPAIR
+LOGISTICS_ISSUE
+COUPON_CONSULTATION
+GENERAL_CONSULTATION
+HUMAN_ESCALATION
+UNKNOWN
+```
+
+#### 7.2.3 SubtaskStatus
+
+建议枚举：
+
+```text
+PENDING
+RUNNING
+SUCCEEDED
+FAILED
+SKIPPED
+WAITING_APPROVAL
+```
+
+#### 7.2.4 SubtaskPlan
+
+表示单个子任务的执行计划。
+
+至少包含：
+
+```text
+subtaskId
+type
+target
+priority
+riskLevel
+policyQuery
+plannedTools
+dependencies
+reason
+```
+
+#### 7.2.5 MultiIntentAgentPlan
+
+表示复杂售后问题的整体计划。
+
+至少包含：
+
+```text
+intent
+riskLevel
+subtasks
+finalSuggestion
+evidenceHints
+```
+
+---
+
+### 7.3 示例结构化输出
+
+```json
+{
+  "intent": "MULTI_INTENT",
+  "riskLevel": "MEDIUM",
+  "subtasks": [
+    {
+      "subtaskId": "subtask-1",
+      "type": "RETURN",
+      "target": "有污渍的衣服",
+      "userMessageFragment": "其中一件有污渍要退货",
+      "priority": 1,
+      "riskLevel": "MEDIUM",
+      "policyQuery": "质量问题 退货 污渍",
+      "plannedTools": [
+        {
+          "toolName": "get_order_by_id",
+          "reason": "查询订单事实"
+        },
+        {
+          "toolName": "search_aftersale_policy",
+          "reason": "检索质量问题退货政策"
+        },
+        {
+          "toolName": "add_ticket_note",
+          "reason": "记录退货子任务处理建议"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "subtaskId": "subtask-2",
+      "type": "EXCHANGE",
+      "target": "需要换尺码的衣服",
+      "userMessageFragment": "另一件要换尺码",
+      "priority": 2,
+      "riskLevel": "MEDIUM",
+      "policyQuery": "换货 尺码不合适",
+      "plannedTools": [
+        {
+          "toolName": "get_order_by_id",
+          "reason": "查询订单事实"
+        },
+        {
+          "toolName": "search_aftersale_policy",
+          "reason": "检索尺码换货政策"
+        },
+        {
+          "toolName": "add_ticket_note",
+          "reason": "记录换货子任务处理建议"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "subtaskId": "subtask-3",
+      "type": "COUPON_CONSULTATION",
+      "target": "未使用优惠券",
+      "userMessageFragment": "还有一张优惠券没用上怎么退",
+      "priority": 3,
+      "riskLevel": "LOW",
+      "policyQuery": "优惠券 未使用 退还",
+      "plannedTools": [
+        {
+          "toolName": "search_aftersale_policy",
+          "reason": "检索优惠券未使用规则"
+        },
+        {
+          "toolName": "add_ticket_note",
+          "reason": "记录优惠券咨询子任务处理建议"
+        }
+      ],
+      "dependencies": []
+    }
+  ],
+  "finalSuggestion": "该售后问题包含退货、换货和优惠券咨询三个子任务，建议分别处理并记录处理依据。",
+  "evidenceHints": [
+    "用户一次性提出多个售后诉求",
+    "需要分别检索退货、换货、优惠券规则"
+  ]
+}
+```
+
+---
+
+### 7.4 V2.3 范围
+
+V2.3 只做：
+
+- AgentPlan 支持 `subtasks`；
+- LLM Planner Contract 支持多意图输出；
+- RuleBasedAgentPlanner 支持简单多意图拆解；
+- AgentApplicationService 顺序执行多个子任务；
+- 每个子任务的工具调用进入 ToolCallTrace；
+- 最终建议能汇总多个子任务结果；
+- 测试覆盖多意图拆解和执行路径。
+
+---
+
+### 7.5 V2.3 不做
+
+V2.3 不做：
 
 - 不做多 Agent 微服务；
 - 不做消息队列；
@@ -276,109 +445,67 @@ V2.3 的目标不是引入多 Agent 平台，而是在现有 `AgentPlanner -> Ag
 - 不做完整优惠券系统；
 - 不做真实退款；
 - 不做真实换货；
-- 不接真实物流；
+- 不做真实物流；
 - 不接真实支付；
-- 不绕过 ToolRegistry；
-- 不让 LLM 直接执行子任务。
+- 不引入前端；
+- 不接 MySQL；
+- 不改变高风险审批边界。
 
-## 6.4 验收标准
+---
 
-- 复杂售后问题可以被拆解为多个结构化子任务；
-- `MultiIntentAgentPlan` 可以表达多个 `AgentSubtask`；
-- 每个子任务的 `plannedTools` 均来自 ToolRegistry 已注册工具；
-- 子任务依赖关系可校验，禁止循环依赖和未知依赖；
-- 子任务不能声明高风险动作已经完成；
-- 单进程顺序执行可以产生清晰 ToolCallTrace；
-- AgentRun 最终建议能汇总多个子任务结果；
-- V1/V2.1/V2.2 默认测试继续通过；
-- 默认测试不依赖真实 LLM、API Key 或外部网络。
+### 7.6 执行方式
 
-## 6.5 示例结构化输出
+V2.3 采用：
 
-```json
-{
-  "intent": "MULTI_INTENT",
-  "riskLevel": "MEDIUM",
-  "policyQuery": "服装退货 换尺码 优惠券退回",
-  "noteToAdd": "用户包含退货、换尺码和优惠券咨询三个诉求，需按子任务处理。",
-  "finalSuggestion": "建议分别核对污渍退货政策、尺码换货政策和优惠券使用规则。",
-  "evidenceHints": [
-    "一件衣服有污渍",
-    "另一件需要换尺码",
-    "用户咨询优惠券未使用如何退回"
-  ],
-  "plannedTools": [
-    {
-      "toolName": "get_order_by_id",
-      "reason": "查询订单事实"
-    }
-  ],
-  "subtasks": [
-    {
-      "subtaskId": "SUB-1",
-      "type": "RETURN",
-      "target": "有污渍的衣服",
-      "userMessageFragment": "其中一件有污渍要退货",
-      "priority": 1,
-      "riskLevel": "MEDIUM",
-      "policyQuery": "服装 污渍 退货",
-      "plannedTools": [
-        {
-          "toolName": "search_aftersale_policy",
-          "reason": "检索质量问题退货政策"
-        }
-      ],
-      "dependencies": []
-    },
-    {
-      "subtaskId": "SUB-2",
-      "type": "EXCHANGE",
-      "target": "需要换尺码的衣服",
-      "userMessageFragment": "另一件要换尺码",
-      "priority": 2,
-      "riskLevel": "MEDIUM",
-      "policyQuery": "服装 尺码 换货",
-      "plannedTools": [
-        {
-          "toolName": "search_aftersale_policy",
-          "reason": "检索尺码换货政策"
-        }
-      ],
-      "dependencies": []
-    },
-    {
-      "subtaskId": "SUB-3",
-      "type": "COUPON_CONSULTATION",
-      "target": "未使用优惠券",
-      "userMessageFragment": "还有一张优惠券没用上怎么退",
-      "priority": 3,
-      "riskLevel": "LOW",
-      "policyQuery": "优惠券 未使用 退回",
-      "plannedTools": [
-        {
-          "toolName": "search_aftersale_policy",
-          "reason": "检索优惠券规则"
-        }
-      ],
-      "dependencies": []
-    }
-  ]
-}
+```text
+Supervisor Planner 生成 MultiIntentAgentPlan
+→ Java 后端校验 subtasks
+→ AgentApplicationService 按 priority 顺序执行
+→ 每个 subtask 通过 ToolRegistry 调用工具
+→ ToolCallTrace 记录工具调用
+→ 汇总生成最终建议
 ```
 
-## 6.6 测试要求
+V2.3 不引入真正的 Specialist Handler。Specialist Handler 放到 V2.4。
 
-- `SubtaskType` 支持 RETURN / EXCHANGE / COUPON_CONSULTATION / LOGISTICS_ISSUE；
-- 合法 `MultiIntentAgentPlan` 能通过校验；
-- 未知子任务类型被拒绝；
-- 未知工具名被拒绝；
-- 子任务循环依赖被拒绝；
-- 子任务高风险完成声明被拒绝；
-- 复杂售后文本能生成多个子任务；
-- AgentRun trace 能区分或关联子任务工具调用；
-- 默认 `mvn test` 离线通过。
+---
 
-## 6.7 验证命令
+### 7.7 验收标准
+
+V2.3 完成时必须满足：
+
+1. 能识别一个用户输入中的多个售后意图；
+2. 能生成多个结构化子任务；
+3. 每个子任务包含 type、target、priority、riskLevel、policyQuery、plannedTools；
+4. Java 后端能校验子任务类型、风险等级、工具名和依赖关系；
+5. 子任务按 priority 顺序执行；
+6. 每个子任务的工具调用通过 ToolRegistry；
+7. ToolCallTrace 能体现多子任务工具调用；
+8. 最终建议能汇总多个子任务结果；
+9. 默认测试不依赖真实 LLM；
+10. V1/V2.1/V2.2 流程继续通过；
+11. ArchUnit、Checkstyle、SpotBugs、JUnit 质量门禁继续通过。
+
+---
+
+### 7.8 测试要求
+
+至少补充：
+
+1. RuleBasedAgentPlanner 能将复杂售后问题拆成多个 subtasks；
+2. AgentPlanParser 能解析包含 subtasks 的合法 JSON；
+3. AgentPlanValidator 能拒绝未知 subtask type；
+4. AgentPlanValidator 能拒绝未知 plannedTools；
+5. AgentPlanValidator 能拒绝非法依赖，例如依赖不存在的 subtaskId；
+6. AgentApplicationService 能顺序执行多个子任务；
+7. AgentRun trace 中能看到多个子任务相关工具调用；
+8. 多意图输入的最终建议包含多个子任务摘要；
+9. 默认 `mvn test` 不依赖真实 LLM；
+10. ArchitectureTest 继续通过。
+
+---
+
+### 7.9 验证命令
 
 ```bash
 mvn test
@@ -387,111 +514,247 @@ mvn spotbugs:check
 mvn test -Dtest=ArchitectureTest
 ```
 
-## 6.8 当前状态
+---
+
+### 7.10 状态
+
+```text
+COMPLETED
+```
+
+V2.3 已完成：
+
+- `AgentPlan` 支持 `subtasks`；
+- 新增 `AgentSubtask`、`SubtaskType`、`SubtaskStatus`；
+- `AgentPlanParser` 可解析包含 subtasks 的结构化 JSON；
+- `AgentPlanValidator` 校验子任务 ID、类型、风险等级、工具名、依赖关系、循环依赖和数量上限；
+- `RuleBasedAgentPlanner` 可将退货、换货、优惠券咨询组合诉求拆成多个子任务；
+- `AgentApplicationService` 可按 priority 顺序执行子任务；
+- 每个子任务工具调用继续通过 ToolRegistry；
+- ToolCallTrace 的 inputJson 包含 subtask metadata；
+- 默认测试继续离线运行。
+
+---
+
+## 8. V2.4：Specialist Agent Handler
+
+### 8.1 目标
+
+在 V2.3 的多子任务计划基础上，引入轻量 Specialist Handler。
+
+V2.4 不做多进程 Agent，而是在 Java 模块化单体中使用策略类表达专业 Agent 分工。
+
+候选 Handler：
+
+```text
+ReturnAgentHandler
+ExchangeAgentHandler
+CouponAgentHandler
+LogisticsAgentHandler
+HumanEscalationHandler
+```
+
+### 8.2 不做
+
+- 不拆微服务；
+- 不引入消息队列；
+- 不做复杂投票共识；
+- 不做独立 Agent 服务部署。
+
+### 8.3 状态
 
 ```text
 PLANNED
 ```
 
-V2.3 当前仅完成 Harness 文档设计，尚未实现 Java 模型、校验器或执行流程。
+---
+
+## 9. V2.5：Shared Workspace / Memory
+
+### 9.1 目标
+
+建立结构化工作记忆，避免将完整对话历史无限塞入 LLM。
+
+候选模型：
+
+```text
+AgentWorkspace
+ResolvedEntity
+SubtaskContext
+OrderEvidence
+PolicyEvidence
+ToolResultMemory
+```
+
+### 9.2 目标
+
+- 保存当前订单事实；
+- 保存用户诉求拆解结果；
+- 保存子任务状态；
+- 保存政策依据；
+- 保存工具结果摘要；
+- 为后续多 Agent 协作提供共享上下文。
+
+### 9.3 状态
+
+```text
+PLANNED
+```
 
 ---
 
-# 7. V2.4：Approval APIs
+## 10. V2.6：Approval APIs
 
-## 7.1 目标
+### 10.1 目标
 
-把 V1 中的高风险审批边界落成 API。
+把高风险人工确认边界落成 API。
 
-## 7.2 必做
+候选 API：
 
-- 创建审批请求；
-- 查询待审批动作；
-- 审批通过；
-- 审批拒绝；
-- 审批结果写回工单；
-- trace 中记录审批相关动作。
+```text
+GET  /api/approval-requests/pending
+POST /api/approval-requests/{id}/approve
+POST /api/approval-requests/{id}/reject
+```
 
-## 7.3 不做
+### 10.2 触发场景
 
-- 不做完整前端后台；
-- 不接真实退款；
-- 不接真实补偿。
+- `riskLevel = HIGH`；
+- LLM plan validation failed；
+- 工具连续失败；
+- 用户问题涉及投诉、争议、强烈不满；
+- 计划中包含退款、补偿、关闭争议等高风险动作。
 
-## 7.4 验收标准
+### 10.3 状态
 
-- HIGH 工具不会直接执行；
-- HIGH 工具会创建 ApprovalRequest；
-- 审批通过后才允许进入后续动作；
-- 审批拒绝后工单有清晰备注。
-
----
-
-# 8. V2.5：Agent Evaluation Dataset
-
-## 8.1 目标
-
-为 Agent 输出质量建立最小评测集。
-
-## 8.2 必做
-
-- 新增 `docs/evaluation/`；
-- 定义 20 条售后测试样例；
-- 每条包含用户问题、期望 intent、期望 policy category、期望风险等级；
-- 新增离线评测命令或测试；
-- 记录准确率、工具调用命中率、失败案例。
-
-## 8.3 不做
-
-- 不做复杂 LLM-as-judge；
-- 不做线上 A/B；
-- 不做大规模标注系统。
-
-## 8.4 验收标准
-
-- 可以离线运行评测；
-- 评测不依赖真实 LLM；
-- LLM 模式下可手动运行评测；
-- 失败案例可被记录到质量文档。
+```text
+PLANNED
+```
 
 ---
 
-# 9. V2.6：Docker Compose and Observability
+## 11. V2.7：Execution Tree
 
-## 9.1 目标
+### 11.1 目标
 
-提升项目可部署性和可观察性。
+将 trace 从线性工具调用列表升级为可解释的执行树。
 
-## 9.2 必做
+候选 API：
 
-- Docker Compose 启动应用和 MySQL；
-- 结构化日志；
-- requestId / ticketId / runId 贯穿日志；
-- 可选接入 Prometheus actuator metrics；
-- README 增加一键启动说明。
+```text
+GET /api/agent-runs/{runId}/execution-tree
+```
 
-## 9.3 不做
+示例结构：
 
-- 不做 Kubernetes；
-- 不做完整生产监控；
-- 不做复杂告警系统。
+```text
+AgentRun
+├── Subtask: RETURN
+│   ├── ToolCall: get_order_by_id
+│   ├── ToolCall: search_aftersale_policy
+│   └── ToolCall: add_ticket_note
+├── Subtask: EXCHANGE
+│   ├── ToolCall: get_order_by_id
+│   └── ToolCall: search_aftersale_policy
+└── Subtask: COUPON_CONSULTATION
+    └── ToolCall: search_aftersale_policy
+```
 
-## 9.4 验收标准
+### 11.2 状态
 
-- 本地可一键启动；
-- Demo 可通过 Docker Compose 复现；
-- 日志能关联 ticketId 和 agentRunId。
+```text
+PLANNED
+```
 
 ---
 
-# 10. V2 成功标准
+## 12. V2.8：Evaluation Dataset
 
-V2 成功不是“加了一个 LLM 调用”，而是：
+### 12.1 目标
 
-- LLM 被纳入可控 Planner 边界；
-- 业务工具执行仍由 Java 后端控制；
-- 测试仍然确定性；
-- 高风险动作仍然受审批边界约束；
-- trace 能解释 Agent 行为；
-- V1 demo 没有被破坏；
-- 后续可平滑扩展真实数据库、订单工具、评测和部署。
+建立最小 Agent 评测集。
+
+评估指标：
+
+```text
+Intent Accuracy
+Subtask Planning Accuracy
+Tool Call Accuracy
+Policy Match Accuracy
+Risk Classification Accuracy
+Plan Validity Rate
+```
+
+### 12.2 候选文件
+
+```text
+docs/evaluation/aftersale_cases.jsonl
+docs/evaluation/EVALUATION.md
+```
+
+### 12.3 状态
+
+```text
+PLANNED
+```
+
+---
+
+## 13. V2.9：Robustness
+
+### 13.1 目标
+
+补充基础容错能力。
+
+候选能力：
+
+```text
+Tool timeout
+Tool retry
+Tool failure trace
+AgentRun failed state
+Fallback to human
+Fallback to RuleBasedPlanner
+```
+
+### 13.2 状态
+
+```text
+PLANNED
+```
+
+---
+
+## 14. V3 候选方向
+
+V3 再考虑：
+
+```text
+MySQL Persistence
+Docker Compose
+Redis
+Prometheus / Actuator Metrics
+Structured Logging
+Vector or Hybrid Retrieval
+Deployment
+```
+
+V3 不在当前 V2.3 范围内。
+
+---
+
+## 15. V2 当前完成度
+
+```text
+V2.1 LLM Planner Adapter ✅
+V2.1.1 Structured LLM Planner Client ✅
+V2.1.2 LLM Live Smoke Test ✅
+V2.2 Order Query Tools ✅
+V2.3 Multi-Intent Planning ✅
+V2.4 Specialist Agent Handler
+V2.5 Shared Workspace / Memory
+V2.6 Approval APIs
+V2.7 Execution Tree
+V2.8 Evaluation Dataset
+V2.9 Robustness
+```

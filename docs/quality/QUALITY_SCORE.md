@@ -165,3 +165,40 @@ Remaining V2.1 follow-up:
 
 - Add live provider smoke tests that are explicitly opt-in and never part of default `mvn test`.
 - Add prompt regression fixtures and broader malformed-output cases.
+
+## V2.3 Quality Targets
+
+V2.3 质量目标聚焦复杂售后诉求拆解的准确性、合法性和可观测性。当前 V2.3 已完成基础实现。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| 子任务拆解准确性 | 复杂售后问题能拆成 RETURN / EXCHANGE / COUPON_CONSULTATION / LOGISTICS_ISSUE 等结构化子任务 | Planner 单元测试 + 评测样例 |
+| 子任务工具规划合法性 | 每个 subtask 的 plannedTools 均来自 ToolRegistry 已注册工具 | AgentPlanValidator 测试 |
+| 子任务 trace 可观测性 | 每个实际工具调用继续写入 ToolCallTrace，并能追溯到多意图处理链路 | AgentRun flow 测试 + trace API 检查 |
+| 子任务依赖校验 | dependencies 只能引用合法 subtaskId，且不得形成循环依赖 | Validator 单元测试 |
+| 风险边界 | 子任务不能声明真实退款、真实换货、优惠券补偿或争议关闭已经完成 | Parser / Validator 负向测试 |
+| 测试确定性 | 默认测试不依赖真实 LLM、API Key 或外部网络 | `mvn test` 离线通过 |
+
+### V2.3 不接受的退化
+
+- V1/V2.1/V2.2 demo 流程不能跑；
+- 默认测试需要真实 LLM 或 API Key；
+- 子任务绕过 ToolRegistry 执行工具；
+- ToolCallTrace 丢失或隐藏失败工具调用；
+- 高风险动作被写成已完成；
+- README 或 Harness 文档把 V2.4+ 未完成扩展能力写成已实现能力。
+
+### V2.3 Current Status
+
+Status: completed for deterministic rule-based multi-intent planning and sequential subtask execution.
+
+Completed:
+
+- `AgentPlan` supports `subtasks`.
+- `AgentPlanParser` parses structured subtask JSON.
+- `AgentPlanValidator` rejects unknown subtask type, unknown tools, blank subtask policy query, missing dependencies,
+  dependency cycles, duplicate IDs, and oversized subtask lists.
+- `RuleBasedAgentPlanner` splits return + exchange + coupon consultation messages into subtasks.
+- `AgentApplicationService` executes subtasks sequentially through ToolRegistry.
+- ToolCallTrace input JSON carries subtask metadata.
+- Default tests remain offline and deterministic.
