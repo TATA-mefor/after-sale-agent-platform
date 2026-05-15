@@ -544,6 +544,129 @@ V2.3 已完成：
 
 V2.4 不做多进程 Agent，而是在 Java 模块化单体中使用策略类表达专业 Agent 分工。
 
+目标是把当前 `AgentApplicationService` 中统一处理所有 `AgentSubtask` 的逻辑，拆成按 `SubtaskType` 分发的专业处理器：
+
+```text
+AgentSubtask
+→ SpecialistAgentHandlerRegistry
+→ SpecialistAgentHandler
+→ ToolRegistry
+→ ToolCallTrace
+```
+
+V2.4 的价值不是增加进程数量，而是让 RETURN、EXCHANGE、COUPON_CONSULTATION、LOGISTICS_ISSUE 等子任务拥有清晰、
+可测试、可替换的处理策略。
+
+### 8.2 范围
+
+V2.4 只做：
+
+- 定义 `SpecialistAgentHandler` 接口；
+- 定义 `SpecialistAgentHandlerRegistry`；
+- 定义 `SubtaskExecutionContext`；
+- 定义 `SubtaskExecutionResult`；
+- 让 `AgentApplicationService` 通过 registry 查找 handler；
+- 每个 handler 只声明并处理自己支持的 `SubtaskType`；
+- handler 内部仍通过 ToolRegistry 调用工具；
+- ToolCallTrace 继续记录每个工具调用；
+- 保持单进程顺序执行；
+- 补充 handler 分发、覆盖、工具调用和 trace 测试。
+
+### 8.3 不做
+
+V2.4 不做：
+
+- 不做多 Agent 微服务；
+- 不引入消息队列；
+- 不做并行执行；
+- 不做投票共识；
+- 不做独立 Agent 服务部署；
+- 不做真实退款；
+- 不做真实换货；
+- 不做真实优惠券补偿；
+- 不接真实物流；
+- 不接真实支付；
+- 不让 handler 直接访问 Repository；
+- 不让 handler 绕过 ToolRegistry；
+- 不让 LLM / Planner 直接执行 handler。
+
+### 8.4 核心模型 / 接口
+
+#### 8.4.1 SpecialistAgentHandler
+
+建议接口：
+
+```java
+public interface SpecialistAgentHandler {
+    boolean supports(SubtaskType type);
+
+    SubtaskExecutionResult handle(SubtaskExecutionContext context);
+}
+```
+
+职责：
+
+- 只处理自己支持的 `SubtaskType`；
+- 基于 `AgentSubtask`、Ticket、AgentRun、工具结果和已有 evidence 生成子任务处理结果；
+- 通过 ToolRegistry 执行工具；
+- 不直接访问 Repository；
+- 不执行真实高风险动作。
+
+#### 8.4.2 SpecialistAgentHandlerRegistry
+
+职责：
+
+- 持有所有 `SpecialistAgentHandler`；
+- 根据 `SubtaskType` 返回唯一 handler；
+- 对未覆盖类型返回清晰错误或 human escalation handler；
+- 拒绝重复 handler 覆盖同一类型；
+- 为测试暴露已支持的 `SubtaskType` 集合。
+
+#### 8.4.3 SubtaskExecutionContext
+
+建议字段：
+
+```text
+runId
+ticket
+agentPlan
+subtask
+availableTools
+riskPolicySummary
+previousResults
+```
+
+说明：
+
+- context 是 handler 的输入；
+- 不直接暴露 Repository；
+- 不暴露 LLM SDK；
+- 不包含 API Key 或敏感基础设施配置。
+
+#### 8.4.4 SubtaskExecutionResult
+
+建议字段：
+
+```text
+subtaskId
+type
+status
+summary
+evidence
+toolCalls
+errorMessage
+requiresHumanApproval
+```
+
+说明：
+
+- result 是 handler 的结构化输出；
+- AgentApplicationService 使用 result 汇总最终建议；
+- 失败必须可见，不能隐藏工具调用失败；
+- 高风险动作只能表达 `requiresHumanApproval`，不能表达已执行完成。
+
+### 8.5 候选 Handler
+
 候选 Handler：
 
 ```text
@@ -551,17 +674,95 @@ ReturnAgentHandler
 ExchangeAgentHandler
 CouponAgentHandler
 LogisticsAgentHandler
+GeneralConsultationHandler
 HumanEscalationHandler
 ```
 
-### 8.2 不做
+建议支持关系：
 
-- 不拆微服务；
-- 不引入消息队列；
-- 不做复杂投票共识；
-- 不做独立 Agent 服务部署。
+```text
+RETURN → ReturnAgentHandler
+EXCHANGE → ExchangeAgentHandler
+COUPON_CONSULTATION → CouponAgentHandler
+LOGISTICS_ISSUE → LogisticsAgentHandler
+GENERAL_CONSULTATION → GeneralConsultationHandler
+HUMAN_ESCALATION / UNKNOWN → HumanEscalationHandler
+```
 
-### 8.3 状态
+### 8.6 执行链路
+
+```text
+Ticket
+→ AgentPlanner
+→ AgentPlan with subtasks
+→ AgentPlanValidator
+→ AgentApplicationService
+→ sort subtasks by priority / dependencies
+→ SpecialistAgentHandlerRegistry
+→ SpecialistAgentHandler
+→ ToolRegistry
+→ ToolCallTrace
+→ SubtaskExecutionResult
+→ final AgentRun summary
+```
+
+约束：
+
+- `AgentApplicationService` 负责调度，不直接写每类子任务处理细节；
+- handler 不得直接调用 LLM；
+- handler 不得访问 Repository；
+- handler 不得绕过 ToolRegistry；
+- handler 不得执行真实退款、换货、优惠券补偿、支付或物流动作；
+- ToolCallTrace 继续记录所有工具调用。
+
+### 8.7 验收标准
+
+V2.4 完成时必须满足：
+
+1. 存在 `SpecialistAgentHandler` 接口；
+2. 存在 `SpecialistAgentHandlerRegistry`；
+3. 存在 `SubtaskExecutionContext`；
+4. 存在 `SubtaskExecutionResult`；
+5. `AgentApplicationService` 通过 registry 调度 handler；
+6. RETURN / EXCHANGE / COUPON_CONSULTATION / LOGISTICS_ISSUE 至少有明确 handler 或 fallback 策略；
+7. handler 只能处理自己支持的 `SubtaskType`；
+8. handler 内部工具调用全部通过 ToolRegistry；
+9. ToolCallTrace 继续记录 handler 内部工具调用；
+10. handler 不访问 Repository；
+11. handler 不执行真实高风险动作；
+12. V1/V2.2 单意图流程不退化；
+13. V2.3 多意图流程不退化；
+14. 默认测试不依赖真实 LLM；
+15. ArchUnit、Checkstyle、SpotBugs、JUnit 质量门禁继续通过。
+
+### 8.8 测试要求
+
+至少补充：
+
+1. registry 能按 `SubtaskType` 找到正确 handler；
+2. registry 拒绝重复 handler 覆盖同一类型；
+3. 未覆盖类型有清晰 fallback 或错误；
+4. ReturnAgentHandler 只处理 RETURN；
+5. ExchangeAgentHandler 只处理 EXCHANGE；
+6. CouponAgentHandler 只处理 COUPON_CONSULTATION；
+7. LogisticsAgentHandler 只处理 LOGISTICS_ISSUE；
+8. handler 工具调用均通过 ToolRegistry；
+9. handler 不访问 Repository 的 ArchUnit 规则；
+10. handler 结果进入最终 AgentRun summary；
+11. ToolCallTrace 能看到 handler 执行产生的工具调用；
+12. V2.3 多意图顺序执行继续通过；
+13. 默认 `mvn test` 不依赖真实 LLM。
+
+### 8.9 验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+### 8.10 状态
 
 ```text
 PLANNED

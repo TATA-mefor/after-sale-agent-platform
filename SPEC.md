@@ -475,3 +475,29 @@ V2.3 仍然不做：
 
 V2.3 已在模块化单体内实现结构化多意图规划、顺序子任务执行和 trace 可观测性。Execution Tree、
 Specialist Handler、真实退款、真实换货、真实优惠券补偿、真实物流和真实支付仍属于后续阶段或非目标。
+
+## 18. V2.4 目标：Specialist Agent Handler
+
+V2.4 的目标是在 V2.3 `AgentSubtask` 基础上，引入 Specialist Agent Handler，用 Java 模块化单体内的策略类表达多 Agent 分工。
+
+V2.4 计划支持：
+
+- 不同 `SubtaskType` 由不同 `SpecialistAgentHandler` 处理；
+- `RETURN`、`EXCHANGE`、`COUPON_CONSULTATION`、`LOGISTICS_ISSUE` 可有不同处理策略；
+- `GENERAL_CONSULTATION` 和 `HUMAN_ESCALATION` 可有兜底处理策略；
+- `AgentApplicationService` 负责调度 handler，而不是直接写每类子任务处理细节；
+- handler 仍然通过 ToolRegistry 调用工具；
+- ToolCallTrace 继续记录所有工具调用。
+
+V2.4 仍然不做：
+
+- 真实退款；
+- 真实换货；
+- 真实优惠券补偿；
+- 真实物流或支付系统接入；
+- 多 Agent 微服务；
+- 消息队列；
+- 并行执行；
+- 投票共识。
+
+V2.4 当前是下一阶段 Harness 目标，不代表功能已经完成。

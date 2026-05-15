@@ -61,3 +61,16 @@ Rules:
 - ToolRegistry and the existing tool risk contract remain the execution boundary.
 
 V2.3 does not implement real refund, real exchange, real coupon compensation, real logistics, or real payment actions.
+
+## V2.4 Specialist Handler Risk Boundary
+
+V2.4 Specialist Handlers are execution strategies, not privileged business actors.
+
+Rules:
+
+- handler risk is bounded by the `AgentSubtask.riskLevel` and each planned tool's risk level;
+- handlers must use ToolRegistry so existing tool risk checks still apply;
+- handlers must not bypass approval rules for `HIGH` actions;
+- handlers must not directly execute real refund, exchange, coupon compensation, payment, logistics, or dispute closure;
+- handlers must return a structured result when human approval is required;
+- handler failures must be visible in AgentRun results and ToolCallTrace where tools were attempted.

@@ -274,3 +274,29 @@ docs/agent/LLM_PLANNER_CONTRACT.md
 docs/agent/TOOL_CONTRACTS.md
 docs/agent/RISK_POLICY.md
 ```
+
+## 16. V2.4 Specialist Handler 任务规则
+
+涉及 Specialist Handler、子任务专业处理器、handler registry、SubtaskExecutionContext 或 SubtaskExecutionResult 的任务，
+必须额外阅读：
+
+```text
+docs/decisions/DECISION_SPECIALIST_AGENT_HANDLER.md
+EXEC_PLAN_V2.md
+ARCHITECTURE.md
+docs/agent/TOOL_CONTRACTS.md
+docs/agent/RISK_POLICY.md
+```
+
+V2.4 任务必须遵守：
+
+1. Handler 不得直接访问 Repository；
+2. Handler 不得绕过 ToolRegistry；
+3. Handler 不得绕过 RiskPolicy；
+4. Handler 不得直接调用 LLM；
+5. Handler 不得直接修改 Ticket、Order、AgentRun 或 ToolCallTrace；
+6. Handler 不得执行真实退款、真实换货、真实优惠券补偿、支付变更、物流变更或争议关闭；
+7. AgentApplicationService 负责调度 Handler；
+8. LLM / Planner 只负责生成结构化 subtasks，不直接执行 Handler；
+9. ToolCallTrace 必须继续记录 Handler 内部工具调用；
+10. 默认测试必须可离线运行。

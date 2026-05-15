@@ -202,3 +202,30 @@ Completed:
 - `AgentApplicationService` executes subtasks sequentially through ToolRegistry.
 - ToolCallTrace input JSON carries subtask metadata.
 - Default tests remain offline and deterministic.
+
+## V2.4 Quality Targets
+
+V2.4 质量目标聚焦 Specialist Agent Handler 的分发正确性、边界安全和对既有流程的非退化。V2.4 当前是下一阶段目标，
+不表示功能已经完成。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| Handler 分发正确性 | registry 能按 `SubtaskType` 找到唯一 handler | Registry 单元测试 |
+| Handler 支持类型覆盖 | RETURN / EXCHANGE / COUPON_CONSULTATION / LOGISTICS_ISSUE 有明确 handler 或 fallback | 覆盖测试 + 文档检查 |
+| Handler 工具调用合法性 | handler 内部工具调用必须通过 ToolRegistry | Flow 测试 + mock/fake registry 测试 |
+| Handler 不访问 Repository | handler 不依赖业务 Repository 或 infrastructure repository | ArchUnit |
+| Handler 结果可追踪 | handler 内部工具调用继续写入 ToolCallTrace | AgentRun flow 测试 |
+| 风险边界 | handler 不直接执行真实退款、换货、优惠券补偿、支付、物流或争议关闭 | 单元测试 + 风险策略检查 |
+| 单意图 / 多意图流程不退化 | V1/V2.2 单意图和 V2.3 多意图流程继续通过 | `mvn test` + API flow 测试 |
+| 测试确定性 | 默认测试不依赖真实 LLM、API Key 或外部网络 | `mvn test` 离线通过 |
+
+### V2.4 不接受的退化
+
+- handler 绕过 ToolRegistry；
+- handler 直接访问 Repository；
+- handler 直接调用 LLM；
+- handler 直接执行真实高风险动作；
+- ToolCallTrace 丢失 handler 内部工具调用；
+- V2.3 多意图流程不能跑；
+- 默认测试需要真实 LLM 或 API Key；
+- README 或 Harness 文档把 V2.4 写成已实现能力。

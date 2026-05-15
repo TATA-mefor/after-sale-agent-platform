@@ -385,6 +385,34 @@ V2.3 remains a single-process planning and execution design. It does not add mul
 execution, voting consensus, a full coupon system, real refunds, real exchanges, real logistics, or real payment
 integration. Specialist handlers and Execution Tree remain future work.
 
+### V2.4 Roadmap: Specialist Agent Handler
+
+The next planned stage is Specialist Agent Handler. It is not implemented yet.
+
+Target flow:
+
+```text
+AgentSubtask
+→ SpecialistAgentHandlerRegistry
+→ SpecialistAgentHandler
+→ ToolRegistry
+→ ToolCallTrace
+→ SubtaskExecutionResult
+```
+
+Candidate handlers:
+
+- `ReturnAgentHandler`
+- `ExchangeAgentHandler`
+- `CouponAgentHandler`
+- `LogisticsAgentHandler`
+- `GeneralConsultationHandler`
+- `HumanEscalationHandler`
+
+V2.4 remains a modular-monolith strategy-class design. It will not add multi-Agent microservices, queues, parallel
+execution, voting consensus, real refunds, real exchanges, real coupon compensation, real logistics, or real payment
+integration. Handlers must still call tools through `ToolRegistry`.
+
 ### 真实 LLM 本地运行说明
 
 默认本地运行仍使用 `rule` 模式。若要手动启用真实 LLM Planner，请只在本机环境变量或本地未提交配置中设置：

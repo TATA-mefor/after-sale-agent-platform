@@ -112,3 +112,15 @@ V2.3 allows `AgentPlan` / `MultiIntentAgentPlan` to contain multiple subtasks. E
 
 V2.3 does not add a full coupon system, real refund tool, real exchange tool, real logistics integration, or real payment
 integration.
+
+## V2.4 Specialist Handler Tool Boundary
+
+V2.4 may add Specialist Agent Handlers for subtask execution. Handler introduction does not change the tool contract:
+
+- handlers must call tools through `ToolRegistry`;
+- handlers cannot call business repositories directly;
+- handlers cannot invent tool names outside registered `ToolDefinition`s;
+- every handler-triggered tool call must produce `ToolCallTrace`;
+- high-risk actions remain approval-bound and cannot be executed directly by handlers;
+- no handler may perform real refund, real exchange, coupon compensation, payment mutation, logistics mutation, or
+  dispute closure in V2.4.
