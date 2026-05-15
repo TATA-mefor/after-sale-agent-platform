@@ -97,7 +97,7 @@ Final results are recorded in the Review Packet for this task.
 - The provider client is intentionally lightweight and currently targets an OpenAI-compatible Responses endpoint.
 - Prompt regression tests remain future work.
 - Live provider smoke testing is manual and depends on the developer's local API Key and network.
-- Order query tools remain V2.2.
+- Order query tools are handled by the separate V2.2 execution record.
 - MySQL persistence remains V2.3.
 - Approval APIs remain V2.4.
 

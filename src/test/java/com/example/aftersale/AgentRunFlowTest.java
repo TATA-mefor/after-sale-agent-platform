@@ -68,7 +68,8 @@ class AgentRunFlowTest {
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
                 .andExpect(jsonPath("$.data.intent").value("RETURN_AND_REFUND"))
-                .andExpect(jsonPath("$.data.toolCalls", hasItems("search_aftersale_policy", "add_ticket_note")))
+                .andExpect(jsonPath("$.data.toolCalls", hasItems("get_order_by_id", "search_aftersale_policy",
+                        "add_ticket_note")))
                 .andReturn();
         String runId = JsonPath.read(agentRunResult.getResponse().getContentAsString(), "$.data.runId");
 
@@ -77,11 +78,13 @@ class AgentRunFlowTest {
                 .andExpect(jsonPath("$.data.status").value("RESOLVED"))
                 .andExpect(jsonPath("$.data.intentType").value("RETURN_AND_REFUND"))
                 .andExpect(jsonPath("$.data.internalNote", containsString("RETURN_AND_REFUND")))
+                .andExpect(jsonPath("$.data.internalNote", containsString("Order O202605130001")))
                 .andExpect(jsonPath("$.data.agentSuggestion", containsString("RETURN_AND_REFUND")));
 
         mockMvc.perform(get("/api/agent-runs/{runId}/traces", runId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[*].toolName", hasItems("search_aftersale_policy", "add_ticket_note")))
+                .andExpect(jsonPath("$.data[*].toolName", hasItems("get_order_by_id", "search_aftersale_policy",
+                        "add_ticket_note")))
                 .andExpect(jsonPath("$.data[*].status", hasItems("SUCCEEDED")));
     }
 
@@ -99,14 +102,18 @@ class AgentRunFlowTest {
                 .andExpect(jsonPath("$.data.intent").value("RETURN_AND_REFUND"))
                 .andExpect(jsonPath("$.data.plan", containsString("search_aftersale_policy")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("RETURN_AND_REFUND")))
-                .andExpect(jsonPath("$.data.evidence[0]", containsString("POL-QUALITY-RETURN-EXCHANGE")))
-                .andExpect(jsonPath("$.data.toolCalls", hasItems("search_aftersale_policy", "add_ticket_note")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("Order O-7001")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("POL-QUALITY-RETURN-EXCHANGE")))
+                .andExpect(jsonPath("$.data.evidence[*]", hasItem(containsString("Order O-7001"))))
+                .andExpect(jsonPath("$.data.evidence[*]", hasItem(containsString("POL-QUALITY-RETURN-EXCHANGE"))))
+                .andExpect(jsonPath("$.data.toolCalls", hasItems("get_order_by_id", "search_aftersale_policy",
+                        "add_ticket_note")))
                 .andReturn();
 
         String runId = JsonPath.read(result.getResponse().getContentAsString(), "$.data.runId");
         assertThat(traceApplicationService.findByRunId(runId))
                 .extracting(ToolCallTrace::getToolName)
-                .contains("search_aftersale_policy", "add_ticket_note");
+                .contains("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
     }
 
     @Test
@@ -125,8 +132,11 @@ class AgentRunFlowTest {
         mockMvc.perform(get("/api/agent-runs/{runId}/traces", runId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
-                .andExpect(jsonPath("$.data[*].toolName", hasItems("search_aftersale_policy", "add_ticket_note")))
+                .andExpect(jsonPath("$.data[*].toolName", hasItems("get_order_by_id", "search_aftersale_policy",
+                        "add_ticket_note")))
                 .andExpect(jsonPath("$.data[0].runId").value(runId))
+                .andExpect(jsonPath("$.data[?(@.toolName == 'get_order_by_id')].inputJson",
+                        hasItem(containsString("\"orderId\""))))
                 .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].inputJson",
                         hasItem(containsString("\"query\""))))
                 .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].outputJson",

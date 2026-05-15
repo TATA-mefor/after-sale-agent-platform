@@ -239,9 +239,11 @@ HIGH
 
 只允许包含 ToolRegistry 中已注册的工具。
 
-V2.1 支持的工具至少包括：
+V2.2 支持的工具至少包括：
 
 ```text
+get_order_by_id
+get_user_orders
 search_aftersale_policy
 add_ticket_note
 create_aftersale_ticket
@@ -359,7 +361,80 @@ docs/agent/
 - 将 API Key 写入 Prompt；
 - 将敏感内部信息发送给 LLM。
 
-## 11. 配置建议
+## 11. V2.3 Multi-Intent Planning 契约
+
+V2.3 允许 `AgentPlan` 增加 `subtasks` 字段，用于表达复杂售后诉求的结构化拆解。
+
+LLM 可以规划子任务，但不得执行子任务。Java 后端必须校验子任务结构，再通过现有执行边界顺序处理。
+
+每个 subtask 至少包含：
+
+```text
+subtaskId
+type
+target
+userMessageFragment
+priority
+riskLevel
+policyQuery
+plannedTools
+dependencies
+```
+
+推荐结构：
+
+```json
+{
+  "subtaskId": "SUB-1",
+  "type": "RETURN",
+  "target": "有污渍的衣服",
+  "userMessageFragment": "其中一件有污渍要退货",
+  "priority": 1,
+  "riskLevel": "MEDIUM",
+  "policyQuery": "服装 污渍 退货",
+  "plannedTools": [
+    {
+      "toolName": "search_aftersale_policy",
+      "reason": "检索质量问题退货政策"
+    }
+  ],
+  "dependencies": []
+}
+```
+
+子任务类型候选：
+
+```text
+RETURN
+EXCHANGE
+COUPON_CONSULTATION
+LOGISTICS_ISSUE
+GENERAL_CONSULTATION
+UNKNOWN
+```
+
+校验要求：
+
+- `type` 必须是系统支持的 `SubtaskType`；
+- `riskLevel` 必须是系统支持的风险等级；
+- `priority` 必须可排序；
+- `plannedTools` 只能包含 ToolRegistry 已注册工具；
+- `dependencies` 只能引用同一计划内已存在的 `subtaskId`；
+- 不允许循环依赖；
+- 子任务不能声明退款、换货、优惠券补偿、争议关闭等高风险动作已经完成；
+- LLM 不得直接调用工具、直接修改 Ticket、AgentRun、ToolCallTrace 或 Repository。
+
+执行边界：
+
+- LLM 只生成 `MultiIntentAgentPlan`；
+- Java 后端负责解析和校验；
+- `AgentApplicationService` 负责按顺序执行子任务计划；
+- ToolRegistry 仍然是唯一工具执行入口；
+- ToolCallTrace 继续记录每个工具调用。
+
+V2.3 不实现多 Agent 微服务、消息队列、并行执行、投票共识、完整优惠券系统、真实退款、真实换货、真实物流或真实支付。
+
+## 12. 配置建议
 
 推荐配置：
 
@@ -385,7 +460,7 @@ agent:
 
 默认模式必须是 `rule`，以保证本地启动和 `mvn test` 不依赖真实 LLM、API Key 或外部网络。
 
-## 12. 成功标准
+## 13. 成功标准
 
 V2.1 成功的标志：
 

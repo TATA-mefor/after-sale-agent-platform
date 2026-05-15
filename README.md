@@ -232,6 +232,7 @@ V1 当前是规则型 AgentRun 闭环，已经支持：
 ```text
 创建售后工单
 触发 AgentRun
+查询内存 demo 订单
 检索售后政策
 写入工单备注
 记录 ToolCallTrace
@@ -330,12 +331,55 @@ business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
 
 ### V2 后续方向
 
-- Order Query Tools；
+- Multi-Intent Planning；
 - MySQL Persistence；
 - Approval APIs；
 - Agent Evaluation Dataset；
 - Vector or Hybrid Policy Retrieval；
 - Docker Compose and Observability。
+
+### V2.2 Order Query Tools
+
+V2.2 adds two low-risk order tools backed by in-memory demo data:
+
+- `get_order_by_id`
+- `get_user_orders`
+
+The rule-based AgentRun now plans `get_order_by_id` before policy retrieval, so the final suggestion and trace can show
+both order facts and policy evidence. This is still demo data only; the project does not connect to a real order center,
+real logistics provider, real payment provider, or real database.
+
+### V2.3 Roadmap: Multi-Intent Planning
+
+The next planned stage is Multi-Intent Planning. It is not implemented yet.
+
+Target flow:
+
+```text
+complex after-sale message
+→ Supervisor Planner
+→ MultiIntentAgentPlan
+→ structured AgentSubtasks
+→ Java validation
+→ sequential ToolRegistry execution
+→ ToolCallTrace
+```
+
+Example user message:
+
+```text
+我买了三件衣服，其中一件有污渍要退货，另一件要换尺码，还有一张优惠券没用上怎么退？
+```
+
+Expected subtask types:
+
+- `RETURN`
+- `EXCHANGE`
+- `COUPON_CONSULTATION`
+
+V2.3 remains a single-process planning and execution design. It will not add multi-Agent microservices, queues,
+parallel execution, voting consensus, a full coupon system, real refunds, real exchanges, real logistics, or real payment
+integration.
 
 ### 真实 LLM 本地运行说明
 

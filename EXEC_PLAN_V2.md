@@ -37,10 +37,11 @@ V2 的第一优先级是：
 ```text
 V2.1 LLM Planner Adapter
 V2.2 Order Query Tools
-V2.3 MySQL Persistence
-V2.4 Approval APIs
-V2.5 Agent Evaluation Dataset
-V2.6 Docker Compose and Observability
+V2.3 Multi-Intent Planning
+V2.4 Approval APIs / Specialist Handler
+V2.5 MySQL Persistence
+V2.6 Agent Evaluation Dataset
+V2.7 Docker Compose and Observability
 ```
 
 V2.1 是第一优先级。
@@ -192,34 +193,207 @@ V2.1 不包含且不伪装完成：
 - 订单工具为 LOW 风险；
 - Agent 不直接访问 OrderRepository。
 
+## 5.5 当前状态
+
+```text
+COMPLETED
+```
+
+V2.2 已完成：
+
+- 内存 demo 订单数据；
+- `OrderApplicationService`；
+- `get_order_by_id` 工具；
+- `get_user_orders` 工具；
+- 订单工具通过 `ToolRegistry` 暴露；
+- `RuleBasedAgentPlanner` 默认规划 `get_order_by_id`；
+- AgentRun trace 记录订单工具调用；
+- Agent 最终建议同时包含订单依据和政策依据；
+- README、工具契约、风险策略和 LLM Planner Contract 已同步。
+
+V2.2 不包含且不伪装完成：
+
+- 真实订单中心；
+- 真实数据库；
+- 真实物流；
+- 真实支付；
+- 退款或补偿执行。
+
 ---
 
-# 6. V2.3：MySQL Persistence
+# 6. V2.3：Multi-Intent Planning
 
 ## 6.1 目标
 
-替换 V1 内存 Repository，使 Ticket、AgentRun、ToolCallTrace 可持久化。
+支持复杂售后诉求拆解为多个结构化子任务，让一个 Ticket 可以表达多个售后意图，并在同一个受控
+AgentRun 中按顺序规划、校验和执行。
+
+示例复杂售后问题：
+
+```text
+我买了三件衣服，其中一件有污渍要退货，另一件要换尺码，还有一张优惠券没用上怎么退？
+```
+
+期望拆解：
+
+```text
+RETURN 子任务
+EXCHANGE 子任务
+COUPON_CONSULTATION 子任务
+```
+
+V2.3 的目标不是引入多 Agent 平台，而是在现有 `AgentPlanner -> AgentPlan -> ToolRegistry -> ToolCallTrace`
+链路上增加可校验的多意图计划结构。
 
 ## 6.2 必做
 
-- 引入 MySQL profile；
-- 新增表结构脚本；
-- 替换 TicketRepository、AgentRunRepository、ToolCallTraceRepository 的实现；
-- 保留内存 profile 供测试使用；
-- 添加集成测试或 Testcontainers 方案。
+- 定义核心模型契约：
+  - `AgentSubtask`
+  - `SubtaskType`
+  - `SubtaskStatus`
+  - `SubtaskPlan`
+  - `MultiIntentAgentPlan`
+- 让 Planner 能输出包含 `subtasks` 的结构化计划；
+- 支持至少以下子任务类型：
+  - `RETURN`
+  - `EXCHANGE`
+  - `COUPON_CONSULTATION`
+  - `LOGISTICS_ISSUE`
+  - `GENERAL_CONSULTATION`
+- 每个子任务至少包含目标对象、用户原文片段、优先级、风险等级、政策检索 query、计划工具和依赖；
+- Java 后端校验子任务类型、风险等级、工具名、依赖关系和高风险声明；
+- `AgentApplicationService` 在单进程内按顺序执行子任务计划；
+- ToolRegistry 仍然是唯一工具执行入口；
+- ToolCallTrace 继续记录每个工具调用；
+- 默认测试仍不依赖真实 LLM。
 
 ## 6.3 不做
 
-- 不做复杂分库分表；
-- 不引入微服务；
-- 不做生产级运维脚本。
+- 不做多 Agent 微服务；
+- 不做消息队列；
+- 不做并行执行；
+- 不做投票共识；
+- 不做完整优惠券系统；
+- 不做真实退款；
+- 不做真实换货；
+- 不接真实物流；
+- 不接真实支付；
+- 不绕过 ToolRegistry；
+- 不让 LLM 直接执行子任务。
 
 ## 6.4 验收标准
 
-- 本地 MySQL profile 可启动；
-- 测试环境仍可离线运行；
-- 重启后工单和 trace 不丢失；
-- V1/V2 demo 可复现。
+- 复杂售后问题可以被拆解为多个结构化子任务；
+- `MultiIntentAgentPlan` 可以表达多个 `AgentSubtask`；
+- 每个子任务的 `plannedTools` 均来自 ToolRegistry 已注册工具；
+- 子任务依赖关系可校验，禁止循环依赖和未知依赖；
+- 子任务不能声明高风险动作已经完成；
+- 单进程顺序执行可以产生清晰 ToolCallTrace；
+- AgentRun 最终建议能汇总多个子任务结果；
+- V1/V2.1/V2.2 默认测试继续通过；
+- 默认测试不依赖真实 LLM、API Key 或外部网络。
+
+## 6.5 示例结构化输出
+
+```json
+{
+  "intent": "MULTI_INTENT",
+  "riskLevel": "MEDIUM",
+  "policyQuery": "服装退货 换尺码 优惠券退回",
+  "noteToAdd": "用户包含退货、换尺码和优惠券咨询三个诉求，需按子任务处理。",
+  "finalSuggestion": "建议分别核对污渍退货政策、尺码换货政策和优惠券使用规则。",
+  "evidenceHints": [
+    "一件衣服有污渍",
+    "另一件需要换尺码",
+    "用户咨询优惠券未使用如何退回"
+  ],
+  "plannedTools": [
+    {
+      "toolName": "get_order_by_id",
+      "reason": "查询订单事实"
+    }
+  ],
+  "subtasks": [
+    {
+      "subtaskId": "SUB-1",
+      "type": "RETURN",
+      "target": "有污渍的衣服",
+      "userMessageFragment": "其中一件有污渍要退货",
+      "priority": 1,
+      "riskLevel": "MEDIUM",
+      "policyQuery": "服装 污渍 退货",
+      "plannedTools": [
+        {
+          "toolName": "search_aftersale_policy",
+          "reason": "检索质量问题退货政策"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "subtaskId": "SUB-2",
+      "type": "EXCHANGE",
+      "target": "需要换尺码的衣服",
+      "userMessageFragment": "另一件要换尺码",
+      "priority": 2,
+      "riskLevel": "MEDIUM",
+      "policyQuery": "服装 尺码 换货",
+      "plannedTools": [
+        {
+          "toolName": "search_aftersale_policy",
+          "reason": "检索尺码换货政策"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "subtaskId": "SUB-3",
+      "type": "COUPON_CONSULTATION",
+      "target": "未使用优惠券",
+      "userMessageFragment": "还有一张优惠券没用上怎么退",
+      "priority": 3,
+      "riskLevel": "LOW",
+      "policyQuery": "优惠券 未使用 退回",
+      "plannedTools": [
+        {
+          "toolName": "search_aftersale_policy",
+          "reason": "检索优惠券规则"
+        }
+      ],
+      "dependencies": []
+    }
+  ]
+}
+```
+
+## 6.6 测试要求
+
+- `SubtaskType` 支持 RETURN / EXCHANGE / COUPON_CONSULTATION / LOGISTICS_ISSUE；
+- 合法 `MultiIntentAgentPlan` 能通过校验；
+- 未知子任务类型被拒绝；
+- 未知工具名被拒绝；
+- 子任务循环依赖被拒绝；
+- 子任务高风险完成声明被拒绝；
+- 复杂售后文本能生成多个子任务；
+- AgentRun trace 能区分或关联子任务工具调用；
+- 默认 `mvn test` 离线通过。
+
+## 6.7 验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+## 6.8 当前状态
+
+```text
+PLANNED
+```
+
+V2.3 当前仅完成 Harness 文档设计，尚未实现 Java 模型、校验器或执行流程。
 
 ---
 

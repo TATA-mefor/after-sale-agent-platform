@@ -8,6 +8,8 @@ Allowed to execute directly when inputs are valid.
 
 Examples:
 
+- `get_order_by_id`
+- `get_user_orders`
 - `create_aftersale_ticket`
 - `add_ticket_note`
 - `search_aftersale_policy`
@@ -36,8 +38,9 @@ Examples:
 
 M5 does not implement real refund, compensation, payment, inventory, or database-side approval execution.
 
-## Final V1 Boundary
+## V2.2 Boundary
 
-V1 does not execute any real financial, inventory, logistics, or order-core mutation. The implemented Agent demo only
-executes low-risk policy retrieval and ticket-note writing. Closing a ticket through `update_ticket_status` is blocked
-with `REQUIRES_APPROVAL`.
+V2.2 adds low-risk order query tools backed by in-memory demo data. They read demo order facts only and do not connect
+to a real order center, logistics provider, payment provider, database, refund system, or inventory system.
+
+Closing a ticket through `update_ticket_status` remains blocked with `REQUIRES_APPROVAL`.

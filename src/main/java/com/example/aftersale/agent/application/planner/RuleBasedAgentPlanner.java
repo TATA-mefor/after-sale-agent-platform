@@ -18,8 +18,12 @@ public class RuleBasedAgentPlanner implements AgentPlanner {
                 "Intent " + intent.name() + " identified. Suggested handling is based on policy evidence.",
                 List.of(
                         "User message: " + context.rawUserMessage(),
+                        "Retrieve order facts for order " + context.orderId(),
                         "Retrieve after-sale policy evidence for intent " + intent.name()),
                 List.of(
+                        new PlannedToolCall(
+                                "get_order_by_id",
+                                "Retrieve order facts for the after-sale ticket."),
                         new PlannedToolCall(
                                 "search_aftersale_policy",
                                 "Retrieve after-sale policy evidence."),

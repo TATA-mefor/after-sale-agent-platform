@@ -52,6 +52,28 @@ Failures must include `errorCode` and `message`. High-risk tools are stopped bef
 
 ## M6 Tools
 
+### get_order_by_id
+
+- Risk: `LOW`
+- Requires approval: `false`
+- Input: `orderId`
+- Output: `orderId`, `userId`, `productId`, `productName`, `orderStatus`, `paidAmount`, `paidAt`, `deliveredAt`,
+  `aftersaleDeadline`, `whetherInAftersaleWindow`
+- Missing order output: failed tool result with a clear `Order not found: {orderId}` message
+- Business path: `ToolRegistry -> GetOrderByIdTool -> OrderApplicationService`
+- Storage: V2.2 in-memory demo order repository
+
+### get_user_orders
+
+- Risk: `LOW`
+- Requires approval: `false`
+- Input: `userId`
+- Output: `orders`
+- Each order contains: `orderId`, `userId`, `productId`, `productName`, `orderStatus`, `paidAmount`, `paidAt`,
+  `deliveredAt`, `aftersaleDeadline`, `whetherInAftersaleWindow`
+- Business path: `ToolRegistry -> GetUserOrdersTool -> OrderApplicationService`
+- Storage: V2.2 in-memory demo order repository
+
 ### search_aftersale_policy
 
 - Risk: `LOW`
@@ -63,13 +85,13 @@ Failures must include `errorCode` and `message`. High-risk tools are stopped bef
 - Business path: `ToolRegistry -> SearchAfterSalePolicyTool -> PolicyApplicationService`
 - Storage: V1 in-memory policy repository
 
-## V1 Demo Tool Chain
+## V2.2 Demo Tool Chain
 
-The final V1 Agent demo invokes:
+The V2.2 Agent demo invokes:
 
-1. `search_aftersale_policy`
-2. `add_ticket_note`
+1. `get_order_by_id`
+2. `search_aftersale_policy`
+3. `add_ticket_note`
 
-The original V1 roadmap mentioned `get_order_by_id` and `get_user_orders`. Those tools are not implemented in the
-final V1 codebase and are treated as V2 candidates. The V1 demo keeps `orderId` on the ticket and focuses on policy
-evidence, low-risk tool execution, and auditable trace records.
+The order tools use in-memory demo data only. They do not connect to a real order center, logistics provider, payment
+system, or database. They provide order facts so Agent suggestions can cite both order evidence and policy evidence.

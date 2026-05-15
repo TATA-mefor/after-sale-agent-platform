@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 public class AgentApplicationService {
 
     private static final String SEARCH_POLICY_TOOL = "search_aftersale_policy";
+    private static final String GET_ORDER_BY_ID_TOOL = "get_order_by_id";
     private static final String ADD_TICKET_NOTE_TOOL = "add_ticket_note";
     private static final String RISK_POLICY_SUMMARY =
             "LOW tools may execute directly. HIGH actions such as refund, compensation, payment mutation, "
@@ -128,11 +129,24 @@ public class AgentApplicationService {
             List<String> evidence,
             List<String> toolCalls) {
         switch (plannedTool.toolName()) {
+            case GET_ORDER_BY_ID_TOOL -> executeOrderLookup(runId, ticket, evidence, toolCalls);
             case SEARCH_POLICY_TOOL -> executePolicySearch(runId, plan, evidence, toolCalls);
             case ADD_TICKET_NOTE_TOOL -> executeTicketNote(runId, ticket, plan, evidence, toolCalls);
             default -> throw new IllegalArgumentException(
-                    "AgentRun V2.1 does not support executing planned tool: " + plannedTool.toolName());
+                    "AgentRun does not support executing planned tool: " + plannedTool.toolName());
         }
+    }
+
+    private void executeOrderLookup(
+            String runId,
+            Ticket ticket,
+            List<String> evidence,
+            List<String> toolCalls) {
+        ToolOutput orderOutput = executeTool(runId, GET_ORDER_BY_ID_TOOL, ToolInput.of(Map.of(
+                "orderId", ticket.getOrderId())));
+        toolCalls.add(GET_ORDER_BY_ID_TOOL);
+        ensureToolSucceeded(orderOutput);
+        evidence.add(orderEvidence(orderOutput));
     }
 
     private void executePolicySearch(
@@ -144,7 +158,6 @@ public class AgentApplicationService {
                 "query", plan.policyQuery())));
         toolCalls.add(SEARCH_POLICY_TOOL);
         ensureToolSucceeded(policyOutput);
-        evidence.clear();
         evidence.addAll(extractEvidence(policyOutput));
     }
 
@@ -183,6 +196,15 @@ public class AgentApplicationService {
                 .map(Map.class::cast)
                 .map(result -> result.get("policyId") + ": " + result.get("category"))
                 .toList();
+    }
+
+    private static String orderEvidence(ToolOutput orderOutput) {
+        Map<String, Object> data = orderOutput.data();
+        return "Order " + data.get("orderId")
+                + ": " + data.get("productName")
+                + ", status=" + data.get("orderStatus")
+                + ", aftersaleWindow=" + data.get("whetherInAftersaleWindow")
+                + ", deadline=" + data.get("aftersaleDeadline");
     }
 
     private static String buildNoteToAdd(AgentPlan plan, List<String> evidence) {

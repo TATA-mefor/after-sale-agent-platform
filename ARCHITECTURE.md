@@ -698,3 +698,79 @@ AgentApplicationService 不得依赖 ..infrastructure..llm..
 ..infrastructure..llm.. 不得依赖 ..repository..
 ..agent..prompt.. 不得依赖 ..repository..
 ```
+
+## 21. V2.3 Multi-Intent Planning 架构边界
+
+V2.3 计划引入 Multi-Intent Planning，用于把一个复杂售后 Ticket 拆解为多个结构化子任务。
+
+目标链路：
+
+```text
+Ticket
+→ Supervisor Planner
+→ MultiIntentAgentPlan
+→ Java validation
+→ AgentApplicationService
+→ ToolRegistry
+→ ToolCallTrace
+```
+
+### 21.1 Supervisor Planner
+
+Supervisor Planner 负责生成 `MultiIntentAgentPlan`。
+
+它可以：
+
+- 识别复杂售后诉求中的多个意图；
+- 生成多个 `AgentSubtask`；
+- 为每个子任务声明 `SubtaskType`、目标对象、用户原文片段、优先级、风险等级、政策 query、计划工具和依赖；
+- 输出结构化 JSON。
+
+它不得：
+
+- 直接执行子任务；
+- 直接调用工具；
+- 直接修改 Ticket、Order、AgentRun、ToolCallTrace；
+- 声称高风险动作已经完成。
+
+### 21.2 AgentApplicationService
+
+`AgentApplicationService` 负责校验并执行子任务计划。
+
+V2.3 当前阶段采用单进程顺序执行：
+
+```text
+validate all subtasks
+→ sort by dependencies / priority
+→ execute planned tools through ToolRegistry
+→ append evidence
+→ produce final summary
+```
+
+V2.3 不做并行执行，不引入消息队列，不引入投票共识。
+
+### 21.3 Specialist Handler Boundary
+
+Specialist Agent Handler 是 V2.4 之后的扩展内容，不在 V2.3 实现。
+
+V2.3 可以先使用统一的子任务执行路径。后续如需引入 `ReturnSubtaskHandler`、`ExchangeSubtaskHandler`、
+`CouponConsultationHandler` 等 specialist handler，必须继续遵守：
+
+- 不绕过 ToolRegistry；
+- 不直接访问 Repository；
+- 不直接执行真实退款、换货、优惠券补偿；
+- 保持 ToolCallTrace 可审计。
+
+### 21.4 Trace Boundary
+
+ToolCallTrace 继续记录每个工具调用。
+
+V2.3 可以先保留 trace list，不强制实现 Execution Tree。后续可以扩展为：
+
+```text
+AgentRun
+└── AgentSubtask
+    └── ToolCallTrace
+```
+
+但在 V2.3 中，trace list 必须足以看出每个工具调用的输入、输出、状态和失败原因。

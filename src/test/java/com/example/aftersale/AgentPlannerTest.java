@@ -39,7 +39,7 @@ class AgentPlannerTest {
         assertThat(plan.finalSuggestion()).contains("RETURN_AND_REFUND");
         assertThat(plan.plannedTools())
                 .extracting("toolName")
-                .containsExactly("search_aftersale_policy", "add_ticket_note");
+                .containsExactly("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
     }
 
     @Test
@@ -89,8 +89,8 @@ class AgentPlannerTest {
                 "O-PLANNER-1",
                 message,
                 TicketStatus.CREATED,
-                List.of("search_aftersale_policy", "add_ticket_note", "create_aftersale_ticket",
-                        "update_ticket_status"),
+                List.of("get_order_by_id", "get_user_orders", "search_aftersale_policy", "add_ticket_note",
+                        "create_aftersale_ticket", "update_ticket_status"),
                 "High-risk actions require human approval.",
                 Instant.parse("2026-05-14T00:00:00Z"));
     }
