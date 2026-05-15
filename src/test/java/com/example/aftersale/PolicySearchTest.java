@@ -3,7 +3,8 @@ package com.example.aftersale;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.aftersale.policy.application.PolicyApplicationService;
-import com.example.aftersale.policy.application.PolicySearchResult;
+import com.example.aftersale.policy.domain.PolicySearchResult;
+import com.example.aftersale.policy.domain.PolicySnippet;
 import com.example.aftersale.tool.application.ToolRegistry;
 import com.example.aftersale.tool.domain.ToolExecutionStatus;
 import com.example.aftersale.tool.domain.ToolInput;
@@ -39,24 +40,47 @@ class PolicySearchTest {
     }
 
     @Test
-    void searchesQualityIssuePolicy() {
-        List<PolicySearchResult> results = policyApplicationService.search("商品有质量问题，想退换货");
+    void searchesReturnPolicyKeywords() {
+        PolicySearchResult result = policyApplicationService.search("商品有质量问题，想退货");
 
-        assertThat(results).isNotEmpty();
-        assertThat(results.get(0).policyId()).isEqualTo("POL-QUALITY-RETURN-EXCHANGE");
-        assertThat(results.get(0).category()).isEqualTo("质量问题退换货规则");
-        assertThat(results.get(0).matchedText()).contains("质量问题");
-        assertThat(results.get(0).matchReason()).contains("Matched query keywords");
+        assertThat(result.hasMatches()).isTrue();
+        assertThat(result.snippets())
+                .extracting(PolicySnippet::policyId)
+                .contains("POL-QUALITY-RETURN-EXCHANGE");
+        PolicySnippet firstSnippet = result.snippets().get(0);
+        assertThat(firstSnippet.category()).isEqualTo("质量问题退换货规则");
+        assertThat(firstSnippet.snippetText()).contains("质量问题");
+        assertThat(firstSnippet.matchReason()).contains("Matched controlled keyword set");
+    }
+
+    @Test
+    void searchesExchangePolicyKeywords() {
+        PolicySearchResult result = policyApplicationService.search("衣服尺码不合适，想换货");
+
+        assertThat(result.hasMatches()).isTrue();
+        assertThat(result.snippets())
+                .extracting(PolicySnippet::policyId)
+                .contains("POL-EXCHANGE");
+    }
+
+    @Test
+    void searchesRefundPolicyKeywords() {
+        PolicySearchResult result = policyApplicationService.search("商品故障，需要退款");
+
+        assertThat(result.hasMatches()).isTrue();
+        assertThat(result.snippets())
+                .extracting(PolicySnippet::policyId)
+                .contains("POL-QUALITY-RETURN-EXCHANGE");
     }
 
     @Test
     void searchesLogisticsDisputePolicy() {
-        List<PolicySearchResult> results = policyApplicationService.search("物流显示签收但我没收到货");
+        PolicySearchResult result = policyApplicationService.search("物流显示签收但我没收到货");
 
-        assertThat(results).isNotEmpty();
-        assertThat(results.get(0).policyId()).isEqualTo("POL-LOGISTICS-NOT-RECEIVED");
-        assertThat(results.get(0).category()).isEqualTo("已签收未收到物流争议规则");
-        assertThat(results.get(0).matchedText()).contains("未收到货");
+        assertThat(result.hasMatches()).isTrue();
+        assertThat(result.snippets().get(0).policyId()).isEqualTo("POL-LOGISTICS-NOT-RECEIVED");
+        assertThat(result.snippets().get(0).category()).isEqualTo("已签收未收到物流争议规则");
+        assertThat(result.snippets().get(0).snippetText()).contains("未收到货");
     }
 
     @Test
@@ -78,6 +102,7 @@ class PolicySearchTest {
         assertThat(results).isNotEmpty();
         Map<?, ?> firstResult = (Map<?, ?>) results.get(0);
         assertThat(firstResult.get("policyId")).isEqualTo("POL-QUALITY-RETURN-EXCHANGE");
+        assertThat(firstResult.containsKey("productType")).isTrue();
         assertThat(firstResult.containsKey("matchReason")).isTrue();
         assertThat(firstResult.containsKey("matchedText")).isTrue();
     }
@@ -90,5 +115,14 @@ class PolicySearchTest {
         assertThat(output.status()).isEqualTo(ToolExecutionStatus.SUCCEEDED);
         assertThat(output.data()).containsEntry("message", "No after-sale policy matched the query.");
         assertThat((List<?>) output.data().get("results")).isEmpty();
+    }
+
+    @Test
+    void unsupportedPolicyQueryReturnsStructuredEmptyResult() {
+        PolicySearchResult result = policyApplicationService.search("会员积分和生日权益");
+
+        assertThat(result.hasMatches()).isFalse();
+        assertThat(result.snippets()).isEmpty();
+        assertThat(result.message()).isEqualTo("No after-sale policy matched the query.");
     }
 }

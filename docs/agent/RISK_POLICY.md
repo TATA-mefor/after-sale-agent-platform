@@ -74,3 +74,17 @@ Rules:
 - handlers must not directly execute real refund, exchange, coupon compensation, payment, logistics, or dispute closure;
 - handlers must return a structured result when human approval is required;
 - handler failures must be visible in AgentRun results and ToolCallTrace where tools were attempted.
+
+## V2.5 Policy Retrieval Risk Boundary
+
+`search_aftersale_policy` remains a LOW-risk read-only tool.
+
+Rules:
+
+- Specialist Handlers may call policy retrieval before low-risk action tools such as `add_ticket_note`;
+- policy retrieval must go through `ToolRegistry`;
+- policy retrieval must produce `ToolCallTrace` when executed in an AgentRun context;
+- empty policy results are allowed and must be surfaced as structured empty results;
+- empty policy results must not be converted into invented policy evidence;
+- V2.5 does not add real VectorStore, PGvector, embedding calls, network retrieval, refunds, exchanges, compensation,
+  payment mutation, or logistics mutation.

@@ -252,3 +252,31 @@ Remaining follow-up:
 - Approval APIs are still V2.6.
 - Handler behavior remains deterministic and policy/tool based; there is no real refund, exchange, coupon compensation,
   logistics, payment, database, or microservice integration.
+
+## V2.5 Quality Targets
+
+V2.5 质量目标聚焦受控政策检索工具的结构化输出、可替换边界和 handler 调用路径。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| 检索模型结构化 | 使用 `PolicySearchQuery` / `PolicySnippet` / `PolicySearchResult` | 单元测试 + 代码检查 |
+| ToolRegistry 边界 | `search_aftersale_policy` 只能通过 ToolRegistry 被 Agent/Handler 使用 | ToolRegistry 测试 + ArchUnit |
+| Handler 调用顺序 | Handler 在动作工具前执行政策检索 | Specialist handler 单元测试 |
+| 空结果安全 | 未支持 query 返回空结果和 message，不编造依据 | PolicySearchTest |
+| 可替换性 | 当前为内存关键词检索，后续可替换 VectorStore / PGvector | 架构文档 + Repository 抽象 |
+| 测试确定性 | 默认测试不依赖真实 LLM、API Key、PGvector 或网络 | `mvn test` 离线通过 |
+
+### V2.5 Current Status
+
+Status: completed for controlled in-memory policy retrieval through ToolRegistry.
+
+Completed:
+
+- Added `PolicySearchQuery`, `PolicySnippet`, and `PolicySearchResult`.
+- `PolicyRepository` now exposes controlled search.
+- `InMemoryPolicyRepository` performs local keyword retrieval.
+- `SearchAfterSalePolicyToolExecutor` registers LOW-risk `search_aftersale_policy`.
+- Tool output includes structured results and message.
+- Handler tool planning keeps policy retrieval before action tools.
+- Unsupported policy queries return structured empty results.
+- Default tests remain offline and deterministic.

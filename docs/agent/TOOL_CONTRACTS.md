@@ -80,10 +80,10 @@ Failures must include `errorCode` and `message`. High-risk tools are stopped bef
 - Requires approval: `false`
 - Input: `query`
 - Output: `results`
-- Each result contains: `policyId`, `category`, `matchedText`, `matchReason`
+- Each result contains: `policyId`, `category`, `productType`, `matchedText`, `matchReason`
 - Empty result output: `results` is empty and `message` explains that no policy matched
-- Business path: `ToolRegistry -> SearchAfterSalePolicyTool -> PolicyApplicationService`
-- Storage: V1 in-memory policy repository
+- Business path: `ToolRegistry -> SearchAfterSalePolicyToolExecutor -> PolicyApplicationService -> PolicyRepository`
+- Storage: V2.5 in-memory keyword repository, replaceable by future VectorStore / PGvector
 
 ## V2.2 Demo Tool Chain
 
@@ -124,3 +124,15 @@ V2.4 adds Specialist Agent Handlers for subtask execution. Handler introduction 
 - high-risk actions remain approval-bound and cannot be executed directly by handlers;
 - no handler may perform real refund, real exchange, coupon compensation, payment mutation, logistics mutation, or
   dispute closure in V2.4.
+
+## V2.5 Policy Retrieval Tool Boundary
+
+V2.5 keeps `search_aftersale_policy` as the only policy retrieval tool exposed to Agent execution.
+
+- handlers must retrieve policy snippets through `ToolRegistry`;
+- handlers must not call `PolicyRepository` or `InMemoryPolicyRepository` directly;
+- policy retrieval is LOW risk and read-only;
+- empty results are valid structured outputs with `results: []` and a clear `message`;
+- empty results must not be treated as invented policy evidence;
+- current retrieval is local in-memory keyword matching only;
+- no real VectorStore, PGvector, embedding service, network search, or real LLM dependency is introduced.

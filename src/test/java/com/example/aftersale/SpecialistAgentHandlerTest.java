@@ -103,6 +103,19 @@ class SpecialistAgentHandlerTest {
     }
 
     @Test
+    void handlerCallsPolicyToolBeforeActionToolEvenWhenPlanIsOutOfOrder() {
+        SubtaskExecutionContext context = contextFor(SubtaskType.RETURN, List.of(
+                new PlannedToolCall("add_ticket_note", "Record note."),
+                new PlannedToolCall("search_aftersale_policy", "Policy evidence.")));
+
+        SubtaskExecutionResult result = returnAgentHandler.handle(context);
+
+        assertThat(result.status()).isEqualTo(SubtaskStatus.SUCCEEDED);
+        assertThat(result.toolCalls()).containsExactly("get_order_by_id", "search_aftersale_policy",
+                "add_ticket_note");
+    }
+
+    @Test
     void exchangeHandlerCallsOrderPolicyAndTicketNoteToolsThroughToolRegistry() {
         SubtaskExecutionContext context = contextFor(SubtaskType.EXCHANGE, List.of(
                 new PlannedToolCall("get_order_by_id", "Order facts."),

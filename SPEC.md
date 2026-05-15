@@ -502,3 +502,29 @@ V2.4 仍然不做：
 
 V2.4 当前已完成模块化单体内的 Specialist Handler 分发，不代表已实现多 Agent 微服务、真实退款、真实换货、
 真实优惠券补偿、真实物流或真实支付。
+
+## 19. V2.5 目标：Policy Retrieval Tool
+
+V2.5 的目标是把售后政策检索收敛为受控工具能力，让 Specialist Handler 在执行工单备注、状态建议等动作前，
+先通过 `ToolRegistry` 调用 `search_aftersale_policy` 获取结构化政策片段。
+
+V2.5 已支持：
+
+- `PolicySearchQuery` 表达检索输入；
+- `PolicySnippet` 表达命中的政策片段；
+- `PolicySearchResult` 表达结构化检索结果；
+- `PolicyRepository` 暴露可替换的检索抽象；
+- `InMemoryPolicyRepository` 提供默认离线关键词检索；
+- `SearchAfterSalePolicyToolExecutor` 注册 LOW-risk `search_aftersale_policy` 工具；
+- Specialist Handler 通过 `ToolRegistry` 检索政策，并在动作工具前执行政策检索；
+- 无匹配政策时返回结构化空结果，不编造政策依据；
+- `ToolCallTrace` 继续记录政策检索调用。
+
+V2.5 仍然不做：
+
+- 真实 VectorStore；
+- PGvector；
+- 外部 embedding 服务；
+- 网络检索；
+- 真实 LLM 依赖；
+- 真实退款、换货、优惠券补偿、支付或物流动作。

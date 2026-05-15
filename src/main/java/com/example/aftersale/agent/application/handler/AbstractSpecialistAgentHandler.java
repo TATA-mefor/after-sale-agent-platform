@@ -62,7 +62,30 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
                 plannedTools.add(new PlannedToolCall(requiredToolName, handlerName() + " required tool."));
             }
         }
-        return plannedTools;
+        return orderPolicyBeforeActionTools(plannedTools);
+    }
+
+    private static List<PlannedToolCall> orderPolicyBeforeActionTools(List<PlannedToolCall> plannedTools) {
+        List<PlannedToolCall> orderedTools = new ArrayList<>();
+        appendToolIfPresent(plannedTools, orderedTools, GET_ORDER_BY_ID_TOOL);
+        appendToolIfPresent(plannedTools, orderedTools, SEARCH_POLICY_TOOL);
+        for (PlannedToolCall plannedTool : plannedTools) {
+            if (!GET_ORDER_BY_ID_TOOL.equals(plannedTool.toolName())
+                    && !SEARCH_POLICY_TOOL.equals(plannedTool.toolName())) {
+                orderedTools.add(plannedTool);
+            }
+        }
+        return orderedTools;
+    }
+
+    private static void appendToolIfPresent(
+            List<PlannedToolCall> plannedTools,
+            List<PlannedToolCall> orderedTools,
+            String toolName) {
+        plannedTools.stream()
+                .filter(plannedTool -> toolName.equals(plannedTool.toolName()))
+                .findFirst()
+                .ifPresent(orderedTools::add);
     }
 
     private SubtaskExecutionResult executeKnownTools(

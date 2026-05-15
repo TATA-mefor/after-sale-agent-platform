@@ -1,25 +1,24 @@
-package com.example.aftersale.policy.application;
+package com.example.aftersale.policy.domain;
 
-import com.example.aftersale.policy.domain.AfterSalePolicy;
 import java.util.Objects;
 
-public record PolicySearchResult(
+public record PolicySnippet(
         String policyId,
         String category,
         String productType,
-        String matchedText,
+        String snippetText,
         String matchReason) {
 
-    public PolicySearchResult {
+    public PolicySnippet {
         policyId = requireText(policyId, "policyId");
         category = requireText(category, "category");
         productType = requireText(productType, "productType");
-        matchedText = requireText(matchedText, "matchedText");
+        snippetText = requireText(snippetText, "snippetText");
         matchReason = requireText(matchReason, "matchReason");
     }
 
-    public static PolicySearchResult from(AfterSalePolicy policy, String matchReason) {
-        return new PolicySearchResult(
+    public static PolicySnippet from(AfterSalePolicy policy, String matchReason) {
+        return new PolicySnippet(
                 policy.getPolicyId(),
                 policy.getCategory(),
                 policy.getProductType(),

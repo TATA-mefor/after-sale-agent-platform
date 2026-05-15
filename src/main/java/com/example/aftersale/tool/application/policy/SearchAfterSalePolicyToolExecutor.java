@@ -1,26 +1,27 @@
 package com.example.aftersale.tool.application.policy;
 
 import com.example.aftersale.policy.application.PolicyApplicationService;
-import com.example.aftersale.policy.application.PolicySearchResult;
+import com.example.aftersale.policy.domain.PolicySearchResult;
+import com.example.aftersale.policy.domain.PolicySnippet;
 import com.example.aftersale.tool.application.ToolExecutor;
 import com.example.aftersale.tool.domain.ToolDefinition;
 import com.example.aftersale.tool.domain.ToolInput;
 import com.example.aftersale.tool.domain.ToolOutput;
 import com.example.aftersale.tool.domain.ToolRiskLevel;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SearchAfterSalePolicyTool implements ToolExecutor {
+public class SearchAfterSalePolicyToolExecutor implements ToolExecutor {
 
     private static final ToolDefinition DEFINITION = ToolDefinition.of(
             "search_aftersale_policy",
-            "Search after-sale policies by simple in-memory keyword matching.",
+            "Search after-sale policy snippets by controlled in-memory keyword retrieval.",
             "{\"query\":\"string\"}",
             "{\"results\":[{\"policyId\":\"string\",\"category\":\"string\","
-                    + "\"matchedText\":\"string\",\"matchReason\":\"string\"}]}",
+                    + "\"productType\":\"string\",\"matchedText\":\"string\",\"matchReason\":\"string\"}],"
+                    + "\"message\":\"string\"}",
             ToolRiskLevel.LOW);
 
     private final PolicyApplicationService policyApplicationService;
@@ -28,7 +29,7 @@ public class SearchAfterSalePolicyTool implements ToolExecutor {
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
             justification = "Spring constructor injection intentionally stores the application service dependency.")
-    public SearchAfterSalePolicyTool(PolicyApplicationService policyApplicationService) {
+    public SearchAfterSalePolicyToolExecutor(PolicyApplicationService policyApplicationService) {
         this.policyApplicationService = policyApplicationService;
     }
 
@@ -39,23 +40,20 @@ public class SearchAfterSalePolicyTool implements ToolExecutor {
 
     @Override
     public ToolOutput execute(ToolInput input) {
-        List<PolicySearchResult> results = policyApplicationService.search(input.requireString("query"));
-        if (results.isEmpty()) {
-            return ToolOutput.succeeded(DEFINITION.toolName(), Map.of(
-                    "results", List.of(),
-                    "message", "No after-sale policy matched the query."));
-        }
+        PolicySearchResult result = policyApplicationService.search(input.requireString("query"));
         return ToolOutput.succeeded(DEFINITION.toolName(), Map.of(
-                "results", results.stream()
-                        .map(SearchAfterSalePolicyTool::toResultMap)
-                        .toList()));
+                "results", result.snippets().stream()
+                        .map(SearchAfterSalePolicyToolExecutor::toResultMap)
+                        .toList(),
+                "message", result.message()));
     }
 
-    private static Map<String, Object> toResultMap(PolicySearchResult result) {
+    private static Map<String, Object> toResultMap(PolicySnippet snippet) {
         return Map.of(
-                "policyId", result.policyId(),
-                "category", result.category(),
-                "matchedText", result.matchedText(),
-                "matchReason", result.matchReason());
+                "policyId", snippet.policyId(),
+                "category", snippet.category(),
+                "productType", snippet.productType(),
+                "matchedText", snippet.snippetText(),
+                "matchReason", snippet.matchReason());
     }
 }

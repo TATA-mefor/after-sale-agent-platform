@@ -26,7 +26,7 @@ V2.1 LLM Planner Adapter
 V2.2 Order Query Tools
 V2.3 Multi-Intent Planning
 V2.4 Specialist Agent Handler
-V2.5 Shared Workspace / Memory
+V2.5 Policy Retrieval Tool
 V2.6 Approval APIs
 V2.7 Execution Tree
 V2.8 Evaluation Dataset
@@ -783,36 +783,40 @@ V2.4 已完成：
 
 ---
 
-## 9. V2.5：Shared Workspace / Memory
+## 9. V2.5：Policy Retrieval Tool
 
 ### 9.1 目标
 
-建立结构化工作记忆，避免将完整对话历史无限塞入 LLM。
+将售后政策检索收敛为受控 `search_aftersale_policy` 工具，使 Specialist Handler 在执行动作工具前通过
+`ToolRegistry` 获取结构化政策片段。
 
-候选模型：
+核心模型：
 
 ```text
-AgentWorkspace
-ResolvedEntity
-SubtaskContext
-OrderEvidence
-PolicyEvidence
-ToolResultMemory
+PolicySearchQuery
+PolicySnippet
+PolicySearchResult
+PolicyRepository
+InMemoryPolicyRepository
+SearchAfterSalePolicyToolExecutor
 ```
 
-### 9.2 目标
+### 9.2 已完成能力
 
-- 保存当前订单事实；
-- 保存用户诉求拆解结果；
-- 保存子任务状态；
-- 保存政策依据；
-- 保存工具结果摘要；
-- 为后续多 Agent 协作提供共享上下文。
+- `PolicySearchQuery` 表达受控检索输入；
+- `PolicySnippet` 表达政策片段；
+- `PolicySearchResult` 表达命中结果或结构化空结果；
+- `PolicyRepository` 暴露可替换检索抽象；
+- `InMemoryPolicyRepository` 使用本地关键词匹配，默认离线运行；
+- `SearchAfterSalePolicyToolExecutor` 注册 LOW-risk `search_aftersale_policy`；
+- `ToolRegistry` 可以执行政策检索并产生 ToolCallTrace；
+- Specialist Handler 会在 `add_ticket_note` 等动作工具前执行政策检索；
+- 不支持的 query 返回空 results 和清晰 message，不编造政策依据。
 
 ### 9.3 状态
 
 ```text
-PLANNED
+COMPLETED
 ```
 
 ---
@@ -966,7 +970,7 @@ V2.1.2 LLM Live Smoke Test ✅
 V2.2 Order Query Tools ✅
 V2.3 Multi-Intent Planning ✅
 V2.4 Specialist Agent Handler ✅
-V2.5 Shared Workspace / Memory
+V2.5 Policy Retrieval Tool ✅
 V2.6 Approval APIs
 V2.7 Execution Tree
 V2.8 Evaluation Dataset

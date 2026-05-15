@@ -882,3 +882,39 @@ AgentRun
 ```
 
 V2.4 阶段仍可保留 trace list，但必须能看出 handler 调用了哪些工具、工具输入输出、状态和失败原因。
+
+## 23. V2.5 Policy Retrieval Tool 架构边界
+
+V2.5 将售后政策检索明确为可替换的工具链路：
+
+```text
+SpecialistAgentHandler
+→ ToolRegistry
+→ SearchAfterSalePolicyToolExecutor
+→ PolicyApplicationService
+→ PolicyRepository
+→ InMemoryPolicyRepository
+```
+
+### 23.1 Policy Model Boundary
+
+政策检索模型包括：
+
+- `PolicySearchQuery`：受控检索输入；
+- `PolicySnippet`：命中的政策片段；
+- `PolicySearchResult`：结构化检索结果和空结果消息。
+
+`PolicyRepository` 是检索抽象，当前由 `InMemoryPolicyRepository` 通过本地关键词匹配实现。后续可以替换为
+Spring AI VectorStore、PGvector 或混合检索，但不得改变 Handler 只能通过 `ToolRegistry` 调用检索工具的边界。
+
+### 23.2 Handler Boundary
+
+Specialist Handler 不得直接访问 `PolicyRepository` 或 `InMemoryPolicyRepository`。Handler 必须调用
+`search_aftersale_policy` 工具，让 ToolRegistry 继续负责工具风险控制和 ToolCallTrace 记录。
+
+Handler 在执行动作工具前必须先获取政策检索结果。当前动作工具主要是低风险的 `add_ticket_note`，不包含真实退款、
+真实换货、真实优惠券补偿、支付变更或物流变更。
+
+### 23.3 Empty Result Boundary
+
+无匹配政策时，工具必须返回结构化空结果和清晰 message，不得编造政策片段，不得把空结果包装为成功依据。
