@@ -15,6 +15,8 @@ import com.example.aftersale.agent.application.planner.AgentSubtask;
 import com.example.aftersale.agent.application.planner.PlannedToolCall;
 import com.example.aftersale.agent.application.planner.SubtaskStatus;
 import com.example.aftersale.agent.application.planner.SubtaskType;
+import com.example.aftersale.agent.application.workspace.AgentWorkspace;
+import com.example.aftersale.agent.application.workspace.PolicyEvidence;
 import com.example.aftersale.ticket.application.TicketApplicationService;
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.Ticket;
@@ -99,6 +101,18 @@ class SpecialistAgentHandlerTest {
         assertThat(result.status()).isEqualTo(SubtaskStatus.SUCCEEDED);
         assertThat(result.toolCalls())
                 .containsExactly("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
+        assertThat(context.workspace().orderFacts())
+                .extracting(orderFact -> orderFact.orderId())
+                .contains("O202605130001");
+        assertThat(context.workspace().policyEvidence())
+                .extracting(PolicyEvidence::policyId)
+                .contains("POL-QUALITY-RETURN-EXCHANGE");
+        assertThat(context.workspace().toolResultSummaries())
+                .extracting(toolSummary -> toolSummary.toolName())
+                .containsExactly("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
+        assertThat(context.workspace().subtaskMemories())
+                .extracting(subtaskMemory -> subtaskMemory.subtaskId())
+                .contains(context.subtask().subtaskId());
         assertTraceTools(context.runId(), "get_order_by_id", "search_aftersale_policy", "add_ticket_note");
     }
 
@@ -143,7 +157,35 @@ class SpecialistAgentHandlerTest {
         assertTraceTools(context.runId(), "search_aftersale_policy", "add_ticket_note");
     }
 
+    @Test
+    void highRiskSubtaskWritesRiskFlagWithoutExecutingTools() {
+        SubtaskExecutionContext context = contextFor(
+                SubtaskType.RETURN,
+                ToolRiskLevel.HIGH,
+                List.of(new PlannedToolCall("get_order_by_id", "Order facts.")));
+
+        SubtaskExecutionResult result = returnAgentHandler.handle(context);
+
+        assertThat(result.requiresHumanApproval()).isTrue();
+        assertThat(result.status()).isEqualTo(SubtaskStatus.WAITING_APPROVAL);
+        assertThat(result.toolCalls()).isEmpty();
+        assertThat(context.workspace().riskFlags())
+                .extracting(riskFlag -> riskFlag.subtaskId())
+                .contains(context.subtask().subtaskId());
+        assertThat(context.workspace().subtaskMemories())
+                .extracting(subtaskMemory -> subtaskMemory.status())
+                .contains(SubtaskStatus.WAITING_APPROVAL);
+        assertThat(traceApplicationService.findByRunId(context.runId())).isEmpty();
+    }
+
     private SubtaskExecutionContext contextFor(SubtaskType type, List<PlannedToolCall> plannedTools) {
+        return contextFor(type, ToolRiskLevel.LOW, plannedTools);
+    }
+
+    private SubtaskExecutionContext contextFor(
+            SubtaskType type,
+            ToolRiskLevel riskLevel,
+            List<PlannedToolCall> plannedTools) {
         Ticket ticket = ticketApplicationService.createTicket(
                 "U-HANDLER-" + UUID.randomUUID(),
                 "O202605130001",
@@ -154,7 +196,7 @@ class SpecialistAgentHandlerTest {
                 "handler target",
                 "handler fragment",
                 1,
-                ToolRiskLevel.LOW,
+                riskLevel,
                 "质量问题 退货 换货 优惠券",
                 plannedTools,
                 List.of());
@@ -167,11 +209,16 @@ class SpecialistAgentHandlerTest {
                 List.of("handler evidence hint"),
                 List.of(),
                 List.of(subtask));
-        return new SubtaskExecutionContext(
+        AgentWorkspace workspace = AgentWorkspace.start(
                 "RUN-HANDLER-" + UUID.randomUUID(),
+                ticket.getTicketId(),
+                ticket.getCreatedAt());
+        return new SubtaskExecutionContext(
+                workspace.agentRunId(),
                 ticket,
                 plan,
                 subtask,
+                workspace,
                 List.of("get_order_by_id", "search_aftersale_policy", "add_ticket_note"),
                 RISK_POLICY_SUMMARY,
                 List.of());

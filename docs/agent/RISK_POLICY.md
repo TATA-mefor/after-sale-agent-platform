@@ -88,3 +88,17 @@ Rules:
 - empty policy results must not be converted into invented policy evidence;
 - V2.5 does not add real VectorStore, PGvector, embedding calls, network retrieval, refunds, exchanges, compensation,
   payment mutation, or logistics mutation.
+
+## V2.6 Agent Workspace Risk Boundary
+
+Agent Workspace is structured execution memory for one `AgentRun`, not a privileged execution actor.
+
+Rules:
+
+- workspace must not bypass ToolRegistry;
+- workspace must not directly access repositories;
+- workspace may store `RiskFlag` records for later summary or approval routing;
+- workspace must not mark high-risk business actions as completed;
+- workspace must not store API keys, sensitive credentials, full long prompts, or raw long LLM outputs;
+- workspace must not become long-term memory, user profile memory, vector memory, or cross-session memory;
+- ToolCallTrace remains the audit trail for tool calls.

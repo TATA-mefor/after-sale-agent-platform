@@ -1,5 +1,6 @@
 package com.example.aftersale.agent.application.handler;
 
+import com.example.aftersale.agent.application.workspace.AgentWorkspace;
 import com.example.aftersale.agent.application.planner.AgentPlan;
 import com.example.aftersale.agent.application.planner.AgentSubtask;
 import com.example.aftersale.ticket.domain.Ticket;
@@ -15,6 +16,7 @@ public record SubtaskExecutionContext(
         Ticket ticket,
         AgentPlan agentPlan,
         AgentSubtask subtask,
+        AgentWorkspace workspace,
         List<String> availableTools,
         String riskPolicySummary,
         List<SubtaskExecutionResult> previousResults) {
@@ -24,6 +26,7 @@ public record SubtaskExecutionContext(
         ticket = Objects.requireNonNull(ticket, "ticket must not be null");
         agentPlan = Objects.requireNonNull(agentPlan, "agentPlan must not be null");
         subtask = Objects.requireNonNull(subtask, "subtask must not be null");
+        workspace = Objects.requireNonNull(workspace, "workspace must not be null");
         availableTools = List.copyOf(Objects.requireNonNull(availableTools, "availableTools must not be null"));
         riskPolicySummary = requireText(riskPolicySummary, "riskPolicySummary");
         previousResults = List.copyOf(Objects.requireNonNull(previousResults, "previousResults must not be null"));

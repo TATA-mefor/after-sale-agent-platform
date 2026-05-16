@@ -152,4 +152,27 @@ class ArchitectureTest {
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
+
+    @Test
+    void agentWorkspaceMustNotAccessRepositoriesOrToolExecutors() {
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.workspace..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("AgentWorkspace is in-run structured memory and must not access repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.workspace..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("ToolRegistry")
+                .because("AgentWorkspace must not execute tools or replace ToolRegistry.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
 }

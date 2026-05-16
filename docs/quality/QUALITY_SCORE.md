@@ -249,7 +249,7 @@ Completed:
 Remaining follow-up:
 
 - Execution Tree is still V2.7.
-- Approval APIs are still V2.6.
+- Approval APIs are still V2.7.
 - Handler behavior remains deterministic and policy/tool based; there is no real refund, exchange, coupon compensation,
   logistics, payment, database, or microservice integration.
 
@@ -280,3 +280,44 @@ Completed:
 - Handler tool planning keeps policy retrieval before action tools.
 - Unsupported policy queries return structured empty results.
 - Default tests remain offline and deterministic.
+
+## V2.6 Quality Targets
+
+V2.6 质量目标聚焦单次 `AgentRun` 内结构化工作记忆的完整性、一致性和边界安全。当前 V2.6 已完成
+in-memory `AgentWorkspace` 基础实现，不表示已经实现长期记忆、跨会话记忆或外部持久化。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| Workspace 字段完整性 | `AgentWorkspace` 能表达订单事实、政策依据、子任务记忆、工具结果摘要和风险标记 | 模型测试 |
+| Handler 写入一致性 | Handler 执行工具后按约定写入 workspace | Handler flow 测试 |
+| Final summary 来源 | final summary 基于 workspace 汇总，而不是散落局部变量 | AgentRun flow 测试 |
+| Trace / workspace 边界 | workspace 不替代 ToolCallTrace，trace 继续完整记录工具调用 | Trace 测试 + 文档检查 |
+| ToolRegistry 边界 | workspace 不绕过 ToolRegistry、不直接访问 Repository | ArchUnit + 单元测试 |
+| 敏感信息控制 | workspace 不保存 API Key、敏感凭证、完整长 prompt 或 LLM 原始长文本 | 单元测试 + 代码检查 |
+| 默认测试确定性 | 默认测试不依赖真实 LLM、API Key、Redis、MySQL、向量库或网络 | `mvn test` 离线通过 |
+
+### V2.6 Current Status
+
+Status: completed for single-`AgentRun` in-memory structured workspace.
+
+Completed:
+
+- Added `AgentWorkspace`, `OrderFact`, `PolicyEvidence`, `SubtaskMemory`, `ToolResultSummary`, and `RiskFlag`.
+- `AgentApplicationService` creates workspace when an `AgentRun` starts.
+- `SubtaskExecutionContext` carries workspace to Specialist Handlers.
+- Single-intent direct tool execution writes order facts, policy evidence, and tool result summaries.
+- Multi-intent handler execution writes order facts, policy evidence, tool result summaries, subtask memories, and risk
+  flags.
+- Final summary is assembled from workspace content.
+- ToolCallTrace remains the audit record for tool calls.
+- Default tests remain offline and deterministic.
+
+### V2.6 不接受的退化
+
+- workspace 替代 ToolCallTrace；
+- workspace 绕过 ToolRegistry；
+- workspace 直接访问 Repository；
+- workspace 保存 API Key、敏感凭证、完整长 prompt 或 LLM 原始长文本；
+- workspace 演变为长期用户画像或跨会话记忆；
+- 默认测试需要真实 LLM、Redis、MySQL、PGvector 或外部网络；
+- README 或 Harness 文档把 V2.6 写成已实现能力。

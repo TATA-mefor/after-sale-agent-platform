@@ -470,7 +470,19 @@ V2.4 已引入 Specialist Agent Handler，但 LLM / Planner 契约不改变：
 - ToolCallTrace 继续记录 handler 内部工具调用；
 - LLM / Planner 不得声明真实退款、真实换货、真实优惠券补偿、支付变更、物流变更或争议关闭已经完成。
 
-## 13. 配置建议
+## 13. V2.6 Agent Workspace Planner 边界
+
+V2.6 计划引入 Agent Workspace / Structured Memory，但 LLM / Planner 契约不改变：
+
+- LLM / Planner 仍然只生成结构化 `AgentPlan` 和 `subtasks`；
+- LLM / Planner 不直接读写 workspace；
+- Java 后端负责创建 workspace、传递给 handler、汇总 final summary；
+- workspace 不能成为把完整上下文塞入 prompt 的替代借口；
+- workspace 不得保存 API Key、敏感凭证、完整长 prompt 或 LLM 原始长文本；
+- workspace 不得替代 ToolCallTrace；
+- workspace 不得绕过 ToolRegistry。
+
+## 14. 配置建议
 
 推荐配置：
 
@@ -496,7 +508,7 @@ agent:
 
 默认模式必须是 `rule`，以保证本地启动和 `mvn test` 不依赖真实 LLM、API Key 或外部网络。
 
-## 14. 成功标准
+## 15. 成功标准
 
 V2.1 成功的标志：
 

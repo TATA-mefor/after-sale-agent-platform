@@ -136,3 +136,15 @@ V2.5 keeps `search_aftersale_policy` as the only policy retrieval tool exposed t
 - empty results must not be treated as invented policy evidence;
 - current retrieval is local in-memory keyword matching only;
 - no real VectorStore, PGvector, embedding service, network search, or real LLM dependency is introduced.
+
+## V2.6 Agent Workspace Tool Boundary
+
+V2.6 Agent Workspace / Structured Memory does not change the tool contract.
+
+- tools still execute only through `ToolRegistry`;
+- ToolRegistry still owns tool lookup, execution, risk checks, and ToolCallTrace recording;
+- workspace may store `ToolResultSummary` records derived from tool outputs;
+- workspace must not execute tools directly;
+- workspace must not invent tool names or bypass registered `ToolDefinition`s;
+- workspace must not replace ToolCallTrace;
+- workspace must not store API keys, sensitive credentials, full long prompts, or raw long LLM outputs.

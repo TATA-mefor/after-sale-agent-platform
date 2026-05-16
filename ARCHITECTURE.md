@@ -918,3 +918,88 @@ Handler 在执行动作工具前必须先获取政策检索结果。当前动作
 ### 23.3 Empty Result Boundary
 
 无匹配政策时，工具必须返回结构化空结果和清晰 message，不得编造政策片段，不得把空结果包装为成功依据。
+
+## 24. V2.6 Agent Workspace / Structured Memory 架构边界
+
+V2.6 计划引入单次 `AgentRun` 内的结构化工作记忆：
+
+```text
+AgentRun
+→ AgentWorkspace
+→ SpecialistAgentHandler
+→ ToolRegistry
+→ ToolCallTrace
+→ AgentWorkspace
+→ final summary
+```
+
+### 24.1 Ownership Boundary
+
+`AgentWorkspace` 属于 `agent/application` 或 `agent/domain` 边界。它是 Agent 执行上下文模型，不属于
+`tool`、`trace`、`order`、`ticket` 或 `policy` 模块。
+
+候选结构：
+
+```text
+AgentWorkspace
+├── OrderFact
+├── PolicyEvidence
+├── SubtaskMemory
+├── ToolResultSummary
+└── RiskFlag
+```
+
+### 24.2 Handler Boundary
+
+Specialist Handler 可以读取和写入 workspace：
+
+- 读取前序 `OrderFact`；
+- 读取前序 `PolicyEvidence`；
+- 读取前序 `SubtaskMemory`；
+- 写入本次工具调用后的 `ToolResultSummary`；
+- 写入本次子任务结果；
+- 写入风险标记。
+
+Handler 仍不得直接访问 Repository、不得直接调用 LLM、不得绕过 ToolRegistry、不得直接修改 Ticket / Order /
+AgentRun / ToolCallTrace。
+
+### 24.3 ToolRegistry Boundary
+
+ToolRegistry 仍然只负责：
+
+- 注册工具定义；
+- 执行工具；
+- 应用工具风险边界；
+- 触发 ToolCallTrace 记录。
+
+ToolRegistry 不负责存储全局上下文，不负责持有 `AgentWorkspace`，也不负责生成 final summary。
+
+### 24.4 ToolCallTrace Boundary
+
+ToolCallTrace 是审计记录，不是主要工作记忆。
+
+允许：
+
+- workspace 中保存 `traceId` 或工具结果摘要；
+- ToolCallTrace 继续保存完整工具输入、输出、状态、错误和延迟。
+
+禁止：
+
+- 用 workspace 替代 ToolCallTrace；
+- 依赖 ToolCallTrace 作为 handler 间的主上下文传递机制；
+- 为了 workspace 简化或删除 trace 记录。
+
+### 24.5 Safety Boundary
+
+Workspace 不得：
+
+- 绕过 ToolRegistry 调用工具；
+- 直接访问 Repository；
+- 保存 API Key；
+- 保存敏感凭证；
+- 保存完整长 prompt；
+- 保存 LLM 原始长文本；
+- 保存长期用户画像；
+- 保存跨会话记忆。
+
+Workspace 可以作为后续 Execution Tree、Evaluation Dataset 和 Approval APIs 的上下文来源，但 V2.6 不直接实现这些能力。

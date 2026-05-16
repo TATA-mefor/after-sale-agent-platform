@@ -102,6 +102,7 @@ class AgentRunFlowTest {
                 .andExpect(jsonPath("$.data.intent").value("RETURN_AND_REFUND"))
                 .andExpect(jsonPath("$.data.plan", containsString("search_aftersale_policy")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("RETURN_AND_REFUND")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("Workspace summary")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("Order O-7001")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("POL-QUALITY-RETURN-EXCHANGE")))
                 .andExpect(jsonPath("$.data.evidence[*]", hasItem(containsString("Order O-7001"))))
@@ -111,6 +112,10 @@ class AgentRunFlowTest {
                 .andReturn();
 
         String runId = JsonPath.read(result.getResponse().getContentAsString(), "$.data.runId");
+        String planJson = JsonPath.read(result.getResponse().getContentAsString(), "$.data.plan");
+        assertThat((List<?>) JsonPath.read(planJson, "$.workspace.orderFacts")).hasSize(1);
+        assertThat((List<?>) JsonPath.read(planJson, "$.workspace.policyEvidence")).isNotEmpty();
+        assertThat((List<?>) JsonPath.read(planJson, "$.workspace.toolResultSummaries")).hasSize(3);
         assertThat(traceApplicationService.findByRunId(runId))
                 .extracting(ToolCallTrace::getToolName)
                 .contains("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
@@ -130,12 +135,17 @@ class AgentRunFlowTest {
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("RETURN")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("EXCHANGE")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("COUPON_CONSULTATION")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("Workspace summary")))
                 .andExpect(jsonPath("$.data.plan", containsString("completedSubtasks")))
                 .andExpect(jsonPath("$.data.toolCalls", hasItems("get_order_by_id", "search_aftersale_policy",
                         "add_ticket_note")))
                 .andReturn();
 
         String runId = JsonPath.read(result.getResponse().getContentAsString(), "$.data.runId");
+        String planJson = JsonPath.read(result.getResponse().getContentAsString(), "$.data.plan");
+        assertThat((List<?>) JsonPath.read(planJson, "$.workspace.subtaskMemories")).hasSize(3);
+        assertThat((List<?>) JsonPath.read(planJson, "$.workspace.orderFacts")).hasSize(3);
+        assertThat((List<?>) JsonPath.read(planJson, "$.workspace.policyEvidence")).isNotEmpty();
         List<ToolCallTrace> traces = traceApplicationService.findByRunId(runId);
         assertThat(traces).hasSize(9);
         assertThat(traces)

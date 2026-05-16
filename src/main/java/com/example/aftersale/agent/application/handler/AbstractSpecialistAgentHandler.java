@@ -2,6 +2,12 @@ package com.example.aftersale.agent.application.handler;
 
 import com.example.aftersale.agent.application.planner.AgentSubtask;
 import com.example.aftersale.agent.application.planner.PlannedToolCall;
+import com.example.aftersale.agent.application.planner.SubtaskStatus;
+import com.example.aftersale.agent.application.workspace.OrderFact;
+import com.example.aftersale.agent.application.workspace.PolicyEvidence;
+import com.example.aftersale.agent.application.workspace.RiskFlag;
+import com.example.aftersale.agent.application.workspace.SubtaskMemory;
+import com.example.aftersale.agent.application.workspace.ToolResultSummary;
 import com.example.aftersale.tool.application.ToolRegistry;
 import com.example.aftersale.tool.application.ToolTraceContext;
 import com.example.aftersale.tool.domain.ToolExecutionStatus;
@@ -9,6 +15,7 @@ import com.example.aftersale.tool.domain.ToolInput;
 import com.example.aftersale.tool.domain.ToolOutput;
 import com.example.aftersale.tool.domain.ToolRiskLevel;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,11 +46,23 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
                     handlerName() + " does not support " + context.subtask().type());
         }
         if (context.subtask().riskLevel() == ToolRiskLevel.HIGH) {
+            String summary = "Subtask " + context.subtask().subtaskId() + " " + context.subtask().type().name()
+                    + " requires human approval before specialist execution.";
+            context.workspace().addRiskFlag(new RiskFlag(
+                    context.subtask().subtaskId(),
+                    context.subtask().riskLevel(),
+                    summary));
+            context.workspace().addSubtaskMemory(new SubtaskMemory(
+                    context.subtask().subtaskId(),
+                    context.subtask().type(),
+                    context.subtask().target(),
+                    SubtaskStatus.WAITING_APPROVAL,
+                    summary,
+                    List.of()));
             return SubtaskExecutionResult.requiresApproval(
                     context.subtask().subtaskId(),
                     context.subtask().type(),
-                    "Subtask " + context.subtask().subtaskId() + " " + context.subtask().type().name()
-                            + " requires human approval before specialist execution.");
+                    summary);
         }
         return executeKnownTools(context, toolPlan(context));
     }
@@ -97,21 +116,37 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
             try {
                 executePlannedTool(context, plannedTool, evidence, toolCalls);
             } catch (RuntimeException exception) {
+                String summary = failureSummary(context.subtask(), exception);
+                context.workspace().addSubtaskMemory(new SubtaskMemory(
+                        context.subtask().subtaskId(),
+                        context.subtask().type(),
+                        context.subtask().target(),
+                        SubtaskStatus.FAILED,
+                        summary,
+                        toolCalls));
                 return new SubtaskExecutionResult(
                         context.subtask().subtaskId(),
                         context.subtask().type(),
-                        com.example.aftersale.agent.application.planner.SubtaskStatus.FAILED,
-                        failureSummary(context.subtask(), exception),
+                        SubtaskStatus.FAILED,
+                        summary,
                         evidence,
                         toolCalls,
                         failureMessage(exception),
                         false);
             }
         }
+        String summary = successSummary(context.subtask(), evidence);
+        context.workspace().addSubtaskMemory(new SubtaskMemory(
+                context.subtask().subtaskId(),
+                context.subtask().type(),
+                context.subtask().target(),
+                SubtaskStatus.SUCCEEDED,
+                summary,
+                toolCalls));
         return SubtaskExecutionResult.succeeded(
                 context.subtask().subtaskId(),
                 context.subtask().type(),
-                successSummary(context.subtask(), evidence),
+                summary,
                 evidence,
                 toolCalls);
     }
@@ -137,7 +172,15 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
         ToolOutput orderOutput = executeTool(context.runId(), GET_ORDER_BY_ID_TOOL, tracedInput(Map.of(
                 "orderId", context.ticket().getOrderId()), context.subtask()));
         toolCalls.add(GET_ORDER_BY_ID_TOOL);
+        context.workspace().addToolResultSummary(ToolResultSummary.fromToolOutput(
+                context.subtask().subtaskId(),
+                orderOutput,
+                Instant.now()));
         ensureToolSucceeded(orderOutput);
+        context.workspace().addOrderFact(OrderFact.fromToolData(
+                GET_ORDER_BY_ID_TOOL,
+                context.subtask().subtaskId(),
+                orderOutput.data()));
         evidence.add(evidencePrefix(context.subtask()) + orderEvidence(orderOutput));
     }
 
@@ -148,7 +191,15 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
         ToolOutput policyOutput = executeTool(context.runId(), SEARCH_POLICY_TOOL, tracedInput(Map.of(
                 "query", context.subtask().policyQuery()), context.subtask()));
         toolCalls.add(SEARCH_POLICY_TOOL);
+        context.workspace().addToolResultSummary(ToolResultSummary.fromToolOutput(
+                context.subtask().subtaskId(),
+                policyOutput,
+                Instant.now()));
         ensureToolSucceeded(policyOutput);
+        context.workspace().addPolicyEvidence(PolicyEvidence.fromToolData(
+                SEARCH_POLICY_TOOL,
+                context.subtask().subtaskId(),
+                policyOutput.data()));
         evidence.addAll(extractEvidence(policyOutput).stream()
                 .map(item -> evidencePrefix(context.subtask()) + item)
                 .toList());
@@ -162,6 +213,10 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
                 "ticketId", context.ticket().getTicketId(),
                 "note", buildSubtaskNote(context, evidence)), context.subtask()));
         toolCalls.add(ADD_TICKET_NOTE_TOOL);
+        context.workspace().addToolResultSummary(ToolResultSummary.fromToolOutput(
+                context.subtask().subtaskId(),
+                noteOutput,
+                Instant.now()));
         ensureToolSucceeded(noteOutput);
     }
 

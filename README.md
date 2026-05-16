@@ -331,7 +331,7 @@ business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
 
 ### V2 后续方向
 
-- Specialist Agent Handler；
+- Agent Workspace / Structured Memory；
 - Execution Tree；
 - MySQL Persistence；
 - Approval APIs；
@@ -419,6 +419,56 @@ through `ToolRegistry`, so `ToolCallTrace` continues to record handler-triggered
 V2.4 remains a modular-monolith strategy-class design. It does not add multi-Agent microservices, queues, parallel
 execution, voting consensus, real refunds, real exchanges, real coupon compensation, real logistics, real payment
 integration, or a real LLM dependency in default tests.
+
+### V2.5 Policy Retrieval Tool
+
+V2.5 completes controlled policy retrieval for handler execution. The public tool remains:
+
+```text
+search_aftersale_policy
+```
+
+Implemented boundary:
+
+```text
+SpecialistAgentHandler
+→ ToolRegistry
+→ SearchAfterSalePolicyToolExecutor
+→ PolicyApplicationService
+→ PolicyRepository
+→ InMemoryPolicyRepository
+```
+
+The retrieval result is structured as policy snippets and empty matches return `results: []` with a clear message.
+V2.5 does not add VectorStore, PGvector, embeddings, network search, real LLM dependency, real refunds, real exchanges,
+coupon compensation, payment changes, logistics changes, or a real database.
+
+### V2.6 Roadmap: Agent Workspace / Structured Memory
+
+The next planned stage is Agent Workspace / Structured Memory. It is not implemented yet.
+
+Target flow:
+
+```text
+AgentRun creates AgentWorkspace
+→ SpecialistAgentHandler reads workspace context
+→ Handler executes tools through ToolRegistry
+→ Handler writes order facts, policy evidence, tool summaries, subtask memory, and risk flags
+→ final summary is assembled from workspace
+```
+
+Candidate models:
+
+- `AgentWorkspace`
+- `OrderFact`
+- `PolicyEvidence`
+- `SubtaskMemory`
+- `ToolResultSummary`
+- `RiskFlag`
+
+V2.6 is scoped to one `AgentRun`. It is not long-term memory, user profiling, vector memory, cross-session memory,
+Redis, MySQL, or a vector database. Workspace must not store API keys, sensitive credentials, full long prompts, or raw
+long LLM outputs, and it must not replace `ToolCallTrace` or bypass `ToolRegistry`.
 
 ### 真实 LLM 本地运行说明
 

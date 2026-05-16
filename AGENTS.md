@@ -300,3 +300,29 @@ V2.4 任务必须遵守：
 8. LLM / Planner 只负责生成结构化 subtasks，不直接执行 Handler；
 9. ToolCallTrace 必须继续记录 Handler 内部工具调用；
 10. 默认测试必须可离线运行。
+
+## 17. V2.6 Agent Workspace / Structured Memory 任务规则
+
+涉及 AgentWorkspace、Structured Memory、OrderFact、PolicyEvidence、SubtaskMemory、ToolResultSummary 或 RiskFlag 的任务，
+必须额外阅读：
+
+```text
+docs/decisions/DECISION_AGENT_WORKSPACE_MEMORY.md
+EXEC_PLAN_V2.md
+ARCHITECTURE.md
+docs/agent/TOOL_CONTRACTS.md
+docs/agent/RISK_POLICY.md
+```
+
+V2.6 任务必须遵守：
+
+1. Workspace 只表示单次 AgentRun 内部的结构化工作记忆；
+2. Workspace 不得替代 ToolCallTrace；
+3. Workspace 不得绕过 ToolRegistry；
+4. Workspace 不得直接访问 Repository；
+5. Workspace 不得保存 API Key、敏感凭证、完整长 prompt 或 LLM 原始长文本；
+6. Workspace 不得实现长期用户画像；
+7. Workspace 不得实现跨会话记忆；
+8. Workspace 不得实现向量记忆；
+9. 默认测试不得依赖真实 LLM、API Key、Redis、MySQL、向量库或外部网络；
+10. final summary 可以基于 workspace 汇总，但工具调用审计仍必须来自 ToolCallTrace。

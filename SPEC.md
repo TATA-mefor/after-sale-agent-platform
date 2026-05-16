@@ -528,3 +528,38 @@ V2.5 仍然不做：
 - 网络检索；
 - 真实 LLM 依赖；
 - 真实退款、换货、优惠券补偿、支付或物流动作。
+
+## 20. V2.6 目标：Agent Workspace / Structured Memory
+
+V2.6 的目标是在单次 `AgentRun` 内维护结构化工作记忆，用于汇总当前执行过程中的订单事实、政策依据、
+子任务结果、工具结果摘要和风险标记。
+
+当前订单依据、政策依据、子任务结果和工具结果主要分散在 `AgentPlan`、`ToolCallTrace`、Ticket note、
+subtask metadata 和 final summary 中。V2.6 计划引入 `AgentWorkspace`，作为当前 `AgentRun` 的结构化工作区。
+
+V2.6 计划支持：
+
+- `AgentRun` 创建时创建 workspace；
+- workspace 保存 `OrderFact`；
+- workspace 保存 `PolicyEvidence`；
+- workspace 保存 `SubtaskMemory`；
+- workspace 保存 `ToolResultSummary`；
+- workspace 保存 `RiskFlag`；
+- Specialist Handler 读取 workspace 中的上下文；
+- Specialist Handler 执行工具后写入 workspace；
+- final summary 基于 workspace 汇总；
+- ToolCallTrace 继续作为完整审计记录。
+
+V2.6 不做：
+
+- 长期记忆；
+- 跨会话记忆；
+- 用户画像；
+- 向量记忆；
+- Redis / MySQL 持久化；
+- 向量库或 PGvector；
+- 把 API Key、敏感凭证、完整长 prompt 或 LLM 原始长文本写入 workspace；
+- 用 workspace 替代 ToolCallTrace；
+- 让 workspace 绕过 ToolRegistry 或直接访问 Repository。
+
+V2.6 当前是下一阶段 Harness 目标，不代表功能已经完成。

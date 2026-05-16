@@ -27,10 +27,11 @@ V2.2 Order Query Tools
 V2.3 Multi-Intent Planning
 V2.4 Specialist Agent Handler
 V2.5 Policy Retrieval Tool
-V2.6 Approval APIs
-V2.7 Execution Tree
-V2.8 Evaluation Dataset
-V2.9 Robustness
+V2.6 Agent Workspace / Structured Memory
+V2.7 Approval APIs
+V2.8 Execution Tree
+V2.9 Evaluation Dataset
+V2.10 Robustness
 ```
 
 MySQL、Docker Compose、完整可观测性和部署能力暂时下沉到 V3。
@@ -821,9 +822,239 @@ COMPLETED
 
 ---
 
-## 10. V2.6：Approval APIs
+## 10. V2.6：Agent Workspace / Structured Memory
 
 ### 10.1 目标
+
+建立单次 `AgentRun` 内的结构化工作记忆，用于统一承载订单事实、政策依据、子任务结果、工具结果摘要和风险标记。
+
+当前执行信息分散在 `AgentPlan`、`ToolCallTrace`、Ticket note、subtask metadata 和 final summary 中。V2.6 已引入
+`AgentWorkspace`，让 handler 可以读取前序上下文、写入结构化结果，并让 final summary 基于 workspace 汇总。
+
+V2.6 不改变 ToolRegistry 和 ToolCallTrace 的边界：
+
+- ToolRegistry 仍然是唯一工具执行入口；
+- ToolCallTrace 仍然是审计记录；
+- AgentWorkspace 是当前 `AgentRun` 内的结构化工作记忆。
+
+### 10.2 范围
+
+V2.6 已完成：
+
+- 定义单次 `AgentRun` 内的 `AgentWorkspace`；
+- 定义订单事实、政策依据、子任务记忆、工具结果摘要和风险标记模型；
+- `AgentRun` 创建时初始化 workspace；
+- handler 从 workspace 读取上下文；
+- handler 执行工具后写入 workspace；
+- final summary 基于 workspace 汇总；
+- workspace 和 trace 保持边界清晰；
+- 默认测试保持离线、确定性。
+
+### 10.3 不做
+
+V2.6 不做：
+
+- 不做长期记忆；
+- 不做跨会话记忆；
+- 不做用户画像；
+- 不做向量记忆；
+- 不接 Redis；
+- 不接 MySQL；
+- 不接向量库或 PGvector；
+- 不保存 API Key、敏感凭证、完整长 prompt 或 LLM 原始长文本；
+- 不让 workspace 替代 ToolCallTrace；
+- 不让 workspace 绕过 ToolRegistry；
+- 不让 workspace 直接访问 Repository。
+
+### 10.4 核心模型
+
+候选模型：
+
+```text
+AgentWorkspace
+OrderFact
+PolicyEvidence
+SubtaskMemory
+ToolResultSummary
+RiskFlag
+```
+
+#### 10.4.1 AgentWorkspace
+
+单次 `AgentRun` 的结构化工作区。
+
+建议字段：
+
+```text
+runId
+ticketId
+orderFacts
+policyEvidence
+subtaskMemories
+toolResultSummaries
+riskFlags
+createdAt
+updatedAt
+```
+
+#### 10.4.2 OrderFact
+
+来自 `get_order_by_id` / `get_user_orders` 的订单事实摘要。
+
+建议字段：
+
+```text
+orderId
+productName
+orderStatus
+paidAmount
+deliveredAt
+aftersaleDeadline
+whetherInAftersaleWindow
+sourceToolName
+```
+
+#### 10.4.3 PolicyEvidence
+
+来自 `search_aftersale_policy` 的政策依据。
+
+建议字段：
+
+```text
+policyId
+category
+productType
+matchedText
+matchReason
+query
+sourceToolName
+```
+
+#### 10.4.4 SubtaskMemory
+
+单个 `AgentSubtask` 的执行记忆。
+
+建议字段：
+
+```text
+subtaskId
+type
+target
+status
+summary
+evidenceRefs
+toolResultRefs
+riskFlagRefs
+```
+
+#### 10.4.5 ToolResultSummary
+
+工具调用结果摘要，不替代完整 ToolCallTrace。
+
+建议字段：
+
+```text
+toolName
+status
+summary
+traceId optional
+subtaskId optional
+requiresHumanApproval
+```
+
+#### 10.4.6 RiskFlag
+
+执行过程中发现的风险标记。
+
+建议字段：
+
+```text
+riskLevel
+reason
+source
+subtaskId optional
+requiresHumanApproval
+```
+
+### 10.5 工作流
+
+```text
+AgentRun 创建 workspace
+→ AgentApplicationService 将 workspace 放入执行上下文
+→ Handler 从 workspace 读取订单事实、政策依据、前序子任务结果和风险标记
+→ Handler 通过 ToolRegistry 执行工具
+→ Handler 将工具结果摘要、政策依据、订单事实、子任务结果和风险标记写入 workspace
+→ ToolRegistry / ToolCallTrace 继续记录完整工具调用审计
+→ final summary 基于 workspace 汇总
+```
+
+### 10.6 验收标准
+
+V2.6 完成时必须满足：
+
+1. 存在 `AgentWorkspace` 结构；
+2. 存在 `OrderFact`、`PolicyEvidence`、`SubtaskMemory`、`ToolResultSummary`、`RiskFlag`；
+3. `AgentRun` 创建时初始化 workspace；
+4. Handler 可读取 workspace；
+5. Handler 执行工具后写入 workspace；
+6. final summary 基于 workspace 汇总；
+7. ToolCallTrace 继续记录完整工具调用；
+8. workspace 不替代 ToolCallTrace；
+9. workspace 不绕过 ToolRegistry；
+10. workspace 不直接访问 Repository；
+11. workspace 不保存 API Key、敏感凭证、完整长 prompt 或 LLM 原始长文本；
+12. 默认测试不依赖真实 LLM、API Key、Redis、MySQL、向量库或网络。
+
+### 10.7 测试要求
+
+至少补充：
+
+1. AgentRun 创建时创建 workspace；
+2. order tool 结果写入 `OrderFact`；
+3. policy tool 结果写入 `PolicyEvidence`；
+4. handler 执行完成后写入 `SubtaskMemory`；
+5. 工具成功、失败、审批要求写入 `ToolResultSummary`；
+6. HIGH risk 或人工确认场景写入 `RiskFlag`；
+7. final summary 使用 workspace 内容；
+8. ToolCallTrace 仍然产生且不被 workspace 替代；
+9. workspace 不包含 API Key、敏感凭证、完整长 prompt；
+10. 默认测试离线运行。
+
+### 10.8 验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+### 10.9 状态
+
+```text
+COMPLETED
+```
+
+V2.6 已完成：
+
+- 新增 `AgentWorkspace`、`OrderFact`、`PolicyEvidence`、`SubtaskMemory`、`ToolResultSummary` 和 `RiskFlag`；
+- `AgentRun` 开始时创建单次运行内的 in-memory workspace；
+- `SubtaskExecutionContext` 携带 workspace 给 Specialist Handler；
+- 单意图直接执行路径和多意图 handler 路径都会写入 workspace；
+- `get_order_by_id` 结果写入 `OrderFact`；
+- `search_aftersale_policy` 结果写入 `PolicyEvidence`；
+- `add_ticket_note` 等工具执行结果写入 `ToolResultSummary`；
+- 多子任务执行结果写入 `SubtaskMemory`；
+- 高风险子任务写入 `RiskFlag` 并等待人工确认；
+- final summary 基于 workspace 汇总订单事实、政策依据和子任务记忆；
+- ToolRegistry 仍然是唯一工具执行入口；
+- ToolCallTrace 仍然是审计记录，未被 workspace 替代。
+
+---
+
+## 11. V2.7：Approval APIs
+
+### 11.1 目标
 
 把高风险人工确认边界落成 API。
 
@@ -835,7 +1066,7 @@ POST /api/approval-requests/{id}/approve
 POST /api/approval-requests/{id}/reject
 ```
 
-### 10.2 触发场景
+### 11.2 触发场景
 
 - `riskLevel = HIGH`；
 - LLM plan validation failed；
@@ -843,7 +1074,7 @@ POST /api/approval-requests/{id}/reject
 - 用户问题涉及投诉、争议、强烈不满；
 - 计划中包含退款、补偿、关闭争议等高风险动作。
 
-### 10.3 状态
+### 11.3 状态
 
 ```text
 PLANNED
@@ -851,9 +1082,9 @@ PLANNED
 
 ---
 
-## 11. V2.7：Execution Tree
+## 12. V2.8：Execution Tree
 
-### 11.1 目标
+### 12.1 目标
 
 将 trace 从线性工具调用列表升级为可解释的执行树。
 
@@ -878,7 +1109,7 @@ AgentRun
     └── ToolCall: search_aftersale_policy
 ```
 
-### 11.2 状态
+### 12.2 状态
 
 ```text
 PLANNED
@@ -886,9 +1117,9 @@ PLANNED
 
 ---
 
-## 12. V2.8：Evaluation Dataset
+## 13. V2.9：Evaluation Dataset
 
-### 12.1 目标
+### 13.1 目标
 
 建立最小 Agent 评测集。
 
@@ -903,14 +1134,14 @@ Risk Classification Accuracy
 Plan Validity Rate
 ```
 
-### 12.2 候选文件
+### 13.2 候选文件
 
 ```text
 docs/evaluation/aftersale_cases.jsonl
 docs/evaluation/EVALUATION.md
 ```
 
-### 12.3 状态
+### 13.3 状态
 
 ```text
 PLANNED
@@ -918,9 +1149,9 @@ PLANNED
 
 ---
 
-## 13. V2.9：Robustness
+## 14. V2.10：Robustness
 
-### 13.1 目标
+### 14.1 目标
 
 补充基础容错能力。
 
@@ -935,7 +1166,7 @@ Fallback to human
 Fallback to RuleBasedPlanner
 ```
 
-### 13.2 状态
+### 14.2 状态
 
 ```text
 PLANNED
@@ -943,7 +1174,7 @@ PLANNED
 
 ---
 
-## 14. V3 候选方向
+## 15. V3 候选方向
 
 V3 再考虑：
 
@@ -961,7 +1192,7 @@ V3 不在当前 V2.3 范围内。
 
 ---
 
-## 15. V2 当前完成度
+## 16. V2 当前完成度
 
 ```text
 V2.1 LLM Planner Adapter ✅
@@ -971,8 +1202,9 @@ V2.2 Order Query Tools ✅
 V2.3 Multi-Intent Planning ✅
 V2.4 Specialist Agent Handler ✅
 V2.5 Policy Retrieval Tool ✅
-V2.6 Approval APIs
-V2.7 Execution Tree
-V2.8 Evaluation Dataset
-V2.9 Robustness
+V2.6 Agent Workspace / Structured Memory ✅
+V2.7 Approval APIs
+V2.8 Execution Tree
+V2.9 Evaluation Dataset
+V2.10 Robustness
 ```

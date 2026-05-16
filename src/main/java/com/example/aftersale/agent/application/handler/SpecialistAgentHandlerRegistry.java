@@ -1,6 +1,8 @@
 package com.example.aftersale.agent.application.handler;
 
+import com.example.aftersale.agent.application.planner.SubtaskStatus;
 import com.example.aftersale.agent.application.planner.SubtaskType;
+import com.example.aftersale.agent.application.workspace.SubtaskMemory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.EnumMap;
 import java.util.List;
@@ -28,10 +30,7 @@ public class SpecialistAgentHandlerRegistry {
     public SubtaskExecutionResult handle(SubtaskExecutionContext context) {
         return findHandler(context.subtask().type())
                 .map(handler -> handler.handle(context))
-                .orElseGet(() -> SubtaskExecutionResult.failed(
-                        context.subtask().subtaskId(),
-                        context.subtask().type(),
-                        "No specialist handler registered for subtask type: " + context.subtask().type().name()));
+                .orElseGet(() -> unsupportedSubtask(context));
     }
 
     public Set<SubtaskType> supportedTypes() {
@@ -49,5 +48,21 @@ public class SpecialistAgentHandlerRegistry {
             }
         }
         return indexedHandlers;
+    }
+
+    private static SubtaskExecutionResult unsupportedSubtask(SubtaskExecutionContext context) {
+        String errorMessage = "No specialist handler registered for subtask type: "
+                + context.subtask().type().name();
+        context.workspace().addSubtaskMemory(new SubtaskMemory(
+                context.subtask().subtaskId(),
+                context.subtask().type(),
+                context.subtask().target(),
+                SubtaskStatus.FAILED,
+                errorMessage,
+                List.of()));
+        return SubtaskExecutionResult.failed(
+                context.subtask().subtaskId(),
+                context.subtask().type(),
+                errorMessage);
     }
 }
