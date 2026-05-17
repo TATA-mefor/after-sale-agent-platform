@@ -154,8 +154,7 @@ V3.1 未做：
 
 ## 4. V3.2 Docker Compose
 
-Status: completed for local app + mysql Docker Compose startup. Structured logging and final review remain planned in
-later V3 stages.
+Status: completed for local app + mysql Docker Compose startup. Final review remains planned in later V3 stages.
 
 ### 4.1 目标
 
@@ -247,6 +246,8 @@ V3.2 未做：
 
 ## 5. V3.3 Structured Logging / Observability
 
+Status: completed for requestId propagation, MDC-backed structured log fields, and key-path observability.
+
 ### 5.1 目标
 
 让关键请求、AgentRun、子任务、工具调用和审批请求具备可检索的结构化日志字段，并保留基础 health check。
@@ -308,6 +309,28 @@ mvn spotbugs:check
 mvn test -Dtest=ArchitectureTest
 ```
 
+### 5.7 完成记录
+
+V3.3 已完成：
+
+- 新增 `X-Request-Id` 请求头支持，请求未提供时自动生成，请求提供时原样透传；
+- 响应头始终返回 `X-Request-Id`；
+- 使用 MDC 保存请求级 `requestId`，并在请求结束后清理；
+- 日志 pattern 增加 `requestId`、`ticketId`、`agentRunId`、`subtaskId`、`toolName` 和
+  `approvalRequestId`；
+- 在创建 Ticket、触发 AgentRun、执行 Specialist Handler、调用 ToolRegistry、创建 ApprovalRequest、
+  approve / reject 和查询 execution tree 的关键路径增加结构化日志；
+- 业务 ID 使用短生命周期 MDC scope，避免线程复用或后续步骤污染；
+- 新增离线测试覆盖 requestId 生成、透传、MDC 清理和日志字段配置；
+- 保持 ToolCallTrace、Approval、Execution Tree 和 persistence 作为业务审计与状态来源，日志只作为诊断入口。
+
+V3.3 未做：
+
+- 不接 Prometheus / Grafana；
+- 不接 ELK、OpenTelemetry 或外部日志平台；
+- 不记录 API Key、数据库密码、完整 LLM prompt、敏感凭证或过长原始文本；
+- 不改变 Agent、ToolRegistry、Approval、Trace、Workspace 或 persistence 的业务语义。
+
 ## 6. V3.4 Final System Review
 
 ### 6.1 目标
@@ -366,9 +389,10 @@ mvn test -Dtest=ArchitectureTest
 ```text
 V3.1 MySQL Persistence: completed
 V3.2 Docker Compose: completed
-V3.3 Structured Logging / Observability: planned
+V3.3 Structured Logging / Observability: completed
 V3.4 Final System Review: planned
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
-已完成本地 app + mysql Docker Compose 启动路径。V3.3 observability 和 V3.4 final review 尚未完成。
+已完成本地 app + mysql Docker Compose 启动路径。V3.3 已完成 requestId 追踪、MDC 日志字段和关键路径结构化日志。
+V3.4 final review 尚未完成。

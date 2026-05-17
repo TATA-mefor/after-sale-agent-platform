@@ -11,6 +11,10 @@ management:
       exposure:
         include: health,info
 
+logging:
+  pattern:
+    level: "%5p requestId=%X{requestId:-} ticketId=%X{ticketId:-} agentRunId=%X{agentRunId:-} subtaskId=%X{subtaskId:-} toolName=%X{toolName:-} approvalRequestId=%X{approvalRequestId:-}"
+
 agent:
   planner:
     mode: rule

@@ -8,6 +8,8 @@ import com.example.aftersale.agent.application.workspace.PolicyEvidence;
 import com.example.aftersale.agent.application.workspace.RiskFlag;
 import com.example.aftersale.agent.application.workspace.SubtaskMemory;
 import com.example.aftersale.agent.application.workspace.ToolResultSummary;
+import com.example.aftersale.common.observability.MdcScope;
+import com.example.aftersale.common.observability.ObservabilityConstants;
 import com.example.aftersale.tool.application.ToolRegistry;
 import com.example.aftersale.tool.application.ToolTraceContext;
 import com.example.aftersale.tool.domain.ToolExecutionStatus;
@@ -21,8 +23,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpecialistAgentHandler.class);
 
     protected static final String ADD_TICKET_NOTE_TOOL = "add_ticket_note";
     protected static final String GET_ORDER_BY_ID_TOOL = "get_order_by_id";
@@ -39,6 +45,25 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
 
     @Override
     public final SubtaskExecutionResult handle(SubtaskExecutionContext context) {
+        try (MdcScope ignored = MdcScope.putAll(Map.of(
+                ObservabilityConstants.TICKET_ID, context.ticket().getTicketId(),
+                ObservabilityConstants.AGENT_RUN_ID, context.runId(),
+                ObservabilityConstants.SUBTASK_ID, context.subtask().subtaskId()))) {
+            LOGGER.info("specialist_handler.started handler={} subtaskType={} riskLevel={}",
+                    handlerName(),
+                    context.subtask().type(),
+                    context.subtask().riskLevel());
+            SubtaskExecutionResult result = handleWithContext(context);
+            LOGGER.info("specialist_handler.completed handler={} subtaskType={} status={} toolCallCount={}",
+                    handlerName(),
+                    context.subtask().type(),
+                    result.status(),
+                    result.toolCalls().size());
+            return result;
+        }
+    }
+
+    private SubtaskExecutionResult handleWithContext(SubtaskExecutionContext context) {
         if (!supports(context.subtask().type())) {
             return SubtaskExecutionResult.failed(
                     context.subtask().subtaskId(),
@@ -46,25 +71,32 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
                     handlerName() + " does not support " + context.subtask().type());
         }
         if (context.subtask().riskLevel() == ToolRiskLevel.HIGH) {
-            String summary = "Subtask " + context.subtask().subtaskId() + " " + context.subtask().type().name()
-                    + " requires human approval before specialist execution.";
-            context.workspace().addRiskFlag(new RiskFlag(
-                    context.subtask().subtaskId(),
-                    context.subtask().riskLevel(),
-                    summary));
-            context.workspace().addSubtaskMemory(new SubtaskMemory(
-                    context.subtask().subtaskId(),
-                    context.subtask().type(),
-                    context.subtask().target(),
-                    SubtaskStatus.WAITING_APPROVAL,
-                    summary,
-                    List.of()));
-            return SubtaskExecutionResult.requiresApproval(
-                    context.subtask().subtaskId(),
-                    context.subtask().type(),
-                    summary);
+            return requireApproval(context);
         }
         return executeKnownTools(context, toolPlan(context));
+    }
+
+    private SubtaskExecutionResult requireApproval(SubtaskExecutionContext context) {
+        String summary = "Subtask " + context.subtask().subtaskId() + " " + context.subtask().type().name()
+                + " requires human approval before specialist execution.";
+        context.workspace().addRiskFlag(new RiskFlag(
+                context.subtask().subtaskId(),
+                context.subtask().riskLevel(),
+                summary));
+        context.workspace().addSubtaskMemory(new SubtaskMemory(
+                context.subtask().subtaskId(),
+                context.subtask().type(),
+                context.subtask().target(),
+                SubtaskStatus.WAITING_APPROVAL,
+                summary,
+                List.of()));
+        LOGGER.info("specialist_handler.requires_approval subtaskType={} riskLevel={}",
+                context.subtask().type(),
+                context.subtask().riskLevel());
+        return SubtaskExecutionResult.requiresApproval(
+                context.subtask().subtaskId(),
+                context.subtask().type(),
+                summary);
     }
 
     protected abstract List<String> requiredToolNames();

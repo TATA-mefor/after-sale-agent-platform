@@ -1,17 +1,24 @@
 package com.example.aftersale.ticket.application;
 
 import com.example.aftersale.common.exception.ResourceNotFoundException;
+import com.example.aftersale.common.observability.MdcScope;
+import com.example.aftersale.common.observability.ObservabilityConstants;
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.Ticket;
 import com.example.aftersale.ticket.domain.TicketRepository;
 import com.example.aftersale.ticket.domain.TicketStatus;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TicketApplicationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TicketApplicationService.class);
 
     private final TicketRepository ticketRepository;
 
@@ -22,7 +29,11 @@ public class TicketApplicationService {
     public Ticket createTicket(String userId, String orderId, String rawUserMessage) {
         String ticketId = "T-" + UUID.randomUUID();
         Ticket ticket = Ticket.create(ticketId, userId, orderId, rawUserMessage, Instant.now());
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        try (MdcScope ignored = MdcScope.put(ObservabilityConstants.TICKET_ID, saved.getTicketId())) {
+            LOGGER.info("ticket.created orderId={} status={}", saved.getOrderId(), saved.getStatus());
+        }
+        return saved;
     }
 
     public Ticket getTicket(String ticketId) {
@@ -41,11 +52,16 @@ public class TicketApplicationService {
     public Ticket classifyTicketIntent(String ticketId, IntentType intentType) {
         Ticket ticket = getTicket(ticketId);
         ticket.classifyIntent(intentType, Instant.now());
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        try (MdcScope ignored = MdcScope.put(ObservabilityConstants.TICKET_ID, saved.getTicketId())) {
+            LOGGER.info("ticket.intent_classified intentType={}", saved.getIntentType());
+        }
+        return saved;
     }
 
     public Ticket updateTicketStatus(String ticketId, TicketStatus targetStatus, String reason) {
         Ticket ticket = getTicket(ticketId);
+        TicketStatus previousStatus = ticket.getStatus();
         Instant changedAt = Instant.now();
         switch (Objects.requireNonNull(targetStatus, "targetStatus must not be null")) {
             case AGENT_RUNNING -> ticket.startAgentRun(changedAt);
@@ -58,7 +74,12 @@ public class TicketApplicationService {
             case CLOSED -> ticket.close(changedAt);
             case CREATED -> throw new IllegalArgumentException("Cannot transition ticket back to CREATED");
         }
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        try (MdcScope ignored = MdcScope.putAll(Map.of(
+                ObservabilityConstants.TICKET_ID, saved.getTicketId()))) {
+            LOGGER.info("ticket.status_updated fromStatus={} toStatus={}", previousStatus, saved.getStatus());
+        }
+        return saved;
     }
 
     private static String requireText(String value, String fieldName) {

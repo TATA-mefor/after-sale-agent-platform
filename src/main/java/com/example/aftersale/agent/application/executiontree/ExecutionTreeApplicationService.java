@@ -4,6 +4,8 @@ import com.example.aftersale.agent.application.AgentApplicationService;
 import com.example.aftersale.agent.domain.AgentRun;
 import com.example.aftersale.approval.application.ApprovalApplicationService;
 import com.example.aftersale.approval.domain.ApprovalRequest;
+import com.example.aftersale.common.observability.MdcScope;
+import com.example.aftersale.common.observability.ObservabilityConstants;
 import com.example.aftersale.trace.application.ToolCallTraceApplicationService;
 import com.example.aftersale.trace.domain.ToolCallTrace;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,10 +16,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ExecutionTreeApplicationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionTreeApplicationService.class);
 
     private static final String SUBTASK_ID_FIELD = "subtaskId";
 
@@ -42,27 +48,41 @@ public class ExecutionTreeApplicationService {
 
     public ExecutionTreeResponse getExecutionTree(String runId) {
         AgentRun agentRun = agentApplicationService.getAgentRun(runId);
-        List<String> errors = new ArrayList<>();
-        JsonNode planRoot = parsePlan(agentRun, errors);
-        Map<String, MutableSubtaskNode> subtaskNodes = subtaskNodes(planRoot);
-        List<ExecutionTreeToolCallNode> rootToolCalls = attachToolCalls(agentRun, subtaskNodes, errors);
-        List<ExecutionTreeApprovalNode> rootApprovalRequests = attachApprovalRequests(agentRun, subtaskNodes);
-        addRunError(agentRun, errors);
+        try (MdcScope ignored = MdcScope.putAll(Map.of(
+                ObservabilityConstants.AGENT_RUN_ID, agentRun.getRunId(),
+                ObservabilityConstants.TICKET_ID, agentRun.getTicketId()))) {
+            LOGGER.info("execution_tree.queried started status={}", agentRun.getStatus());
+            List<String> errors = new ArrayList<>();
+            JsonNode planRoot = parsePlan(agentRun, errors);
+            Map<String, MutableSubtaskNode> subtaskNodes = subtaskNodes(planRoot);
+            List<ExecutionTreeToolCallNode> rootToolCalls = attachToolCalls(agentRun, subtaskNodes, errors);
+            List<ExecutionTreeApprovalNode> rootApprovalRequests = attachApprovalRequests(agentRun, subtaskNodes);
+            addRunError(agentRun, errors);
 
-        return new ExecutionTreeResponse(
-                agentRun.getRunId(),
-                agentRun.getTicketId(),
-                agentRun.getStatus(),
-                agentRun.getFinalAnswer(),
-                rootSummary(agentRun, planRoot),
-                subtaskNodes.values().stream()
-                        .map(MutableSubtaskNode::toResponse)
-                        .toList(),
-                rootToolCalls,
-                rootApprovalRequests,
-                errors,
-                agentRun.getStartedAt(),
-                agentRun.getFinishedAt());
+            ExecutionTreeResponse response = new ExecutionTreeResponse(
+                    agentRun.getRunId(),
+                    agentRun.getTicketId(),
+                    agentRun.getStatus(),
+                    agentRun.getFinalAnswer(),
+                    rootSummary(agentRun, planRoot),
+                    subtaskNodes.values().stream()
+                            .map(MutableSubtaskNode::toResponse)
+                            .toList(),
+                    rootToolCalls,
+                    rootApprovalRequests,
+                    errors,
+                    agentRun.getStartedAt(),
+                    agentRun.getFinishedAt());
+            LOGGER.info("""
+                    execution_tree.queried completed subtaskCount={} rootToolCallCount={} rootApprovalCount={} \
+                    errorCount={}\
+                    """,
+                    response.subtasks().size(),
+                    response.toolCalls().size(),
+                    response.approvalRequests().size(),
+                    response.errors().size());
+            return response;
+        }
     }
 
     private JsonNode parsePlan(AgentRun agentRun, List<String> errors) {

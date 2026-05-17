@@ -153,6 +153,58 @@ Default validation still does not require Docker:
 mvn test
 ```
 
+## Observability
+
+V3.3 adds request correlation and structured log fields without introducing an external logging platform. Each HTTP
+request returns an `X-Request-Id` response header. If the request already includes `X-Request-Id`, the same value is
+returned; otherwise the application generates one.
+
+Example with an explicit request id:
+
+```bash
+curl -H "X-Request-Id: demo-request-001" http://localhost:8080/api/health -i
+```
+
+Use the returned `X-Request-Id` to search logs for the request. Agent-related logs also include the available business
+IDs:
+
+```text
+requestId
+ticketId
+agentRunId
+subtaskId
+toolName
+approvalRequestId
+```
+
+Typical troubleshooting flow:
+
+1. Start with `requestId` from the API response header.
+2. Find the `ticketId` from ticket creation logs or the API response.
+3. Find `agentRunId` from AgentRun logs or the trigger response.
+4. Inspect persisted tool audit records:
+
+```bash
+curl http://localhost:8080/api/agent-runs/{runId}/traces
+```
+
+5. Inspect the read-only execution tree:
+
+```bash
+curl http://localhost:8080/api/agent-runs/{runId}/execution-tree
+```
+
+Approval flows remain queryable through:
+
+```bash
+curl http://localhost:8080/api/approval-requests/pending
+curl http://localhost:8080/api/approval-requests/{approvalRequestId}
+```
+
+Logs are diagnostic only. ToolCallTrace, ApprovalRequest records, and the Execution Tree API remain the audit and
+inspection surfaces. Logs must not contain API keys, database passwords, full LLM prompts, sensitive credentials, or
+long raw user text.
+
 ## Demo Walkthrough
 
 This walkthrough shows the V1 closed loop:
@@ -644,7 +696,8 @@ LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals,
 ## V3 Roadmap
 
 V3 is the infrastructure closure phase. V3.1 MySQL Persistence and V3.2 Docker Compose are implemented for explicit
-local infrastructure profiles. V3.3 and V3.4 remain planned. V3 does not change the Agent business capability boundary.
+local infrastructure profiles. V3.3 Structured Logging / Observability is implemented for request correlation and
+structured diagnostic fields. V3.4 remains planned. V3 does not change the Agent business capability boundary.
 
 ### V3.1 MySQL Persistence
 
@@ -672,12 +725,15 @@ Implemented focus:
 
 ### V3.3 Structured Logging / Observability
 
-Planned focus:
+Implemented focus:
 
-- Add structured log fields such as requestId, ticketId, agentRunId, subtaskId, toolName, and approvalRequestId.
+- Add `X-Request-Id` request propagation and response header return.
+- Add MDC-backed structured log fields such as requestId, ticketId, agentRunId, subtaskId, toolName, and
+  approvalRequestId.
+- Log key Ticket, AgentRun, Specialist Handler, ToolRegistry, Approval, and Execution Tree paths.
 - Keep actuator health checks available.
 - Do not replace ToolCallTrace or Execution Tree with logs.
-- Do not introduce complex Prometheus/Grafana setup unless a later plan requires it.
+- Do not introduce Prometheus/Grafana, ELK, OpenTelemetry, or external logging platforms.
 
 ### V3.4 Final Review
 

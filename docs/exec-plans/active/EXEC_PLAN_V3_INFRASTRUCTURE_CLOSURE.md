@@ -5,26 +5,26 @@ Status: Active
 
 ## Current Stage
 
-V3 进入 Infrastructure Closure 阶段。V3.1 MySQL Persistence 和 V3.2 Docker Compose 已完成实现；当前活动计划
-继续跟踪 V3.3 Observability 和 V3.4 Final Review。
+V3 进入 Infrastructure Closure 阶段。V3.1 MySQL Persistence、V3.2 Docker Compose 和 V3.3 Observability
+已完成实现；当前活动计划继续跟踪 V3.4 Final Review。
 
 ## First Priority
 
-V3.3 Structured Logging / Observability 是下一优先级。
+V3.4 Final System Review 是下一优先级。
 
 原因：
 
 - V3.1 已提供明确的 MySQL profile、schema 和 seed 策略；
 - V3.2 已提供本地 app + mysql 一键启动路径；
-- 关键请求、AgentRun、Subtask、ToolCall 和 ApprovalRequest 还需要更一致的结构化日志字段；
+- V3.3 已提供 requestId、AgentRun、Subtask、ToolCall 和 ApprovalRequest 结构化日志字段；
 - 默认 Maven 测试仍必须保留 in-memory 离线路径；
-- observability 不得替代 ToolCallTrace、Execution Tree 或持久化状态。
+- 最终复盘需要确认 README、质量记录、demo flow 和已知限制与实际系统能力一致。
 
 ## Execution Order
 
 1. V3.1 MySQL Persistence：completed。
 2. V3.2 Docker Compose：completed。
-3. V3.3 Observability：新增 requestId、ticketId、agentRunId、subtaskId、toolName、approvalRequestId 等结构化日志字段。
+3. V3.3 Observability：completed。
 4. V3.4 Final Review：复盘系统能力、限制、demo flow 和后续方向。
 5. 每个阶段运行默认验证命令。
 6. 每个阶段输出 Review Packet 和完成信号。

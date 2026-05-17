@@ -492,7 +492,7 @@ Completed:
 ## V3 Quality Targets
 
 V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL profile 和 Spring JDBC persistence，V3.2 已完成
-本地 Docker Compose 启动路径；observability 仍是后续计划，不表示已经完成。
+本地 Docker Compose 启动路径，V3.3 已完成 requestId 追踪和结构化日志基础能力。
 
 | 维度 | 当前目标 | 验收方式 |
 |---|---|---|
@@ -521,7 +521,6 @@ Completed:
 
 Remaining V3 follow-up:
 
-- Add structured logging and observability fields in V3.3.
 - Consider opt-in MySQL/Testcontainers integration tests without changing the default offline test path.
 
 ### V3.2 Current Status
@@ -541,8 +540,30 @@ Completed:
 
 Remaining V3 follow-up:
 
-- Add structured logging and observability fields in V3.3.
 - Keep Docker Compose smoke validation explicit and outside the default Maven test path.
+
+### V3.3 Current Status
+
+Status: completed for structured logging and basic observability.
+
+Completed:
+
+- Added `X-Request-Id` support for request correlation.
+- Requests without `X-Request-Id` receive a generated response header.
+- Requests with `X-Request-Id` receive the same value in the response header.
+- Request-level MDC stores `requestId` during request handling and clears it after completion.
+- Logging pattern includes `requestId`, `ticketId`, `agentRunId`, `subtaskId`, `toolName`, and
+  `approvalRequestId`.
+- Ticket creation, AgentRun execution, Specialist Handler execution, ToolRegistry calls, approval creation and
+  decisions, and execution tree queries emit structured diagnostic logs.
+- Added tests for generated request IDs, propagated request IDs, MDC cleanup, and required logging fields.
+- No external observability platform, Docker, MySQL, Redis, real LLM, API Key, or network dependency is required by
+  default tests.
+
+Remaining V3 follow-up:
+
+- Complete V3.4 Final System Review.
+- Keep logs as diagnostics only; ToolCallTrace, ApprovalRequest records, and Execution Tree remain audit surfaces.
 
 ### V3 不接受的退化
 

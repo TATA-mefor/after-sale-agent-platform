@@ -19,6 +19,8 @@ import com.example.aftersale.agent.application.workspace.ToolResultSummary;
 import com.example.aftersale.agent.domain.AgentRun;
 import com.example.aftersale.agent.domain.AgentRunRepository;
 import com.example.aftersale.common.exception.ResourceNotFoundException;
+import com.example.aftersale.common.observability.MdcScope;
+import com.example.aftersale.common.observability.ObservabilityConstants;
 import com.example.aftersale.ticket.application.TicketApplicationService;
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.Ticket;
@@ -37,10 +39,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AgentApplicationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentApplicationService.class);
 
     private static final String SEARCH_POLICY_TOOL = "search_aftersale_policy";
     private static final String GET_ORDER_BY_ID_TOOL = "get_order_by_id";
@@ -86,50 +92,70 @@ public class AgentApplicationService {
                 agentRun.getStartedAt());
         agentRunRepository.save(agentRun);
 
-        IntentType intent = IntentType.UNKNOWN;
-        List<String> toolCalls = new ArrayList<>();
-        try {
-            AgentPlanningContext planningContext = planningContext(ticket);
-            AgentPlan plan = agentPlanner.plan(planningContext);
-            AgentPlanValidator.validate(plan, planningContext.availableTools());
-            intent = plan.intent();
+        try (MdcScope ignored = MdcScope.putAll(Map.of(
+                ObservabilityConstants.TICKET_ID, ticket.getTicketId(),
+                ObservabilityConstants.AGENT_RUN_ID, agentRun.getRunId()))) {
+            LOGGER.info("agent_run.started status={}", agentRun.getStatus());
+            IntentType intent = IntentType.UNKNOWN;
+            List<String> toolCalls = new ArrayList<>();
+            try {
+                AgentPlanningContext planningContext = planningContext(ticket);
+                AgentPlan plan = agentPlanner.plan(planningContext);
+                AgentPlanValidator.validate(plan, planningContext.availableTools());
+                intent = plan.intent();
+                LOGGER.info(
+                        "agent_run.plan_validated intent={} riskLevel={} subtaskCount={} plannedToolCount={}",
+                        plan.intent(),
+                        plan.riskLevel(),
+                        plan.subtasks().size(),
+                        plan.plannedTools().size());
 
-            ticketApplicationService.classifyTicketIntent(ticket.getTicketId(), intent);
-            ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.AGENT_RUNNING, null);
+                ticketApplicationService.classifyTicketIntent(ticket.getTicketId(), intent);
+                ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.AGENT_RUNNING, null);
 
-            List<String> evidence = new ArrayList<>();
-            List<SubtaskExecutionResult> subtaskResults = List.of();
-            String finalSuggestion;
-            if (plan.hasSubtasks()) {
-                subtaskResults = executeSubtasks(agentRun.getRunId(), ticket, plan, workspace, evidence, toolCalls);
-                finalSuggestion = buildMultiIntentFinalSuggestion(plan, subtaskResults, workspace);
-            } else {
-                for (PlannedToolCall plannedTool : plan.plannedTools()) {
-                    executePlannedTool(agentRun.getRunId(), ticket, plan, workspace, plannedTool, evidence, toolCalls);
+                List<String> evidence = new ArrayList<>();
+                List<SubtaskExecutionResult> subtaskResults = List.of();
+                String finalSuggestion;
+                if (plan.hasSubtasks()) {
+                    subtaskResults = executeSubtasks(agentRun.getRunId(), ticket, plan, workspace, evidence, toolCalls);
+                    finalSuggestion = buildMultiIntentFinalSuggestion(plan, subtaskResults, workspace);
+                } else {
+                    for (PlannedToolCall plannedTool : plan.plannedTools()) {
+                        executePlannedTool(agentRun.getRunId(), ticket, plan, workspace, plannedTool, evidence,
+                                toolCalls);
+                    }
+                    finalSuggestion = buildFinalSuggestion(plan, workspace);
                 }
-                finalSuggestion = buildFinalSuggestion(plan, workspace);
-            }
 
-            String completedPlanJson = completedPlanJson(
-                    plan,
-                    finalSuggestion,
-                    evidence,
-                    toolCalls,
-                    subtaskResults,
-                    workspace);
-            agentRun.succeed(completedPlanJson, finalSuggestion, Instant.now());
-            agentRunRepository.save(agentRun);
-            if (!requiresHumanApproval(subtaskResults)) {
-                ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.RESOLVED,
-                        finalSuggestion);
+                String completedPlanJson = completedPlanJson(
+                        plan,
+                        finalSuggestion,
+                        evidence,
+                        toolCalls,
+                        subtaskResults,
+                        workspace);
+                agentRun.succeed(completedPlanJson, finalSuggestion, Instant.now());
+                agentRunRepository.save(agentRun);
+                if (!requiresHumanApproval(subtaskResults)) {
+                    ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.RESOLVED,
+                            finalSuggestion);
+                }
+                LOGGER.info("agent_run.succeeded toolCallCount={} evidenceCount={} requiresHumanApproval={}",
+                        toolCalls.size(),
+                        evidence.size(),
+                        requiresHumanApproval(subtaskResults));
+                return new AgentRunResult(agentRun, intent, completedPlanJson, finalSuggestion, evidence, toolCalls);
+            } catch (RuntimeException exception) {
+                String failureMessage = failureMessage(exception);
+                agentRun.fail(failureMessage, Instant.now());
+                agentRunRepository.save(agentRun);
+                LOGGER.warn("agent_run.failed intent={} toolCallCount={} errorType={}",
+                        intent,
+                        toolCalls.size(),
+                        exception.getClass().getSimpleName());
+                return new AgentRunResult(agentRun, intent, failurePlan(intent, failureMessage), failureMessage,
+                        List.of(), toolCalls);
             }
-            return new AgentRunResult(agentRun, intent, completedPlanJson, finalSuggestion, evidence, toolCalls);
-        } catch (RuntimeException exception) {
-            String failureMessage = failureMessage(exception);
-            agentRun.fail(failureMessage, Instant.now());
-            agentRunRepository.save(agentRun);
-            return new AgentRunResult(agentRun, intent, failurePlan(intent, failureMessage), failureMessage,
-                    List.of(), toolCalls);
         }
     }
 
@@ -220,6 +246,11 @@ public class AgentApplicationService {
                         subtask.subtaskId(),
                         result.summary(),
                         subtask.riskLevel());
+                try (MdcScope ignored = MdcScope.put(ObservabilityConstants.SUBTASK_ID, subtask.subtaskId())) {
+                    LOGGER.info("agent_run.subtask_approval_required type={} riskLevel={}",
+                            subtask.type(),
+                            subtask.riskLevel());
+                }
             }
             results.add(result);
         }
