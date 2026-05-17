@@ -332,7 +332,6 @@ business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
 ### V2 后续方向
 
 - MySQL Persistence；
-- Agent Evaluation Dataset；
 - Vector or Hybrid Policy Retrieval；
 - Docker Compose and Observability。
 
@@ -510,6 +509,26 @@ available.
 
 This API is query-only. It does not modify tickets, AgentRun records, traces, approvals, refunds, exchanges, coupons,
 payments, logistics, or inventory.
+
+### V2.9 Evaluation Dataset
+
+V2.9 adds an offline evaluation dataset and runner for the current after-sale Agent planner.
+
+Dataset:
+
+```text
+docs/evaluation/aftersale_cases.jsonl
+```
+
+Run the focused evaluation tests:
+
+```bash
+mvn test -Dtest=EvaluationApplicationServiceTest
+```
+
+The default runner uses `RuleBasedAgentPlanner`, validates every generated plan with `AgentPlanValidator`, and computes
+intent, subtask, tool, risk, policy-category, approval-requirement, and plan-validity metrics. It does not call a real
+LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals, or connect to external infrastructure.
 
 ### 真实 LLM 本地运行说明
 

@@ -405,3 +405,45 @@ Completed:
 - 为 Execution Tree 大幅重构 Agent 主执行链路或 ToolCallTrace 模型；
 - 默认测试需要真实 LLM、API Key、Redis、MySQL、向量库或外部网络；
 - README 或 Harness 文档把前端可视化、并行执行、消息队列或真实业务执行写成 V2.8 已实现能力。
+
+## V2.9 Quality Targets
+
+V2.9 质量目标聚焦离线、确定性的 Agent 规划评测。当前 V2.9 已完成 JSONL 评测集和 rule-based evaluation
+runner，不表示已完成真实 LLM 评测或 LLM-as-judge。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| 数据集版本化 | 售后评测 case 存放在 `docs/evaluation/aftersale_cases.jsonl` | 文件检查 + loader 测试 |
+| 场景覆盖 | 覆盖退货、换货、仅退款、维修、物流、优惠券、多意图、高风险、普通咨询和 UNKNOWN | 数据集检查 |
+| 计划合法性 | 每条 case 生成的 `AgentPlan` 必须通过 `AgentPlanValidator` | Evaluation 测试 |
+| 指标结构化 | report 包含 total/passed/failed 和 accuracy 指标 | Evaluation 测试 |
+| 失败可定位 | failure 包含 caseId、field、expected、actual 和 message | Evaluation 测试 |
+| Tool 边界 | policy category 评测通过受控 `search_aftersale_policy` 工具 | Evaluation 测试 |
+| 测试确定性 | 默认评测使用 RuleBased planner，不依赖真实 LLM、API Key 或网络 | `mvn test` 离线通过 |
+| 非状态变更 | 默认评测不创建或修改 Ticket、AgentRun、ToolCallTrace 或 ApprovalRequest | 代码检查 + 测试 |
+
+### V2.9 Current Status
+
+Status: completed for offline deterministic evaluation dataset and runner.
+
+Completed:
+
+- Added 15-case JSONL evaluation dataset.
+- Added `docs/evaluation/EVALUATION.md`.
+- Added `EvaluationCase`, `EvaluationExpected`, `EvaluationResult`, `EvaluationReport`, `EvaluationMetric`, and
+  `EvaluationFailure`.
+- Added `EvaluationApplicationService`.
+- Default evaluation runs with `RuleBasedAgentPlanner`.
+- Every generated plan is validated with `AgentPlanValidator`.
+- Expected tools, subtask types, policy categories, risk level, and approval requirements are checked.
+- Current rule-based limitations are surfaced as structured failures instead of hidden.
+- Default tests remain offline and deterministic.
+
+### V2.9 不接受的退化
+
+- 默认评测调用真实 LLM、OpenAI provider、外部网络或需要 API Key；
+- 评测使用 LLM-as-judge；
+- 评测绕过 `AgentPlanValidator`；
+- 评测修改 Ticket、AgentRun、ToolCallTrace 或 ApprovalRequest；
+- 引入外部评测框架导致本地测试复杂化；
+- 删除或降低现有架构、Checkstyle、SpotBugs 或 JUnit 约束。

@@ -1191,30 +1191,66 @@ COMPLETED
 
 ### 13.1 目标
 
-建立最小 Agent 评测集。
+建立离线、确定性的 Agent 评测集，用于评估当前售后 Agent 的规划、工具调用、风险判断和执行结果边界。
 
-评估指标：
+V2.9 默认使用 `RuleBasedAgentPlanner`，不调用真实 LLM，不需要 API Key，不访问外部网络，不接数据库、Redis 或向量库。
 
-```text
-Intent Accuracy
-Subtask Planning Accuracy
-Tool Call Accuracy
-Policy Match Accuracy
-Risk Classification Accuracy
-Plan Validity Rate
-```
-
-### 13.2 候选文件
+当前评测链路：
 
 ```text
 docs/evaluation/aftersale_cases.jsonl
-docs/evaluation/EVALUATION.md
+→ EvaluationApplicationService
+→ RuleBasedAgentPlanner
+→ AgentPlanValidator
+→ controlled policy search through ToolRegistry
+→ EvaluationReport
 ```
 
-### 13.3 状态
+评估指标包括：
 
 ```text
-PLANNED
+totalCases
+passedCases
+failedCases
+intentAccuracy
+subtaskTypeAccuracy
+toolCallAccuracy
+riskLevelAccuracy
+policyMatchAccuracy
+approvalRequirementAccuracy
+planValidityRate
+```
+
+### 13.2 已完成能力
+
+- 新增 `docs/evaluation/aftersale_cases.jsonl`，包含 15 条售后评测 case；
+- 新增 `docs/evaluation/EVALUATION.md`；
+- 新增 `EvaluationCase`、`EvaluationExpected`、`EvaluationResult`、`EvaluationReport`、`EvaluationMetric` 和
+  `EvaluationFailure`；
+- 新增 `EvaluationApplicationService`；
+- 每条 case 生成 `AgentPlan` 后必须通过 `AgentPlanValidator`；
+- `expectedTools` 校验 planned tools；
+- `expectedSubtaskTypes` 校验多意图 subtask 拆解；
+- `expectedPolicyCategories` 通过受控 `search_aftersale_policy` 工具离线校验；
+- `expectedRequiresApproval` 校验 HIGH-risk / approval requirement 边界；
+- 失败结果包含 `caseId` 和失败字段；
+- 默认测试仍离线运行，不依赖真实 LLM、API Key、数据库、Redis、向量库或网络。
+
+### 13.3 不做
+
+V2.9 不做：
+
+- 不把评测写成 LLM-as-judge；
+- 不让默认评测调用真实 OpenAI provider；
+- 不执行完整 AgentRun 状态流转；
+- 不修改 Ticket、AgentRun、ToolCallTrace 或 ApprovalRequest；
+- 不新增前端；
+- 不引入复杂外部评测框架。
+
+### 13.4 状态
+
+```text
+COMPLETED
 ```
 
 ---
@@ -1275,6 +1311,6 @@ V2.5 Policy Retrieval Tool ✅
 V2.6 Agent Workspace / Structured Memory ✅
 V2.7 Approval APIs ✅
 V2.8 Execution Tree ✅
-V2.9 Evaluation Dataset
+V2.9 Evaluation Dataset ✅
 V2.10 Robustness
 ```
