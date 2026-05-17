@@ -20,4 +20,10 @@ public class ApiExceptionHandler {
     public ApiResponse<Void> handleIllegalArgument(IllegalArgumentException exception) {
         return ApiResponse.failure("INVALID_REQUEST", exception.getMessage());
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiResponse<Void> handleIllegalState(IllegalStateException exception) {
+        return ApiResponse.failure("CONFLICT", exception.getMessage());
+    }
 }

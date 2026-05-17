@@ -248,8 +248,8 @@ Completed:
 
 Remaining follow-up:
 
-- Execution Tree is still V2.7.
-- Approval APIs are still V2.7.
+- Approval APIs are completed in V2.7.
+- Execution Tree is still V2.8.
 - Handler behavior remains deterministic and policy/tool based; there is no real refund, exchange, coupon compensation,
   logistics, payment, database, or microservice integration.
 
@@ -321,3 +321,47 @@ Completed:
 - workspace 演变为长期用户画像或跨会话记忆；
 - 默认测试需要真实 LLM、Redis、MySQL、PGvector 或外部网络；
 - README 或 Harness 文档把 V2.6 写成已实现能力。
+
+## V2.7 Quality Targets
+
+V2.7 质量目标聚焦高风险审批 API 的可调用性、幂等边界和非真实业务执行边界。当前 V2.7 已完成
+in-memory Approval APIs 基础实现。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| 审批请求结构化 | `ApprovalRequest` 保留 ticketId、agentRunId、subtaskId、toolName、riskLevel、status 和 decision reason | 服务测试 + API 测试 |
+| Pending 查询 | 可以查询待审批请求 | API 测试 |
+| 单条查询 | 可以查询单个审批请求 | API 测试 |
+| 审批状态流转 | approve / reject 只能处理 PENDING 请求 | 服务测试 + API 冲突测试 |
+| 拒绝原因 | reject 必须保存 reason | 服务测试 |
+| Ticket 回写 | 审批创建和审批结果写入 Ticket note / status | 服务测试 |
+| 高风险边界 | high-risk subtask 创建审批请求并进入 WAITING_HUMAN_APPROVAL | Agent flow 测试 |
+| 低风险边界 | LOW risk action 不创建审批请求 | 服务测试 |
+| 架构边界 | Controller 不访问 Repository，Agent / Handler 不直接访问 ApprovalRepository | ArchitectureTest |
+| 测试确定性 | 默认测试不依赖真实 LLM、API Key、Redis、MySQL 或网络 | `mvn test` 离线通过 |
+
+### V2.7 Current Status
+
+Status: completed for in-memory approval API flow.
+
+Completed:
+
+- Added `ApprovalApplicationService`.
+- Added `ApprovalRepository` and `InMemoryApprovalRepository`.
+- Added `ApprovalController` and approval response/decision DTOs.
+- Added pending query, single request query, approve, and reject endpoints.
+- Approval decisions write back to Ticket note/status.
+- High-risk subtasks create approval requests and leave tickets waiting for human approval.
+- Low-risk actions do not create approval requests.
+- Repeated approval decisions return clear conflict errors.
+- Default tests remain offline and deterministic.
+
+### V2.7 不接受的退化
+
+- approval API 执行真实退款、真实换货或真实优惠券补偿；
+- Controller 直接访问 Repository；
+- Handler / Agent 直接访问 ApprovalRepository；
+- 已完成审批请求可被重复 approve / reject；
+- reject 不保存 reason；
+- high-risk subtask 被标记为直接完成；
+- 默认测试需要真实 LLM、API Key、Redis、MySQL 或外部网络。

@@ -9,6 +9,7 @@ public final class ApprovalRequest {
     private final String approvalId;
     private final String ticketId;
     private final String runId;
+    private final String subtaskId;
     private final String toolName;
     private final String requestedAction;
     private final ToolRiskLevel riskLevel;
@@ -22,6 +23,7 @@ public final class ApprovalRequest {
             String approvalId,
             String ticketId,
             String runId,
+            String subtaskId,
             String toolName,
             String requestedAction,
             ToolRiskLevel riskLevel,
@@ -29,6 +31,7 @@ public final class ApprovalRequest {
         this.approvalId = requireText(approvalId, "approvalId");
         this.ticketId = requireText(ticketId, "ticketId");
         this.runId = requireText(runId, "runId");
+        this.subtaskId = subtaskId == null ? "" : subtaskId;
         this.toolName = requireText(toolName, "toolName");
         this.requestedAction = requireText(requestedAction, "requestedAction");
         this.riskLevel = requireApprovalRisk(riskLevel);
@@ -44,7 +47,35 @@ public final class ApprovalRequest {
             String requestedAction,
             ToolRiskLevel riskLevel,
             Instant requestedAt) {
-        return new ApprovalRequest(approvalId, ticketId, runId, toolName, requestedAction, riskLevel, requestedAt);
+        return createForHighRiskTool(
+                approvalId,
+                ticketId,
+                runId,
+                "",
+                toolName,
+                requestedAction,
+                riskLevel,
+                requestedAt);
+    }
+
+    public static ApprovalRequest createForHighRiskTool(
+            String approvalId,
+            String ticketId,
+            String runId,
+            String subtaskId,
+            String toolName,
+            String requestedAction,
+            ToolRiskLevel riskLevel,
+            Instant requestedAt) {
+        return new ApprovalRequest(
+                approvalId,
+                ticketId,
+                runId,
+                subtaskId,
+                toolName,
+                requestedAction,
+                riskLevel,
+                requestedAt);
     }
 
     public void approve(String approvedBy, String reason, Instant approvedAt) {
@@ -80,6 +111,10 @@ public final class ApprovalRequest {
 
     public String getRunId() {
         return runId;
+    }
+
+    public String getSubtaskId() {
+        return subtaskId;
     }
 
     public String getToolName() {

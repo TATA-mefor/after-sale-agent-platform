@@ -1058,15 +1058,34 @@ V2.6 已完成：
 
 把高风险人工确认边界落成 API。
 
-候选 API：
+已实现 API：
 
 ```text
 GET  /api/approval-requests/pending
+GET  /api/approval-requests/{id}
 POST /api/approval-requests/{id}/approve
 POST /api/approval-requests/{id}/reject
 ```
 
-### 11.2 触发场景
+### 11.2 已完成能力
+
+- `ApprovalApplicationService`；
+- `ApprovalRepository`；
+- `InMemoryApprovalRepository`；
+- `ApprovalController`；
+- `ApprovalRequestResponse`；
+- `ApprovalApproveRequest`；
+- `ApprovalRejectRequest`；
+- pending approval 查询；
+- 单个 approval request 查询；
+- approve / reject 状态流转；
+- 重复审批返回清晰冲突错误；
+- 审批结果写回 Ticket note；
+- high-risk subtask 自动创建 `ApprovalRequest` 并让 Ticket 进入 `WAITING_HUMAN_APPROVAL`；
+- 低风险动作不会创建审批请求；
+- 审批流不执行真实退款、真实换货或真实优惠券补偿。
+
+### 11.3 触发场景
 
 - `riskLevel = HIGH`；
 - LLM plan validation failed；
@@ -1074,10 +1093,12 @@ POST /api/approval-requests/{id}/reject
 - 用户问题涉及投诉、争议、强烈不满；
 - 计划中包含退款、补偿、关闭争议等高风险动作。
 
-### 11.3 状态
+当前 V2.7 至少覆盖 high-risk subtask 触发审批请求。其他触发场景可在后续 robustness / evaluation 阶段扩展。
+
+### 11.4 状态
 
 ```text
-PLANNED
+COMPLETED
 ```
 
 ---
@@ -1203,7 +1224,7 @@ V2.3 Multi-Intent Planning ✅
 V2.4 Specialist Agent Handler ✅
 V2.5 Policy Retrieval Tool ✅
 V2.6 Agent Workspace / Structured Memory ✅
-V2.7 Approval APIs
+V2.7 Approval APIs ✅
 V2.8 Execution Tree
 V2.9 Evaluation Dataset
 V2.10 Robustness

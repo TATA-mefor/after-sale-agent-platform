@@ -2,6 +2,7 @@ package com.example.aftersale.agent.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.aftersale.approval.application.ApprovalApplicationService;
 import com.example.aftersale.agent.application.handler.SpecialistAgentHandlerRegistry;
 import com.example.aftersale.agent.application.handler.SubtaskExecutionContext;
 import com.example.aftersale.agent.application.handler.SubtaskExecutionResult;
@@ -54,6 +55,7 @@ public class AgentApplicationService {
     private final SpecialistAgentHandlerRegistry specialistAgentHandlerRegistry;
     private final AgentPlanner agentPlanner;
     private final ObjectMapper objectMapper;
+    private final ApprovalApplicationService approvalApplicationService;
 
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
@@ -64,13 +66,15 @@ public class AgentApplicationService {
             ToolRegistry toolRegistry,
             SpecialistAgentHandlerRegistry specialistAgentHandlerRegistry,
             AgentPlanner agentPlanner,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            ApprovalApplicationService approvalApplicationService) {
         this.agentRunRepository = agentRunRepository;
         this.ticketApplicationService = ticketApplicationService;
         this.toolRegistry = toolRegistry;
         this.specialistAgentHandlerRegistry = specialistAgentHandlerRegistry;
         this.agentPlanner = agentPlanner;
         this.objectMapper = objectMapper;
+        this.approvalApplicationService = approvalApplicationService;
     }
 
     public AgentRunResult runForTicket(String ticketId) {
@@ -115,7 +119,10 @@ public class AgentApplicationService {
                     workspace);
             agentRun.succeed(completedPlanJson, finalSuggestion, Instant.now());
             agentRunRepository.save(agentRun);
-            ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.RESOLVED, finalSuggestion);
+            if (!requiresHumanApproval(subtaskResults)) {
+                ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.RESOLVED,
+                        finalSuggestion);
+            }
             return new AgentRunResult(agentRun, intent, completedPlanJson, finalSuggestion, evidence, toolCalls);
         } catch (RuntimeException exception) {
             String failureMessage = failureMessage(exception);
@@ -206,6 +213,14 @@ public class AgentApplicationService {
             SubtaskExecutionResult result = specialistAgentHandlerRegistry.handle(context);
             evidence.addAll(result.evidence());
             toolCalls.addAll(result.toolCalls());
+            if (result.requiresHumanApproval()) {
+                approvalApplicationService.createForHighRiskSubtask(
+                        ticket.getTicketId(),
+                        runId,
+                        subtask.subtaskId(),
+                        result.summary(),
+                        subtask.riskLevel());
+            }
             results.add(result);
         }
         return results;
@@ -378,6 +393,10 @@ public class AgentApplicationService {
             return "";
         }
         return subtask.subtaskId();
+    }
+
+    private static boolean requiresHumanApproval(List<SubtaskExecutionResult> subtaskResults) {
+        return subtaskResults.stream().anyMatch(SubtaskExecutionResult::requiresHumanApproval);
     }
 
     private String completedPlanJson(

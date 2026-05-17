@@ -175,4 +175,27 @@ class ArchitectureTest {
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
+
+    @Test
+    void approvalApiAndAgentHandlersMustNotAccessApprovalRepositoryDirectly() {
+        noClasses()
+                .that()
+                .resideInAPackage("..approval.api..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("ApprovalRepository")
+                .because("Approval controllers must call ApprovalApplicationService instead of repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent..", "..agent.application.handler..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("ApprovalRepository")
+                .because("Agent code and handlers must create approvals through application services.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
 }

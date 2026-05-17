@@ -332,9 +332,9 @@ business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
 ### V2 后续方向
 
 - Agent Workspace / Structured Memory；
+- Approval APIs；
 - Execution Tree；
 - MySQL Persistence；
-- Approval APIs；
 - Agent Evaluation Dataset；
 - Vector or Hybrid Policy Retrieval；
 - Docker Compose and Observability。
@@ -443,11 +443,11 @@ The retrieval result is structured as policy snippets and empty matches return `
 V2.5 does not add VectorStore, PGvector, embeddings, network search, real LLM dependency, real refunds, real exchanges,
 coupon compensation, payment changes, logistics changes, or a real database.
 
-### V2.6 Roadmap: Agent Workspace / Structured Memory
+### V2.6 Agent Workspace / Structured Memory
 
-The next planned stage is Agent Workspace / Structured Memory. It is not implemented yet.
+V2.6 adds single-`AgentRun` structured workspace memory.
 
-Target flow:
+Implemented flow:
 
 ```text
 AgentRun creates AgentWorkspace
@@ -469,6 +469,30 @@ Candidate models:
 V2.6 is scoped to one `AgentRun`. It is not long-term memory, user profiling, vector memory, cross-session memory,
 Redis, MySQL, or a vector database. Workspace must not store API keys, sensitive credentials, full long prompts, or raw
 long LLM outputs, and it must not replace `ToolCallTrace` or bypass `ToolRegistry`.
+
+### V2.7 Approval APIs
+
+V2.7 adds in-memory approval APIs for high-risk Agent decisions. Approval records are structured and queryable, but
+approval does not execute real refunds, exchanges, coupon compensation, payment changes, or logistics changes.
+
+Implemented APIs:
+
+```bash
+curl http://localhost:8080/api/approval-requests/pending
+
+curl http://localhost:8080/api/approval-requests/{approvalRequestId}
+
+curl -X POST http://localhost:8080/api/approval-requests/{approvalRequestId}/approve \
+  -H "Content-Type: application/json" \
+  -d '{"reviewerId":"operator-1","reason":"Evidence is sufficient for manual processing."}'
+
+curl -X POST http://localhost:8080/api/approval-requests/{approvalRequestId}/reject \
+  -H "Content-Type: application/json" \
+  -d '{"reviewerId":"operator-1","reason":"Policy evidence is insufficient."}'
+```
+
+High-risk subtasks create `ApprovalRequest` records and move the ticket to `WAITING_HUMAN_APPROVAL`. Low-risk tools do
+not create approval requests.
 
 ### 真实 LLM 本地运行说明
 
