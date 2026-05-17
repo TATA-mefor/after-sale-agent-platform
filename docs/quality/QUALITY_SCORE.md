@@ -562,8 +562,52 @@ Completed:
 
 Remaining V3 follow-up:
 
-- Complete V3.4 Final System Review.
 - Keep logs as diagnostics only; ToolCallTrace, ApprovalRequest records, and Execution Tree remain audit surfaces.
+- Consider opt-in integration tests for MySQL or Docker Compose without joining the default Maven test path.
+
+### V3.4 Final Quality Summary
+
+Status: completed for V3 infrastructure closure review.
+
+Current validation baseline:
+
+- Test classes: 27 under `src/test/java/com/example/aftersale`.
+- JUnit test methods: 118 discovered by the default Maven test run, with the live LLM smoke test skipped unless
+  explicitly enabled.
+- Architecture test methods: 11.
+- ArchUnit rule checks: 16 `noClasses` boundary checks across API, domain, Agent, Tool, LLM infrastructure, Specialist
+  Handler, Workspace, and Approval boundaries.
+- Default validation commands remain:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+Current infrastructure status:
+
+- Default profile remains in-memory and offline.
+- `mysql` profile is explicit opt-in and uses environment variables for database connection values.
+- MySQL schema and deterministic seed data exist for Ticket, AgentRun, ToolCallTrace, ApprovalRequest, order demo data,
+  and after-sale policy data.
+- Docker Compose provides local app + MySQL startup with placeholder local credentials only.
+- Structured logging supports `requestId`, `ticketId`, `agentRunId`, `subtaskId`, `toolName`, and
+  `approvalRequestId`.
+- Actuator health remains available.
+- ToolCallTrace, ApprovalRequest records, and Execution Tree remain the audit and inspection surfaces.
+- Default tests do not require MySQL, Docker, Redis, real LLMs, API keys, or external network.
+- V2 demo boundaries remain compatible with V3 infrastructure profiles.
+
+V3 final non-regression targets:
+
+- No committed real secrets.
+- No production claims for Docker Compose.
+- No Controller direct Repository access.
+- No Agent or Specialist Handler direct Repository access.
+- No persistence bypass around ApplicationService, ToolRegistry, Approval, Trace, or Workspace boundaries.
+- No log output of API keys, database passwords, full LLM prompts, sensitive credentials, or long raw text.
 
 ### V3 不接受的退化
 

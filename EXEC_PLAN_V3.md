@@ -55,8 +55,7 @@ V3 不改变：
 
 ## 3. V3.1 MySQL Persistence
 
-Status: completed for explicit MySQL profile and Spring JDBC persistence. Docker Compose and observability remain
-planned in later V3 stages.
+Status: completed for explicit MySQL profile and Spring JDBC persistence.
 
 ### 3.1.1 目标
 
@@ -154,7 +153,7 @@ V3.1 未做：
 
 ## 4. V3.2 Docker Compose
 
-Status: completed for local app + mysql Docker Compose startup. Final review remains planned in later V3 stages.
+Status: completed for local app + mysql Docker Compose startup.
 
 ### 4.1 目标
 
@@ -333,6 +332,8 @@ V3.3 未做：
 
 ## 6. V3.4 Final System Review
 
+Status: completed for V3 infrastructure closure review.
+
 ### 6.1 目标
 
 对 V1、V2、V3 的系统能力、边界、验证命令、demo flow 和后续方向做最终复盘，形成可交付的项目说明。
@@ -384,15 +385,36 @@ mvn spotbugs:check
 mvn test -Dtest=ArchitectureTest
 ```
 
+### 6.7 完成记录
+
+V3.4 已完成：
+
+- README 收口为项目入口文档，覆盖项目简介、核心能力、技术栈、默认 in-memory 启动、MySQL profile、
+  Docker Compose、Observability、核心 API、demo flow、execution tree、approval APIs、evaluation dataset、
+  验证命令和已知限制；
+- `docs/quality/QUALITY_SCORE.md` 增加 V3 final quality summary；
+- `docs/exec-plans/active/EXEC_PLAN_V3_INFRASTRUCTURE_CLOSURE.md` 标记为 completed；
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V3_FINAL_REVIEW.md`；
+- 复跑默认质量门禁，确认默认测试仍不依赖 MySQL、Docker、Redis、真实 LLM、API Key 或外部网络。
+
+V3.4 未做：
+
+- 不新增 Java 业务功能；
+- 不新增依赖；
+- 不接新基础设施；
+- 不改变 Agent、ToolRegistry、Approval、Trace、Workspace、Planner、Specialist Handler 或 persistence 语义；
+- 不把 Docker Compose 写成生产部署方案；
+- 不实现真实退款、真实换货、真实优惠券补偿、真实支付或真实物流。
+
 ## 7. V3 当前状态
 
 ```text
 V3.1 MySQL Persistence: completed
 V3.2 Docker Compose: completed
 V3.3 Structured Logging / Observability: completed
-V3.4 Final System Review: planned
+V3.4 Final System Review: completed
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
 已完成本地 app + mysql Docker Compose 启动路径。V3.3 已完成 requestId 追踪、MDC 日志字段和关键路径结构化日志。
-V3.4 final review 尚未完成。
+V3.4 已完成最终系统复盘和文档收口。V3 基础设施收口阶段完成。

@@ -13,6 +13,23 @@ user after-sale message -> ticket -> rule-based AgentRun -> policy retrieval -> 
 The project is intentionally built as a modular monolith with Harness Engineering documents, architecture tests, lint
 checks, and executable tests as the guardrails.
 
+## Core Capabilities
+
+- Create and query after-sale tickets.
+- Trigger deterministic AgentRun execution.
+- Plan single-intent and multi-intent after-sale tasks.
+- Query demo order data through registered tools.
+- Retrieve controlled after-sale policy evidence.
+- Dispatch specialist handlers for return, exchange, coupon, logistics, general consultation, and human escalation
+  subtasks.
+- Record ToolCallTrace entries for tool audit.
+- Create approval requests for high-risk decisions.
+- Query a read-only execution tree for AgentRun inspection.
+- Run offline evaluation against a versioned after-sale dataset.
+- Run with default in-memory repositories or an explicit MySQL profile.
+- Start a local app + MySQL environment with Docker Compose.
+- Correlate requests and Agent execution logs with `X-Request-Id` and MDC fields.
+
 ## Tech Stack
 
 - Java 17
@@ -205,6 +222,42 @@ Logs are diagnostic only. ToolCallTrace, ApprovalRequest records, and the Execut
 inspection surfaces. Logs must not contain API keys, database passwords, full LLM prompts, sensitive credentials, or
 long raw user text.
 
+## Core API List
+
+Health:
+
+```bash
+GET /api/health
+GET /actuator/health
+```
+
+Tickets:
+
+```bash
+POST /api/tickets
+GET /api/tickets/{ticketId}
+```
+
+Agent execution:
+
+```bash
+POST /api/tickets/{ticketId}/agent-runs
+GET /api/agent-runs/{runId}/traces
+GET /api/agent-runs/{runId}/execution-tree
+```
+
+Approval:
+
+```bash
+GET /api/approval-requests/pending
+GET /api/approval-requests/{approvalRequestId}
+POST /api/approval-requests/{approvalRequestId}/approve
+POST /api/approval-requests/{approvalRequestId}/reject
+```
+
+The execution tree endpoint is read-only. It aggregates AgentRun, subtasks, ToolCallTrace records, ApprovalRequest
+records, and workspace-derived summaries without mutating business state.
+
 ## Demo Walkthrough
 
 This walkthrough shows the V1 closed loop:
@@ -346,6 +399,14 @@ API responses use a shared envelope:
   "message": "ok",
   "data": {}
 }
+```
+
+For a richer V2/V3 demo, create a multi-intent or high-risk ticket, trigger an AgentRun, then inspect both the approval
+queue and execution tree:
+
+```bash
+curl http://localhost:8080/api/approval-requests/pending
+curl http://localhost:8080/api/agent-runs/{runId}/execution-tree
 ```
 
 ## Validate
@@ -683,6 +744,12 @@ Dataset:
 docs/evaluation/aftersale_cases.jsonl
 ```
 
+Evaluation guide:
+
+```text
+docs/evaluation/EVALUATION.md
+```
+
 Run the focused evaluation tests:
 
 ```bash
@@ -697,7 +764,8 @@ LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals,
 
 V3 is the infrastructure closure phase. V3.1 MySQL Persistence and V3.2 Docker Compose are implemented for explicit
 local infrastructure profiles. V3.3 Structured Logging / Observability is implemented for request correlation and
-structured diagnostic fields. V3.4 remains planned. V3 does not change the Agent business capability boundary.
+structured diagnostic fields. V3.4 Final Review is completed as the infrastructure closure review. V3 does not change
+the Agent business capability boundary.
 
 ### V3.1 MySQL Persistence
 
@@ -737,12 +805,28 @@ Implemented focus:
 
 ### V3.4 Final Review
 
-Planned focus:
+Completed focus:
 
 - Review system capability list.
 - Document known limitations.
 - Verify demo flow and validation commands.
 - Record follow-up directions without claiming unfinished capabilities as completed.
+
+## Known Limitations
+
+- The default runtime uses in-memory repositories, so default local data is reset on restart.
+- MySQL persistence is available only through the explicit `mysql` profile.
+- Docker Compose is a local development setup, not a production deployment.
+- The default Agent planner is deterministic rule-based fallback; real LLM mode is explicit opt-in.
+- The live LLM smoke test is manual opt-in and requires local credentials.
+- No production authentication or authorization is implemented.
+- No real refund, exchange, coupon compensation, payment, inventory, logistics, order center, or dispute-closing system
+  is connected.
+- Approval APIs record manual decisions but do not execute real high-risk business actions.
+- Policy retrieval is controlled local keyword retrieval, not vector search or hybrid retrieval.
+- Logs are diagnostic only; ToolCallTrace, ApprovalRequest records, and Execution Tree remain the audit surfaces.
+- Docker, MySQL, Redis, real LLMs, API keys, and external network access are intentionally outside the default
+  `mvn test` path.
 
 ### 真实 LLM 本地运行说明
 
