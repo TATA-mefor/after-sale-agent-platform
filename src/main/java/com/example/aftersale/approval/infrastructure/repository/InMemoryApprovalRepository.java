@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!mysql")
 public class InMemoryApprovalRepository implements ApprovalRepository {
 
     private final ConcurrentMap<String, ApprovalRequest> requests = new ConcurrentHashMap<>();

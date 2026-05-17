@@ -33,6 +33,24 @@ public final class ToolCallTrace {
         return new ToolCallTrace(traceId, runId, toolName, inputJson, createdAt);
     }
 
+    public static ToolCallTrace restore(
+            String traceId,
+            String runId,
+            String toolName,
+            String inputJson,
+            ToolCallStatus status,
+            String outputJson,
+            long latencyMs,
+            String errorMessage,
+            Instant createdAt) {
+        ToolCallTrace trace = new ToolCallTrace(traceId, runId, toolName, inputJson, createdAt);
+        trace.status = Objects.requireNonNull(status, "status must not be null");
+        trace.outputJson = outputJson;
+        trace.latencyMs = requireNonNegativeLatency(latencyMs);
+        trace.errorMessage = errorMessage;
+        return trace;
+    }
+
     public void markSucceeded(String successfulOutputJson, long successfulLatencyMs) {
         ensureRunning();
         this.outputJson = requireText(successfulOutputJson, "outputJson");

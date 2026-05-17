@@ -5,9 +5,11 @@ import com.example.aftersale.ticket.domain.TicketRepository;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!mysql")
 public class InMemoryTicketRepository implements TicketRepository {
 
     private final Map<String, Ticket> tickets = new ConcurrentHashMap<>();

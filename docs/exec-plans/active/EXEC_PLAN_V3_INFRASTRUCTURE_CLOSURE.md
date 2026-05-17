@@ -5,37 +5,34 @@ Status: Active
 
 ## Current Stage
 
-V3 进入 Infrastructure Closure 阶段。当前任务只建立 V3 Harness 文档，不实现 Java 代码、不新增 Maven 依赖、
-不新增 `docker-compose.yml`、不接 MySQL。
+V3 进入 Infrastructure Closure 阶段。V3.1 MySQL Persistence 已完成实现；当前活动计划继续跟踪 V3.2 Docker
+Compose、V3.3 Observability 和 V3.4 Final Review。
 
 ## First Priority
 
-V3.1 MySQL Persistence 是第一优先级。
+V3.2 Docker Compose 是下一优先级。
 
 原因：
 
-- Ticket、AgentRun、ToolCallTrace 和 ApprovalRequest 是系统审计与执行状态的核心数据；
-- Docker Compose 需要先有明确的 MySQL profile、schema 和 seed 策略；
-- Observability 需要稳定的业务 ID 和持久化 ID 作为日志关联字段；
-- in-memory/test profile 必须在引入 MySQL 前先明确保留边界。
+- V3.1 已提供明确的 MySQL profile、schema 和 seed 策略；
+- Docker Compose 可以在此基础上提供本地 app + mysql 一键启动路径；
+- 默认 Maven 测试仍必须保留 in-memory 离线路径；
+- Docker Compose 只能代表本地开发环境，不代表生产部署。
 
 ## Execution Order
 
-1. 建立 `EXEC_PLAN_V3.md`，明确 V3.1 到 V3.4 的目标、范围、非目标、验收标准和验证命令。
-2. 新增 V3 infrastructure closure 决策日志。
-3. 更新 `SPEC.md`，补充 V3 基础设施目标和非目标。
-4. 更新 `ARCHITECTURE.md`，补充 MySQL repository、profile、infrastructure 和 Docker Compose 边界。
-5. 更新 `AGENTS.md` 和 `WORKFLOW.md`，补充 persistence / external infrastructure 工作规则。
-6. 更新 `README.md`，加入 V3 roadmap，保持计划状态，不写成已完成。
-7. 更新 `docs/quality/QUALITY_SCORE.md`，加入 V3 质量目标。
-8. 运行默认验证命令。
-9. 输出 Review Packet 和完成信号。
+1. V3.1 MySQL Persistence：completed。
+2. V3.2 Docker Compose：新增本地 app + mysql compose 配置和 README 启动说明。
+3. V3.3 Observability：新增 requestId、ticketId、agentRunId、subtaskId、toolName、approvalRequestId 等结构化日志字段。
+4. V3.4 Final Review：复盘系统能力、限制、demo flow 和后续方向。
+5. 每个阶段运行默认验证命令。
+6. 每个阶段输出 Review Packet 和完成信号。
 
 ## Risks
 
 - 文档可能把 V3 计划误写成已实现能力；
-- 后续 persistence 实现可能让默认测试意外依赖本地 MySQL；
-- MySQL profile 和 in-memory profile 可能出现行为不一致；
+- 后续 Docker Compose 任务可能让默认测试意外依赖 Docker 或本地 MySQL；
+- MySQL profile 和 in-memory profile 可能随新功能出现行为不一致；
 - seed data 可能与现有 in-memory demo 数据漂移；
 - Docker Compose 可能被误解为生产部署；
 - structured logging 可能输出敏感配置或过长 LLM 内容；

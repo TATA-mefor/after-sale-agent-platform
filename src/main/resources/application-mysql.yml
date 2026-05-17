@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: mysql
+
+aftersale:
+  persistence:
+    mysql:
+      url: ${AFTERSALE_MYSQL_URL:jdbc:mysql://localhost:3306/after_sale_agent?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true}
+      username: ${AFTERSALE_MYSQL_USERNAME:aftersale}
+      password: ${AFTERSALE_MYSQL_PASSWORD:}
+      schema-location: classpath:schema-mysql.sql
+      data-location: classpath:data-mysql.sql

@@ -6,9 +6,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!mysql")
 public class InMemoryToolCallTraceRepository implements ToolCallTraceRepository {
 
     private final Map<String, ToolCallTrace> traces = new ConcurrentHashMap<>();

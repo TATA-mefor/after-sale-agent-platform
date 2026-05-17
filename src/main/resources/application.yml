@@ -1,6 +1,9 @@
 spring:
   application:
     name: after-sale-agent-platform
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 
 management:
   endpoints:

@@ -22,7 +22,8 @@ checks, and executable tests as the guardrails.
 - ArchUnit
 - Checkstyle
 - SpotBugs
-- In-memory repositories for V1 demo data
+- In-memory repositories for default offline demo data
+- Spring JDBC + explicit MySQL profile for V3.1 persistence
 
 ## Requirements
 
@@ -35,12 +36,61 @@ checks, and executable tests as the guardrails.
 mvn spring-boot:run
 ```
 
+Default local startup uses in-memory repositories. It does not require MySQL, Docker, Redis, a real LLM, API keys, or
+external network access.
+
 Health checks:
 
 ```bash
 curl http://localhost:8080/api/health
 curl http://localhost:8080/actuator/health
 ```
+
+## MySQL Profile
+
+V3.1 adds an explicit `mysql` profile for local persistence. The default profile remains in-memory, and default
+`mvn test` does not connect to MySQL.
+
+The MySQL profile persists:
+
+- Ticket records
+- AgentRun records
+- ToolCallTrace records
+- ApprovalRequest records
+- Demo order data
+- After-sale policy data
+
+Schema and seed initialization are loaded from:
+
+```text
+src/main/resources/schema-mysql.sql
+src/main/resources/data-mysql.sql
+```
+
+Configure MySQL with local environment variables. Do not commit real passwords.
+
+PowerShell example:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = "mysql"
+$env:AFTERSALE_MYSQL_URL = "jdbc:mysql://localhost:3306/after_sale_agent?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
+$env:AFTERSALE_MYSQL_USERNAME = "aftersale"
+$env:AFTERSALE_MYSQL_PASSWORD = "<local-password>"
+mvn spring-boot:run
+```
+
+Bash example:
+
+```bash
+SPRING_PROFILES_ACTIVE=mysql \
+AFTERSALE_MYSQL_URL='jdbc:mysql://localhost:3306/after_sale_agent?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true' \
+AFTERSALE_MYSQL_USERNAME=aftersale \
+AFTERSALE_MYSQL_PASSWORD='<local-password>' \
+mvn spring-boot:run
+```
+
+The application only creates a JDBC `DataSource` when `SPRING_PROFILES_ACTIVE=mysql` is set. Without that profile, the
+in-memory repositories are active and no database connection is configured.
 
 ## Demo Walkthrough
 
@@ -532,18 +582,19 @@ LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals,
 
 ## V3 Roadmap
 
-V3 is the planned infrastructure closure phase. It is not completed yet, and it does not change the Agent business
-capability boundary.
+V3 is the infrastructure closure phase. V3.1 MySQL Persistence is implemented as an explicit local profile; V3.2,
+V3.3, and V3.4 remain planned. V3 does not change the Agent business capability boundary.
 
 ### V3.1 MySQL Persistence
 
-Planned focus:
+Implemented focus:
 
 - Persist Ticket, AgentRun, ToolCallTrace, and ApprovalRequest records.
-- Persist or seed order demo data and policy data.
-- Add a local MySQL profile.
+- Seed order demo data and policy data.
+- Add a local `mysql` profile.
 - Keep in-memory/test profile for offline deterministic tests.
 - Keep default `mvn test` independent from MySQL, Docker, Redis, real LLMs, API keys, and external network.
+- Keep database credentials in environment variables or uncommitted local configuration only.
 
 ### V3.2 Docker Compose
 

@@ -491,8 +491,8 @@ Completed:
 
 ## V3 Quality Targets
 
-V3 质量目标聚焦基础设施收口。当前 V3 只进入 Harness 计划阶段，不表示已经完成 MySQL、Docker Compose 或
-observability 实现。
+V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL profile 和 Spring JDBC persistence；Docker Compose
+和 observability 仍是后续计划，不表示已经完成。
 
 | 维度 | 当前目标 | 验收方式 |
 |---|---|---|
@@ -503,6 +503,27 @@ observability 实现。
 | Secret safety | 数据库密码、API Key、token 和敏感凭证不进入仓库 | 配置检查 + review |
 | Backward compatibility with V2 demo | V2 ticket、AgentRun、approval、execution tree 和 evaluation demo 不退化 | 回归测试 + README demo |
 | No regression of Agent boundaries | Agent/Handler 不访问 Repository，不绕过 ToolRegistry、Approval、Trace 或 Workspace | ArchitectureTest + 单元测试 |
+
+### V3.1 Current Status
+
+Status: completed for explicit MySQL persistence profile.
+
+Completed:
+
+- Added `mysql` profile configuration using `AFTERSALE_MYSQL_URL`, `AFTERSALE_MYSQL_USERNAME`, and
+  `AFTERSALE_MYSQL_PASSWORD`.
+- Added Spring JDBC repositories for Ticket, AgentRun, ToolCallTrace, ApprovalRequest, Order, and AfterSalePolicy.
+- Added `schema-mysql.sql` with the required core tables.
+- Added `data-mysql.sql` with deterministic demo orders and after-sale policies.
+- Preserved in-memory repositories for the default non-`mysql` profile.
+- Added tests proving default Spring context has no `DataSource` and uses in-memory repositories.
+- Added schema/seed harness tests checking required fields and avoiding committed real secrets.
+
+Remaining V3 follow-up:
+
+- Add Docker Compose local startup in V3.2.
+- Add structured logging and observability fields in V3.3.
+- Consider opt-in MySQL/Testcontainers integration tests without changing the default offline test path.
 
 ### V3 不接受的退化
 

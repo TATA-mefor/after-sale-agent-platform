@@ -35,6 +35,28 @@ public final class Ticket {
         return new Ticket(ticketId, userId, orderId, rawUserMessage, now);
     }
 
+    public static Ticket restore(
+            String ticketId,
+            String userId,
+            String orderId,
+            String rawUserMessage,
+            IntentType intentType,
+            String priority,
+            TicketStatus status,
+            String internalNote,
+            String agentSuggestion,
+            Instant createdAt,
+            Instant updatedAt) {
+        Ticket ticket = new Ticket(ticketId, userId, orderId, rawUserMessage, createdAt);
+        ticket.intentType = Objects.requireNonNull(intentType, "intentType must not be null");
+        ticket.priority = requireText(priority, "priority");
+        ticket.status = Objects.requireNonNull(status, "status must not be null");
+        ticket.internalNote = internalNote;
+        ticket.agentSuggestion = agentSuggestion;
+        ticket.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt must not be null");
+        return ticket;
+    }
+
     public void classifyIntent(IntentType newIntentType, Instant changedAt) {
         this.intentType = Objects.requireNonNull(newIntentType, "intentType must not be null");
         touch(changedAt);

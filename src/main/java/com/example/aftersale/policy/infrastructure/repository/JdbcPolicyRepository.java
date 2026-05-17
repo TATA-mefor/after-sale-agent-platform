@@ -5,60 +5,43 @@ import com.example.aftersale.policy.domain.PolicyRepository;
 import com.example.aftersale.policy.domain.PolicySearchQuery;
 import com.example.aftersale.policy.domain.PolicySearchResult;
 import com.example.aftersale.policy.domain.PolicySnippet;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("!mysql")
-public class InMemoryPolicyRepository implements PolicyRepository {
+@Profile("mysql")
+public class JdbcPolicyRepository implements PolicyRepository {
 
-    private static final Instant EFFECTIVE_FROM = Instant.parse("2026-01-01T00:00:00Z");
-    private static final Instant EFFECTIVE_TO = Instant.parse("2026-12-31T23:59:59Z");
+    private final JdbcTemplate jdbcTemplate;
 
-    private final List<AfterSalePolicy> policies = List.of(
-            policy(
-                    "POL-RETURN-7D",
-                    "7 天无理由退货规则",
-                    "通用商品",
-                    "用户签收商品后 7 天内，在商品完好、附件齐全且不影响二次销售时，可申请无理由退货。"),
-            policy(
-                    "POL-QUALITY-RETURN-EXCHANGE",
-                    "质量问题退换货规则",
-                    "通用商品",
-                    "商品存在质量问题、功能故障或与描述明显不符时，用户可申请退货、退款或换货。"),
-            policy(
-                    "POL-LOGISTICS-NOT-RECEIVED",
-                    "已签收未收到物流争议规则",
-                    "通用商品",
-                    "物流显示已签收但用户反馈未收到货时，应核验签收凭证、物流轨迹和收货地址后进入争议处理。"),
-            policy(
-                    "POL-EXCHANGE",
-                    "换货规则",
-                    "服饰鞋包",
-                    "尺码不合适、颜色错发或同款可替换库存充足时，可发起换货流程。"),
-            policy(
-                    "POL-REPAIR",
-                    "维修规则",
-                    "电子数码",
-                    "保修期内商品出现非人为损坏故障时，可申请维修；超过保修期需告知可能产生费用。"),
-            policy(
-                    "POL-SPECIAL-NO-RETURN",
-                    "特殊商品不支持退货规则",
-                    "特殊商品",
-                    "定制商品、生鲜易腐商品、拆封后影响安全或卫生的商品，非质量问题通常不支持退货。"));
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "JdbcTemplate is a Spring-managed infrastructure collaborator.")
+    public JdbcPolicyRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public List<AfterSalePolicy> findAll() {
-        return policies;
+        return jdbcTemplate.query("""
+                SELECT policy_id, category, product_type, policy_text, effective_from, effective_to
+                FROM aftersale_policies
+                ORDER BY policy_id ASC
+                """, (resultSet, rowNumber) -> mapPolicy(resultSet));
     }
 
     @Override
     public PolicySearchResult search(PolicySearchQuery query) {
-        List<PolicySnippet> snippets = policies.stream()
+        List<PolicySnippet> snippets = findAll().stream()
                 .map(policy -> new ScoredPolicy(policy, score(policy, query.queryText())))
                 .filter(scoredPolicy -> scoredPolicy.score() > 0)
                 .sorted(Comparator.comparingInt(ScoredPolicy::score).reversed()
@@ -74,8 +57,14 @@ public class InMemoryPolicyRepository implements PolicyRepository {
         return PolicySearchResult.matched(query, snippets);
     }
 
-    private static AfterSalePolicy policy(String policyId, String category, String productType, String policyText) {
-        return new AfterSalePolicy(policyId, category, productType, policyText, EFFECTIVE_FROM, EFFECTIVE_TO);
+    private static AfterSalePolicy mapPolicy(ResultSet resultSet) throws SQLException {
+        return new AfterSalePolicy(
+                resultSet.getString("policy_id"),
+                resultSet.getString("category"),
+                resultSet.getString("product_type"),
+                resultSet.getString("policy_text"),
+                instant(resultSet.getTimestamp("effective_from")),
+                instant(resultSet.getTimestamp("effective_to")));
     }
 
     private static int score(AfterSalePolicy policy, String normalizedQuery) {
@@ -129,6 +118,10 @@ public class InMemoryPolicyRepository implements PolicyRepository {
 
     private static String normalize(String value) {
         return value.toLowerCase(Locale.ROOT).trim();
+    }
+
+    private static Instant instant(Timestamp value) {
+        return value.toInstant();
     }
 
     private record ScoredPolicy(AfterSalePolicy policy, int score) {

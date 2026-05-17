@@ -577,6 +577,9 @@ V3 计划支持：
 - 支持结构化日志和基础健康检查；
 - 为 request、ticket、agentRun、subtask、tool 和 approval 维度提供可诊断字段。
 
+当前 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema 初始化和 demo seed 初始化。Docker Compose
+和 structured logging 仍属于后续 V3 阶段。
+
 V3 不改变 Agent 核心业务能力边界：
 
 - LLM 仍只负责生成结构化计划；

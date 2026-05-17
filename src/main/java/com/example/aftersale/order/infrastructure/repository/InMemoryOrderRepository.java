@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!mysql")
 public class InMemoryOrderRepository implements OrderRepository {
 
     private final Map<String, Order> orders = new ConcurrentHashMap<>();

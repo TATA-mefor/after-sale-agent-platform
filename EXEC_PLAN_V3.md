@@ -55,6 +55,9 @@ V3 不改变：
 
 ## 3. V3.1 MySQL Persistence
 
+Status: completed for explicit MySQL profile and Spring JDBC persistence. Docker Compose and observability remain
+planned in later V3 stages.
+
 ### 3.1.1 目标
 
 为核心业务数据增加可替换的 MySQL 持久化实现，同时保留当前 in-memory/test profile，保证默认测试不依赖本地
@@ -128,6 +131,26 @@ mvn test -Dtest=ArchitectureTest
 ```
 
 如引入可选 Testcontainers 或 MySQL integration test，必须使用显式 opt-in 命令，并在 README 中说明。
+
+### 3.1.7 完成记录
+
+V3.1 已完成：
+
+- 新增 `mysql` profile；
+- 新增 `schema-mysql.sql` 和 `data-mysql.sql`；
+- 新增 Ticket、AgentRun、ToolCallTrace、ApprovalRequest、Order、AfterSalePolicy 的 Spring JDBC repository；
+- 保留默认 in-memory repository，并通过 profile 测试证明默认路径不创建 `DataSource`；
+- MySQL 连接信息只来自环境变量或本地未提交配置；
+- domain 层只增加 restore factory，不引入 JPA / Jdbc / Spring Data 依赖；
+- README 记录 MySQL profile 启动说明和默认离线路径；
+- 默认测试仍不依赖 MySQL、Docker、Redis、真实 LLM、API Key 或外部网络。
+
+V3.1 未做：
+
+- 不新增 Docker Compose；
+- 不新增 Redis；
+- 不新增 Testcontainers 默认测试；
+- 不实现真实退款、真实换货、真实优惠券补偿、真实支付或真实物流。
 
 ## 4. V3.2 Docker Compose
 
@@ -315,10 +338,11 @@ mvn test -Dtest=ArchitectureTest
 ## 7. V3 当前状态
 
 ```text
-V3.1 MySQL Persistence: planned
+V3.1 MySQL Persistence: completed
 V3.2 Docker Compose: planned
 V3.3 Structured Logging / Observability: planned
 V3.4 Final System Review: planned
 ```
 
-V3 当前仅进入 Harness 计划阶段，尚未实现 MySQL、Docker Compose 或 observability 代码与配置。
+V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
+Docker Compose、V3.3 observability 和 V3.4 final review 尚未完成。

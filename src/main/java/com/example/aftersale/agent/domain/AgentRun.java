@@ -25,6 +25,24 @@ public final class AgentRun {
         return new AgentRun(runId, ticketId, startedAt);
     }
 
+    public static AgentRun restore(
+            String runId,
+            String ticketId,
+            AgentRunStatus status,
+            String planJson,
+            String finalAnswer,
+            String errorMessage,
+            Instant startedAt,
+            Instant finishedAt) {
+        AgentRun agentRun = new AgentRun(runId, ticketId, startedAt);
+        agentRun.status = Objects.requireNonNull(status, "status must not be null");
+        agentRun.planJson = planJson;
+        agentRun.finalAnswer = finalAnswer;
+        agentRun.errorMessage = errorMessage;
+        agentRun.finishedAt = finishedAt;
+        return agentRun;
+    }
+
     public void succeed(String completedPlanJson, String completedFinalAnswer, Instant completedAt) {
         ensureRunning();
         this.planJson = requireText(completedPlanJson, "planJson");

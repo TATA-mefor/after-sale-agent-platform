@@ -78,6 +78,35 @@ public final class ApprovalRequest {
                 requestedAt);
     }
 
+    public static ApprovalRequest restore(
+            String approvalId,
+            String ticketId,
+            String runId,
+            String subtaskId,
+            String toolName,
+            String requestedAction,
+            ToolRiskLevel riskLevel,
+            ApprovalStatus status,
+            String reviewerId,
+            String decisionReason,
+            Instant requestedAt,
+            Instant reviewedAt) {
+        ApprovalRequest request = new ApprovalRequest(
+                approvalId,
+                ticketId,
+                runId,
+                subtaskId,
+                toolName,
+                requestedAction,
+                riskLevel,
+                requestedAt);
+        request.status = Objects.requireNonNull(status, "status must not be null");
+        request.reviewerId = reviewerId;
+        request.decisionReason = decisionReason;
+        request.reviewedAt = reviewedAt;
+        return request;
+    }
+
     public void approve(String approvedBy, String reason, Instant approvedAt) {
         ensurePending();
         this.reviewerId = requireText(approvedBy, "approvedBy");
