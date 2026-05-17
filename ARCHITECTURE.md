@@ -1003,3 +1003,83 @@ Workspace 不得：
 - 保存跨会话记忆。
 
 Workspace 可以作为后续 Execution Tree、Evaluation Dataset 和 Approval APIs 的上下文来源，但 V2.6 不直接实现这些能力。
+
+## 25. V3 Infrastructure 架构边界
+
+V3 引入基础设施收口目标，但不改变模块化单体和 Agent 执行边界。
+
+### 25.1 Persistence Boundary
+
+Repository 允许出现 MySQL / JPA / Jdbc 实现，但实现必须位于各业务模块的 `infrastructure` 层。
+
+允许：
+
+```text
+ticket/application → TicketRepository
+ticket/infrastructure → MySQL/JPA/Jdbc adapter
+trace/application → ToolCallTraceRepository
+approval/application → ApprovalRepository
+order/application → OrderRepository
+policy/application → PolicyRepository
+```
+
+禁止：
+
+```text
+domain → JPA entity / Jdbc template / datasource
+api → repository
+agent → business repository
+handler → business repository
+controller → infrastructure repository
+persistence adapter → bypass ApplicationService for business flow
+```
+
+### 25.2 Profile Boundary
+
+V3 必须保留 in-memory repository，用于 `test` 或 `dev-simple` profile。
+
+MySQL repository 只在明确的 MySQL profile 中启用。默认测试不得强制依赖本地 MySQL、Docker、真实 LLM、Redis、
+向量库或外部网络。
+
+### 25.3 Domain Boundary
+
+Domain 层不得依赖数据库框架。
+
+领域模型可以表达业务状态、ID、时间和风险边界，但不得出现 JPA annotation、Jdbc API、Spring Data repository、
+database migration 细节或 datasource 配置。
+
+### 25.4 Agent Boundary
+
+Agent、Planner、Workspace 和 Specialist Handler 仍不得直接访问 Repository。即使 Repository 已有 MySQL 实现，
+Agent 执行路径仍必须是：
+
+```text
+AgentApplicationService
+→ ToolRegistry
+→ ToolExecutor
+→ Business Application Service
+→ Repository abstraction
+→ infrastructure implementation
+```
+
+Persistence 不得成为绕过 ToolRegistry、Approval、RiskPolicy、ToolCallTrace 或 ApplicationService 的后门。
+
+### 25.5 Docker Compose Boundary
+
+Docker Compose 只负责本地开发环境。
+
+它可以启动：
+
+- app；
+- mysql；
+- optional redis。
+
+它不代表生产部署，不承诺高可用、备份、密钥管理、监控告警或云环境配置。真实密钥不得写入 compose 文件、
+README、测试、代码或提交历史。
+
+### 25.6 Observability Boundary
+
+V3 structured logging 应包含 requestId、ticketId、agentRunId、subtaskId、toolName 和 approvalRequestId 等字段。
+
+日志不得替代 ToolCallTrace、Execution Tree 或持久化状态；日志也不得输出 API Key、数据库密码、完整长 prompt、
+LLM 原始长文本或敏感凭证。

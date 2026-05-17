@@ -326,3 +326,28 @@ V2.6 任务必须遵守：
 8. Workspace 不得实现向量记忆；
 9. 默认测试不得依赖真实 LLM、API Key、Redis、MySQL、向量库或外部网络；
 10. final summary 可以基于 workspace 汇总，但工具调用审计仍必须来自 ToolCallTrace。
+
+## 18. V3 Infrastructure Closure 任务规则
+
+涉及 persistence、MySQL、schema、seed data、Docker Compose、structured logging、actuator health 或基础设施
+profile 的任务，必须额外阅读：
+
+```text
+EXEC_PLAN_V3.md
+docs/decisions/DECISION_V3_INFRASTRUCTURE_CLOSURE.md
+ARCHITECTURE.md
+WORKFLOW.md
+```
+
+V3 任务必须遵守：
+
+1. 不得删除 in-memory / test profile；
+2. 不得让默认 `mvn test` 强依赖本地 MySQL、Docker、Redis、真实 LLM 或外部网络；
+3. 不得提交真实数据库密码、API Key、访问令牌或其他敏感凭证；
+4. 不得把 Docker Compose 当作生产部署方案；
+5. 不得绕过现有 ToolRegistry / Agent / Approval / Trace / Workspace 边界；
+6. 不得让 Controller 直接访问 Repository；
+7. 不得让 Agent 或 Specialist Handler 直接访问 Repository；
+8. 不得让 persistence 绕过 ApplicationService 执行业务状态流转；
+9. 数据库变更必须有 schema 初始化或 migration 策略；
+10. Docker Compose 变更必须同步更新 README。

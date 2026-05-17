@@ -530,6 +530,49 @@ The default runner uses `RuleBasedAgentPlanner`, validates every generated plan 
 intent, subtask, tool, risk, policy-category, approval-requirement, and plan-validity metrics. It does not call a real
 LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals, or connect to external infrastructure.
 
+## V3 Roadmap
+
+V3 is the planned infrastructure closure phase. It is not completed yet, and it does not change the Agent business
+capability boundary.
+
+### V3.1 MySQL Persistence
+
+Planned focus:
+
+- Persist Ticket, AgentRun, ToolCallTrace, and ApprovalRequest records.
+- Persist or seed order demo data and policy data.
+- Add a local MySQL profile.
+- Keep in-memory/test profile for offline deterministic tests.
+- Keep default `mvn test` independent from MySQL, Docker, Redis, real LLMs, API keys, and external network.
+
+### V3.2 Docker Compose
+
+Planned focus:
+
+- Add local app + mysql startup through Docker Compose.
+- Keep redis optional and not required by default.
+- Manage local environment variables through examples only.
+- Do not commit real secrets.
+- Treat Docker Compose as local development setup, not production deployment.
+
+### V3.3 Structured Logging / Observability
+
+Planned focus:
+
+- Add structured log fields such as requestId, ticketId, agentRunId, subtaskId, toolName, and approvalRequestId.
+- Keep actuator health checks available.
+- Do not replace ToolCallTrace or Execution Tree with logs.
+- Do not introduce complex Prometheus/Grafana setup unless a later plan requires it.
+
+### V3.4 Final Review
+
+Planned focus:
+
+- Review system capability list.
+- Document known limitations.
+- Verify demo flow and validation commands.
+- Record follow-up directions without claiming unfinished capabilities as completed.
+
 ### 真实 LLM 本地运行说明
 
 默认本地运行仍使用 `rule` 模式。若要手动启用真实 LLM Planner，请只在本机环境变量或本地未提交配置中设置：

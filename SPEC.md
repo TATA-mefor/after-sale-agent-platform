@@ -563,3 +563,36 @@ V2.6 不做：
 - 让 workspace 绕过 ToolRegistry 或直接访问 Repository。
 
 V2.6 当前是下一阶段 Harness 目标，不代表功能已经完成。
+
+## 21. V3 目标：Infrastructure Closure
+
+V3 的目标不是继续扩大 Agent 行为能力，而是把 V2 已完成的 in-memory 后端闭环收口为更接近可运行系统的基础设施形态。
+
+V3 计划支持：
+
+- 持久化核心业务数据，包括 Ticket、AgentRun、ToolCallTrace 和 ApprovalRequest；
+- 支持本地 MySQL profile；
+- 保留 in-memory / test profile，默认测试仍然可离线运行；
+- 支持 Docker Compose 本地启动 app + mysql；
+- 支持结构化日志和基础健康检查；
+- 为 request、ticket、agentRun、subtask、tool 和 approval 维度提供可诊断字段。
+
+V3 不改变 Agent 核心业务能力边界：
+
+- LLM 仍只负责生成结构化计划；
+- Java 后端仍负责校验和执行；
+- ToolRegistry 仍是唯一工具执行入口；
+- Agent / Handler 仍不得直接访问 Repository；
+- 高风险动作仍必须进入人工确认；
+- ToolCallTrace 仍是工具调用审计记录。
+
+V3 不做：
+
+- 真实支付；
+- 真实物流；
+- 真实退款；
+- 真实换货；
+- 真实优惠券补偿；
+- 生产级部署编排；
+- 微服务拆分；
+- 让默认测试依赖本地 MySQL、Docker、真实 LLM 或外部网络。

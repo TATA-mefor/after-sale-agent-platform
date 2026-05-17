@@ -488,3 +488,30 @@ Completed:
 - Planner 或 handler 绕过 `AgentPlanValidator`、`ToolRegistry`、Approval、Trace 或 Workspace 边界；
 - 执行真实退款、真实换货、真实优惠券补偿、支付变更、物流变更或争议关闭；
 - 降低 ArchUnit、Checkstyle、SpotBugs 或 JUnit 约束。
+
+## V3 Quality Targets
+
+V3 质量目标聚焦基础设施收口。当前 V3 只进入 Harness 计划阶段，不表示已经完成 MySQL、Docker Compose 或
+observability 实现。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| Persistence correctness | Ticket、AgentRun、ToolCallTrace、ApprovalRequest 在 MySQL profile 下可正确保存和查询 | Repository contract 测试 + opt-in integration test |
+| Test profile stability | in-memory/test profile 保持离线、确定性、快速运行 | 默认 `mvn test` |
+| Docker reproducibility | 本地 app + mysql 可按 README 复现启动 | Docker Compose smoke check |
+| Logging traceability | requestId、ticketId、agentRunId、subtaskId、toolName、approvalRequestId 可用于日志关联 | 日志字段测试 + 手动检查 |
+| Secret safety | 数据库密码、API Key、token 和敏感凭证不进入仓库 | 配置检查 + review |
+| Backward compatibility with V2 demo | V2 ticket、AgentRun、approval、execution tree 和 evaluation demo 不退化 | 回归测试 + README demo |
+| No regression of Agent boundaries | Agent/Handler 不访问 Repository，不绕过 ToolRegistry、Approval、Trace 或 Workspace | ArchitectureTest + 单元测试 |
+
+### V3 不接受的退化
+
+- 删除 in-memory/test profile；
+- 默认测试依赖本地 MySQL、Docker、Redis、真实 LLM、API Key 或外部网络；
+- 真实数据库密码或 API Key 出现在代码、测试、README、docs、配置或提交历史；
+- Docker Compose 被写成生产部署方案；
+- Controller 直接访问 Repository；
+- Agent 或 Specialist Handler 直接访问 Repository；
+- persistence 绕过 ApplicationService、ToolRegistry、Approval、Trace 或 Workspace 边界；
+- 日志输出敏感凭证、完整长 prompt 或 LLM 原始长文本；
+- 降低 ArchUnit、Checkstyle、SpotBugs 或 JUnit 约束。

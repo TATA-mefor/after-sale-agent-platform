@@ -405,3 +405,31 @@ LLM 相关任务只有在以下条件满足时才可完成：
 - 在文档中声称未完成能力已经完成；
 - 让 LLM 绕过 ToolRegistry；
 - 让 LLM 直接执行高风险业务动作。
+
+## 16. V3 外部基础设施工作流规则
+
+任何引入数据库、Docker Compose、Redis、外部日志系统、监控系统或其他外部基础设施的任务，必须先满足：
+
+1. 已有执行计划；
+2. 已有决策日志；
+3. 已有本地降级路径；
+4. 已明确 profile 边界；
+5. 默认测试不依赖外部基础设施；
+6. 敏感配置不进入仓库；
+7. README 说明本地运行方式和降级方式。
+
+涉及 persistence 的任务必须：
+
+- 明确 `test` / `dev-simple` / `mysql` 等 profile 行为；
+- 保留离线测试路径；
+- 保留 in-memory repository 或等价 test double；
+- 为数据库变更提供 migration 或 schema 初始化策略；
+- 为 seed data 提供可复现初始化策略；
+- 证明 Controller、Agent、Handler 没有绕过 ApplicationService 或 ToolRegistry。
+
+涉及 Docker Compose 的任务必须：
+
+- 更新 README；
+- 只提交示例配置，不提交真实密钥；
+- 说明启动、停止、清理和健康检查命令；
+- 明确 Docker Compose 只用于本地开发，不代表生产部署。
