@@ -30,8 +30,20 @@ public class InMemoryApprovalRepository implements ApprovalRepository {
     public List<ApprovalRequest> findByStatus(ApprovalStatus status) {
         return requests.values().stream()
                 .filter(request -> request.getStatus() == status)
-                .sorted(Comparator.comparing(ApprovalRequest::getRequestedAt)
-                        .thenComparing(ApprovalRequest::getApprovalId))
+                .sorted(approvalSort())
                 .toList();
+    }
+
+    @Override
+    public List<ApprovalRequest> findByRunId(String runId) {
+        return requests.values().stream()
+                .filter(request -> request.getRunId().equals(runId))
+                .sorted(approvalSort())
+                .toList();
+    }
+
+    private static Comparator<ApprovalRequest> approvalSort() {
+        return Comparator.comparing(ApprovalRequest::getRequestedAt)
+                .thenComparing(ApprovalRequest::getApprovalId);
     }
 }

@@ -10,4 +10,6 @@ public interface ApprovalRepository {
     Optional<ApprovalRequest> findById(String approvalId);
 
     List<ApprovalRequest> findByStatus(ApprovalStatus status);
+
+    List<ApprovalRequest> findByRunId(String runId);
 }

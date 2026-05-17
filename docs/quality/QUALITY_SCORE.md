@@ -249,7 +249,7 @@ Completed:
 Remaining follow-up:
 
 - Approval APIs are completed in V2.7.
-- Execution Tree is still V2.8.
+- Execution Tree is completed in V2.8.
 - Handler behavior remains deterministic and policy/tool based; there is no real refund, exchange, coupon compensation,
   logistics, payment, database, or microservice integration.
 
@@ -365,3 +365,43 @@ Completed:
 - reject 不保存 reason；
 - high-risk subtask 被标记为直接完成；
 - 默认测试需要真实 LLM、API Key、Redis、MySQL 或外部网络。
+
+## V2.8 Quality Targets
+
+V2.8 质量目标聚焦执行过程的只读可解释视图。当前 V2.8 已完成 in-memory Execution Tree API 基础实现。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| 根节点完整性 | execution tree 返回 runId、ticketId、AgentRun 状态、finalSuggestion、rootSummary 和时间戳 | API 测试 |
+| Subtask 归属 | 多意图 AgentRun 返回多个 subtask node | API 测试 |
+| ToolCall 归属 | trace inputJson 中存在 subtaskId 时挂到对应 subtask | API 测试 |
+| Root-level trace | 无 subtaskId 的 trace 留在 root-level toolCalls | API 测试 |
+| Approval 归属 | high-risk subtask 创建的 ApprovalRequest 挂到对应 subtask | API 测试 |
+| 只读边界 | 查询 execution tree 不改变 Ticket 或 ApprovalRequest 状态 | API 测试 |
+| 错误清晰度 | 不存在 runId 返回 `AGENT_RUN_NOT_FOUND` | API 测试 |
+| 架构边界 | Controller 不访问 Repository，聚合逻辑放在 ApplicationService | ArchitectureTest |
+| 测试确定性 | 默认测试不依赖真实 LLM、API Key、Redis、MySQL 或网络 | `mvn test` 离线通过 |
+
+### V2.8 Current Status
+
+Status: completed for read-only in-memory execution tree view.
+
+Completed:
+
+- Added `ExecutionTreeApplicationService`.
+- Added `AgentExecutionTreeController`.
+- Added structured execution tree response models.
+- Tool calls are attached to subtasks by `ToolCallTrace.inputJson.subtaskId` when present.
+- Tool calls without subtask metadata remain root-level.
+- Approval requests are attached to subtasks by `runId` and `subtaskId` when present.
+- Missing run IDs return a clear not-found API response.
+- Execution tree queries do not mutate Ticket or ApprovalRequest state.
+- Default tests remain offline and deterministic.
+
+### V2.8 不接受的退化
+
+- Execution Tree API 修改 Ticket、AgentRun、ToolCallTrace 或 ApprovalRequest；
+- Controller 直接访问 Repository；
+- 为 Execution Tree 大幅重构 Agent 主执行链路或 ToolCallTrace 模型；
+- 默认测试需要真实 LLM、API Key、Redis、MySQL、向量库或外部网络；
+- README 或 Harness 文档把前端可视化、并行执行、消息队列或真实业务执行写成 V2.8 已实现能力。

@@ -331,9 +331,6 @@ business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
 
 ### V2 后续方向
 
-- Agent Workspace / Structured Memory；
-- Approval APIs；
-- Execution Tree；
 - MySQL Persistence；
 - Agent Evaluation Dataset；
 - Vector or Hybrid Policy Retrieval；
@@ -383,7 +380,8 @@ priority order, and trace `inputJson` includes subtask metadata such as `subtask
 
 V2.3 remains a single-process planning and execution design. It does not add multi-Agent microservices, queues, parallel
 execution, voting consensus, a full coupon system, real refunds, real exchanges, real logistics, or real payment
-integration. V2.4 now adds handler-based dispatch on top of this subtask model; Execution Tree remains future work.
+integration. V2.4 adds handler-based dispatch on top of this subtask model, and V2.8 exposes the resulting execution
+tree as a read-only API.
 
 ### V2.4 Specialist Agent Handler
 
@@ -493,6 +491,25 @@ curl -X POST http://localhost:8080/api/approval-requests/{approvalRequestId}/rej
 
 High-risk subtasks create `ApprovalRequest` records and move the ticket to `WAITING_HUMAN_APPROVAL`. Low-risk tools do
 not create approval requests.
+
+### V2.8 Execution Tree
+
+V2.8 adds a read-only execution tree API for inspecting one `AgentRun` across plan, subtasks, tool traces, approval
+requests, and workspace-derived summary.
+
+Implemented API:
+
+```bash
+curl http://localhost:8080/api/agent-runs/{runId}/execution-tree
+```
+
+The response contains root AgentRun fields, root-level tool calls without `subtaskId`, subtask nodes with attached tool
+calls, approval request nodes, errors, and timestamps. Tool calls are associated to subtasks through
+`ToolCallTrace.inputJson.subtaskId` when present. Approval requests are associated through `runId` and `subtaskId` when
+available.
+
+This API is query-only. It does not modify tickets, AgentRun records, traces, approvals, refunds, exchanges, coupons,
+payments, logistics, or inventory.
 
 ### 真实 LLM 本地运行说明
 

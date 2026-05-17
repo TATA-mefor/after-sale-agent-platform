@@ -77,6 +77,10 @@ public class ApprovalApplicationService {
         return approvalRepository.findByStatus(ApprovalStatus.PENDING);
     }
 
+    public List<ApprovalRequest> findByRunId(String runId) {
+        return approvalRepository.findByRunId(requireText(runId, "runId"));
+    }
+
     public ApprovalRequest getById(String approvalRequestId) {
         return approvalRepository.findById(requireText(approvalRequestId, "approvalRequestId"))
                 .orElseThrow(() -> new ResourceNotFoundException(

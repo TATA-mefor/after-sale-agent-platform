@@ -1107,12 +1107,35 @@ COMPLETED
 
 ### 12.1 目标
 
-将 trace 从线性工具调用列表升级为可解释的执行树。
+将 trace 从线性工具调用列表升级为可解释的只读执行树。
 
-候选 API：
+已实现 API：
 
 ```text
 GET /api/agent-runs/{runId}/execution-tree
+```
+
+Execution Tree 聚合：
+
+- `AgentRun` 根信息；
+- `AgentPlan` / `AgentSubtask`；
+- `ToolCallTrace`；
+- `ApprovalRequest`；
+- `AgentWorkspace` snapshot 汇总。
+
+返回结构包含：
+
+```text
+runId
+ticketId
+agentRunStatus
+finalSuggestion
+rootSummary
+subtasks
+toolCalls
+approvalRequests
+errors
+createdAt / finishedAt
 ```
 
 示例结构：
@@ -1130,10 +1153,36 @@ AgentRun
     └── ToolCall: search_aftersale_policy
 ```
 
-### 12.2 状态
+### 12.2 已完成能力
+
+- 新增 `ExecutionTreeApplicationService`；
+- 新增 `AgentExecutionTreeController`；
+- 新增 `ExecutionTreeResponse`、subtask node、tool call node 和 approval node；
+- 单意图 AgentRun 的无 subtask tool calls 归入 root-level `toolCalls`；
+- 多意图 AgentRun 的 tool calls 基于 trace `inputJson.subtaskId` 归属到对应 subtask；
+- high-risk subtask 创建的 `ApprovalRequest` 基于 `runId` / `subtaskId` 归属到对应 subtask；
+- 无法精确归属的 approval request 保留在 root-level `approvalRequests`；
+- missing `runId` 返回清晰 `AGENT_RUN_NOT_FOUND`；
+- API 为只读查询，不修改 Ticket、AgentRun、ToolCallTrace 或 ApprovalRequest；
+- 默认测试仍离线运行，不依赖真实 LLM、API Key、数据库、Redis 或网络。
+
+### 12.3 不做
+
+V2.8 不做：
+
+- 不改 Agent 主执行流程；
+- 不改 ToolCallTrace 模型；
+- 不接真实数据库；
+- 不接 Redis；
+- 不做前端可视化 UI；
+- 不做并行执行；
+- 不做消息队列；
+- 不执行真实退款、换货、优惠券补偿、支付或物流动作。
+
+### 12.4 状态
 
 ```text
-PLANNED
+COMPLETED
 ```
 
 ---
@@ -1225,7 +1274,7 @@ V2.4 Specialist Agent Handler ✅
 V2.5 Policy Retrieval Tool ✅
 V2.6 Agent Workspace / Structured Memory ✅
 V2.7 Approval APIs ✅
-V2.8 Execution Tree
+V2.8 Execution Tree ✅
 V2.9 Evaluation Dataset
 V2.10 Robustness
 ```
