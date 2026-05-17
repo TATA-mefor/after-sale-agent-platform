@@ -447,3 +447,44 @@ Completed:
 - 评测修改 Ticket、AgentRun、ToolCallTrace 或 ApprovalRequest；
 - 引入外部评测框架导致本地测试复杂化；
 - 删除或降低现有架构、Checkstyle、SpotBugs 或 JUnit 约束。
+
+## V2.10 Quality Targets
+
+V2.10 质量目标聚焦基于 V2.9 评测暴露问题的 deterministic fallback robustness。当前 V2.10 已完成
+`RuleBasedAgentPlanner` 规则覆盖增强，不表示已经引入真实 LLM 评测、语义理解模型或外部依赖。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| Refund-only 识别 | 仅退款、只退款、不退货退款、未发货取消并退款等表达能进入 `REFUND_ONLY` | Planner 测试 + Evaluation 测试 |
+| Coupon 咨询识别 | 优惠券、退券、补券、优惠没退等表达能进入 `COUPON_CONSULTATION` | Planner 测试 + Evaluation 测试 |
+| 双意图拆解 | 退货 + 换货、退货 + 优惠券、物流 + 退款咨询能生成多个 subtasks | Planner 测试 + JSONL 评测 |
+| 高风险识别 | 直接退款、立刻退款、投诉、平台介入、金额较大、补偿、赔偿等触发 `HIGH` 或审批要求 | Planner 测试 + Evaluation 测试 |
+| 评测改进 | V2.10 rule-based evaluation 至少通过 13/15 cases，且 plan validity 为 100% | Evaluation 测试 |
+| 边界不变 | 不调用真实 LLM、不绕过 AgentPlanValidator、ToolRegistry、Approval、Trace 或 Workspace | 单元测试 + 架构检查 |
+| 测试确定性 | 默认测试不依赖真实 LLM、API Key、Redis、MySQL、向量库或网络 | `mvn test` 离线通过 |
+
+### V2.10 Current Status
+
+Status: completed for deterministic robustness improvements in the rule-based fallback.
+
+Completed:
+
+- `RuleBasedAgentPlanner` expands refund-only, coupon-only, logistics, return, exchange, and high-risk keyword coverage.
+- Single coupon consultation creates a `COUPON_CONSULTATION` subtask while keeping the top-level intent as
+  `GENERAL_CONSULTATION`.
+- Two-intent combinations now produce multiple ordered subtasks and assign `MEDIUM` plan risk unless high-risk language
+  is present.
+- High-risk language sets `HIGH` plan risk and propagates `HIGH` risk to generated subtasks, preserving human approval
+  boundaries.
+- In-memory policy keyword priority now favors special goods and repair policies before generic return/quality matches.
+- Evaluation tests assert improved V2.10 pass/fail bounds and high-risk approval expectation coverage.
+- Default tests remain offline and deterministic.
+
+### V2.10 不接受的退化
+
+- 为通过评测读取或硬编码 `caseId`；
+- 删除评测 case 或降低评测字段断言；
+- 默认评测调用真实 LLM、OpenAI provider、外部网络或需要 API Key；
+- Planner 或 handler 绕过 `AgentPlanValidator`、`ToolRegistry`、Approval、Trace 或 Workspace 边界；
+- 执行真实退款、真实换货、真实优惠券补偿、支付变更、物流变更或争议关闭；
+- 降低 ArchUnit、Checkstyle、SpotBugs 或 JUnit 约束。

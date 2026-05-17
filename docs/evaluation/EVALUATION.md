@@ -51,8 +51,9 @@ The initial dataset contains 15 cases covering:
 - general consultation;
 - unknown input.
 
-Some cases intentionally represent target behavior that the current rule-based planner does not fully satisfy. Those
-failures are useful signal for V2.10 robustness and later LLM evaluation work.
+V2.9 used this dataset to expose deterministic fallback gaps. V2.10 keeps the same dataset and improves the
+rule-based fallback so refund-only, coupon consultation, two-intent combinations, high-risk terms, and approval
+requirements are covered without reading `caseId` or hard-coding dataset answers.
 
 ## Metrics
 
@@ -116,6 +117,23 @@ mvn test -Dtest=ArchitectureTest
 - It does not use LLM-as-judge.
 - It does not call a real LLM provider.
 - It does not connect to MySQL, Redis, PGvector, or external networks.
+
+## V2.10 Robustness Notes
+
+V2.10 improves `RuleBasedAgentPlanner` as the deterministic fallback used by default evaluation. The fallback now:
+
+- recognizes refund-only wording such as only-refund, no-return refund, not-yet-shipped cancellation, and missing-goods
+  refund consultation;
+- recognizes coupon-only and coupon consultation wording and emits `COUPON_CONSULTATION` subtasks;
+- splits two-intent messages such as return + exchange, return + coupon, and logistics + refund-only;
+- marks high-risk refund, complaint, platform escalation, compensation, dispute-closing, repeated after-sale, and
+  high-amount language as `HIGH` risk or high-risk subtasks;
+- keeps every generated plan under `AgentPlanValidator`, `ToolRegistry`, approval, trace, and workspace boundaries.
+
+The evaluation regression target is now stronger than V2.9: default rule-based evaluation must pass at least 13 of the
+15 versioned cases, with all generated plans valid. The current V2.10 rule set is still keyword-based. It is not a
+semantic model, does not call a real LLM, does not judge free-form final answer quality, and does not add real coupon,
+refund, exchange, logistics, database, Redis, or vector integrations.
 
 ## Future LLM Evaluation
 

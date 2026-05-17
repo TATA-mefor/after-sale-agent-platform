@@ -90,6 +90,15 @@ public class InMemoryPolicyRepository implements PolicyRepository {
     }
 
     private static List<String> keywordsFor(String normalizedQuery) {
+        if (normalizedQuery.contains("特殊") || normalizedQuery.contains("不支持")
+                || normalizedQuery.contains("定制") || normalizedQuery.contains("生鲜")
+                || normalizedQuery.contains("拆封")) {
+            return List.of("特殊", "不支持", "定制", "生鲜");
+        }
+        if (normalizedQuery.contains("维修") || normalizedQuery.contains("修")
+                || normalizedQuery.contains("保修")) {
+            return List.of("维修", "修理", "保修");
+        }
         if (normalizedQuery.contains("质量") || normalizedQuery.contains("坏")
                 || normalizedQuery.contains("故障") || normalizedQuery.contains("问题")) {
             return List.of("质量", "故障", "退换货", "退款");
@@ -110,15 +119,8 @@ public class InMemoryPolicyRepository implements PolicyRepository {
                 || normalizedQuery.contains("尺码")) {
             return List.of("换货", "尺码");
         }
-        if (normalizedQuery.contains("维修") || normalizedQuery.contains("修")) {
-            return List.of("维修", "修理");
-        }
         if (normalizedQuery.contains("优惠券") || normalizedQuery.contains("券")) {
             return List.of("优惠券");
-        }
-        if (normalizedQuery.contains("特殊") || normalizedQuery.contains("不支持")
-                || normalizedQuery.contains("定制") || normalizedQuery.contains("生鲜")) {
-            return List.of("特殊", "不支持", "定制", "生鲜");
         }
         return List.of(normalizedQuery);
     }

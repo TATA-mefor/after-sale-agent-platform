@@ -43,8 +43,8 @@ class EvaluationApplicationServiceTest {
         EvaluationReport report = evaluationApplicationService.runRuleBased(DATASET_PATH);
 
         assertThat(report.totalCases()).isEqualTo(15);
-        assertThat(report.passedCases()).isGreaterThan(0);
-        assertThat(report.failedCases()).isGreaterThan(0);
+        assertThat(report.passedCases()).isGreaterThanOrEqualTo(13);
+        assertThat(report.failedCases()).isLessThanOrEqualTo(2);
         assertThat(report.metrics())
                 .extracting(metric -> metric.name())
                 .contains(
@@ -90,14 +90,15 @@ class EvaluationApplicationServiceTest {
     }
 
     @Test
-    void approvalExpectationReportsHighRiskBoundaryGap() {
+    void approvalExpectationPassesForHighRiskFallback() {
         EvaluationReport report = evaluationApplicationService.runRuleBased(DATASET_PATH);
 
         EvaluationResult result = resultByCaseId(report, "AS-EVAL-013");
-        assertThat(result.passed()).isFalse();
+        assertThat(result.passed()).isTrue();
+        assertThat(result.actualRiskLevel().requiresApproval()).isTrue();
         assertThat(result.failures())
                 .extracting(EvaluationFailure::field)
-                .contains("riskLevel", "approvalRequirement");
+                .doesNotContain("riskLevel", "approvalRequirement");
     }
 
     @Test

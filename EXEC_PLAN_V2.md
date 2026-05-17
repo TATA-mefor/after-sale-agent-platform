@@ -1259,23 +1259,47 @@ COMPLETED
 
 ### 14.1 目标
 
-补充基础容错能力。
+基于 V2.9 evaluation dataset 暴露的问题，增强 deterministic rule-based fallback 的意图识别、子任务拆解和
+审批风险判断。V2.10 不改变 LLM Planner、ToolRegistry、Approval、Trace、Workspace 或外部基础设施边界。
 
-候选能力：
+重点改进：
 
 ```text
-Tool timeout
-Tool retry
-Tool failure trace
-AgentRun failed state
-Fallback to human
-Fallback to RuleBasedPlanner
+refund-only recognition
+coupon-only / coupon consultation recognition
+two-intent combination splitting
+high-risk keyword detection
+expectedRequiresApproval alignment
+policy keyword priority for special goods and repair
 ```
 
-### 14.2 状态
+### 14.2 已完成能力
+
+- `RuleBasedAgentPlanner` 扩展仅退款、未发货取消退款、不退货退款等 refund-only 表达；
+- `RuleBasedAgentPlanner` 扩展优惠券、退券、补券、优惠没退等 coupon consultation 表达；
+- 支持退货 + 换货、退货 + 优惠券、物流 + 退款咨询等两意图拆解；
+- 多意图计划在无高风险语言时保持 `MEDIUM` plan risk；
+- 直接退款、立刻退款、强制退款、投诉、平台介入、金额较高、多次售后、关闭争议、补偿、赔偿等表达触发
+  `HIGH` risk 或高风险 subtask；
+- 评测继续通过 `AgentPlanValidator`，不读取或硬编码 `caseId`；
+- 默认评测继续使用 `RuleBasedAgentPlanner`，不依赖真实 LLM、API Key、网络、数据库、Redis 或向量库；
+- `InMemoryPolicyRepository` 调整 keyword priority，优先匹配特殊商品和维修政策，减少泛化质量/退货命中误差。
+
+### 14.3 不做
+
+V2.10 不做：
+
+- 不调用真实 LLM；
+- 不做 LLM-as-judge；
+- 不删除或降低 V2.9 evaluation case / assertions；
+- 不引入数据库、Redis、向量库或前端；
+- 不实现真实退款、真实换货、真实优惠券补偿、支付变更、物流变更或争议关闭；
+- 不降低 ArchUnit、Checkstyle、SpotBugs 或 JUnit 约束。
+
+### 14.4 状态
 
 ```text
-PLANNED
+COMPLETED
 ```
 
 ---
@@ -1312,5 +1336,5 @@ V2.6 Agent Workspace / Structured Memory ✅
 V2.7 Approval APIs ✅
 V2.8 Execution Tree ✅
 V2.9 Evaluation Dataset ✅
-V2.10 Robustness
+V2.10 Robustness ✅
 ```

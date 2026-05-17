@@ -11,10 +11,10 @@ import com.example.aftersale.agent.application.planner.RuleBasedAgentPlanner;
 import com.example.aftersale.agent.application.planner.SubtaskType;
 import com.example.aftersale.agent.infrastructure.llm.AgentPlannerConfiguration;
 import com.example.aftersale.agent.infrastructure.llm.LlmAgentPlanner;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.TicketStatus;
 import com.example.aftersale.tool.domain.ToolRiskLevel;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Constructor;
 import java.time.Instant;
 import java.util.Arrays;
@@ -36,7 +36,7 @@ class AgentPlannerTest {
 
         assertThat(plan.intent()).isEqualTo(IntentType.RETURN_AND_REFUND);
         assertThat(plan.riskLevel()).isEqualTo(ToolRiskLevel.LOW);
-        assertThat(plan.policyQuery()).isEqualTo(context.rawUserMessage());
+        assertThat(plan.policyQuery()).contains("质量问题", "退货");
         assertThat(plan.finalSuggestion()).contains("RETURN_AND_REFUND");
         assertThat(plan.plannedTools())
                 .extracting("toolName")
@@ -59,6 +59,82 @@ class AgentPlannerTest {
                 .allSatisfy(subtask -> assertThat(subtask.plannedTools())
                         .extracting("toolName")
                         .containsExactly("get_order_by_id", "search_aftersale_policy", "add_ticket_note"));
+    }
+
+    @Test
+    void ruleBasedPlannerRecognizesRefundOnlyIntent() {
+        AgentPlanningContext context = planningContext("商品还没有发货，我只想仅退款，不需要退货。");
+
+        AgentPlan plan = new RuleBasedAgentPlanner().plan(context);
+
+        assertThat(plan.intent()).isEqualTo(IntentType.REFUND_ONLY);
+        assertThat(plan.subtasks()).isEmpty();
+        assertThat(plan.policyQuery()).contains("仅退款");
+    }
+
+    @Test
+    void ruleBasedPlannerRecognizesCouponConsultationSubtask() {
+        AgentPlanningContext context = planningContext("下单时有一张优惠券没用上，还能退回或补给我吗？");
+
+        AgentPlan plan = new RuleBasedAgentPlanner().plan(context);
+
+        assertThat(plan.intent()).isEqualTo(IntentType.GENERAL_CONSULTATION);
+        assertThat(plan.subtasks())
+                .extracting("type")
+                .containsExactly(SubtaskType.COUPON_CONSULTATION);
+    }
+
+    @Test
+    void ruleBasedPlannerSplitsReturnAndExchangeIntoTwoSubtasks() {
+        AgentPlanningContext context = planningContext("一件衣服有污渍想退货，另一件尺码不合适想换货。");
+
+        AgentPlan plan = new RuleBasedAgentPlanner().plan(context);
+
+        assertThat(plan.intent()).isEqualTo(IntentType.MULTI_INTENT);
+        assertThat(plan.subtasks())
+                .extracting("type")
+                .containsExactly(SubtaskType.RETURN, SubtaskType.EXCHANGE);
+    }
+
+    @Test
+    void ruleBasedPlannerSplitsReturnAndCouponIntoTwoSubtasks() {
+        AgentPlanningContext context = planningContext("耳机有质量问题想退货，另外优惠券没用上能不能退？");
+
+        AgentPlan plan = new RuleBasedAgentPlanner().plan(context);
+
+        assertThat(plan.intent()).isEqualTo(IntentType.MULTI_INTENT);
+        assertThat(plan.subtasks())
+                .extracting("type")
+                .containsExactly(SubtaskType.RETURN, SubtaskType.COUPON_CONSULTATION);
+    }
+
+    @Test
+    void ruleBasedPlannerMarksHighRiskKeywordsAsApprovalRequired() {
+        AgentPlanningContext context = planningContext("我要马上退款，金额较高，如果不给退我就投诉。");
+
+        AgentPlan plan = new RuleBasedAgentPlanner().plan(context);
+
+        assertThat(plan.riskLevel()).isEqualTo(ToolRiskLevel.HIGH);
+        assertThat(plan.riskLevel().requiresApproval()).isTrue();
+    }
+
+    @Test
+    void ruleBasedPlannerUsesMessageContentInsteadOfEvaluationCaseIds() {
+        AgentPlanningContext refundContext = planningContextWithTicketId(
+                "EVAL-NON-DATASET",
+                "商品还没有发货，我只想仅退款，不需要退货。");
+        AgentPlanningContext couponContext = planningContextWithTicketId(
+                "EVAL-AS-EVAL-003",
+                "下单时有一张优惠券没用上，还能退回或补给我吗？");
+
+        AgentPlan refundPlan = new RuleBasedAgentPlanner().plan(refundContext);
+        AgentPlan couponPlan = new RuleBasedAgentPlanner().plan(couponContext);
+
+        assertThat(refundPlan.intent()).isEqualTo(IntentType.REFUND_ONLY);
+        assertThat(couponPlan.intent()).isEqualTo(IntentType.GENERAL_CONSULTATION);
+        assertThat(couponPlan.subtasks())
+                .extracting("type")
+                .containsExactly(SubtaskType.COUPON_CONSULTATION);
     }
 
     @Test
@@ -102,8 +178,12 @@ class AgentPlannerTest {
     }
 
     private static AgentPlanningContext planningContext(String message) {
+        return planningContextWithTicketId("T-PLANNER-1", message);
+    }
+
+    private static AgentPlanningContext planningContextWithTicketId(String ticketId, String message) {
         return new AgentPlanningContext(
-                "T-PLANNER-1",
+                ticketId,
                 "U-PLANNER-1",
                 "O-PLANNER-1",
                 message,
