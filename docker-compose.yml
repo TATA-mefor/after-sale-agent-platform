@@ -1,0 +1,45 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: aftersale-mysql
+    environment:
+      MYSQL_DATABASE: ${AFTERSALE_MYSQL_DATABASE:-after_sale_agent}
+      MYSQL_USER: ${AFTERSALE_MYSQL_USERNAME:-aftersale}
+      MYSQL_PASSWORD: ${AFTERSALE_MYSQL_PASSWORD:-aftersale}
+      MYSQL_ROOT_PASSWORD: ${AFTERSALE_MYSQL_ROOT_PASSWORD:-aftersale_root}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/main/resources/schema-mysql.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./src/main/resources/data-mysql.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aftersale-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mysql
+      AFTERSALE_MYSQL_URL: jdbc:mysql://mysql:3306/after_sale_agent?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+      AFTERSALE_MYSQL_USERNAME: ${AFTERSALE_MYSQL_USERNAME:-aftersale}
+      AFTERSALE_MYSQL_PASSWORD: ${AFTERSALE_MYSQL_PASSWORD:-aftersale}
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:

@@ -154,6 +154,9 @@ V3.1 未做：
 
 ## 4. V3.2 Docker Compose
 
+Status: completed for local app + mysql Docker Compose startup. Structured logging and final review remain planned in
+later V3 stages.
+
 ### 4.1 目标
 
 为本地开发和演示提供一键启动路径，使 app 和 MySQL 能在本机以可复现方式启动。Docker Compose 只代表本地
@@ -218,6 +221,29 @@ mvn test -Dtest=ArchitectureTest
 ```
 
 Docker Compose smoke 命令必须在 README 中作为显式本地验证，不进入默认测试门禁。
+
+### 4.7 完成记录
+
+V3.2 已完成：
+
+- 新增 `docker-compose.yml`；
+- 新增 `Dockerfile`；
+- 新增 `.dockerignore`；
+- Compose 包含 `mysql` 和 `app` 服务；
+- MySQL 使用本地占位数据库、账号和密码，并允许通过环境变量覆盖；
+- MySQL 初始化挂载 `schema-mysql.sql` 和 `data-mysql.sql`；
+- app 服务通过 `SPRING_PROFILES_ACTIVE=mysql` 启动，并连接 compose 内部的 `mysql` 服务；
+- README 记录启动、健康检查、停止和清理命令；
+- 默认 Maven 测试仍不依赖 Docker、MySQL、Redis、真实 LLM、API Key 或外部网络；
+- 新增离线 harness 测试检查 compose profile、schema/seed 挂载、Redis 边界和 secret safety。
+
+V3.2 未做：
+
+- 不新增 Redis；
+- 不新增 Kubernetes；
+- 不新增生产部署脚本；
+- 不改变 Agent、ToolRegistry、Approval、Trace 或 Workspace 业务边界；
+- 不实现真实退款、真实换货、真实优惠券补偿、真实支付或真实物流。
 
 ## 5. V3.3 Structured Logging / Observability
 
@@ -339,10 +365,10 @@ mvn test -Dtest=ArchitectureTest
 
 ```text
 V3.1 MySQL Persistence: completed
-V3.2 Docker Compose: planned
+V3.2 Docker Compose: completed
 V3.3 Structured Logging / Observability: planned
 V3.4 Final System Review: planned
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
-Docker Compose、V3.3 observability 和 V3.4 final review 尚未完成。
+已完成本地 app + mysql Docker Compose 启动路径。V3.3 observability 和 V3.4 final review 尚未完成。

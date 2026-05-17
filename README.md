@@ -29,6 +29,7 @@ checks, and executable tests as the guardrails.
 
 - Java 17+
 - Maven 3.9+
+- Docker and Docker Compose, only for the optional V3.2 local compose flow
 
 ## Run Locally
 
@@ -91,6 +92,66 @@ mvn spring-boot:run
 
 The application only creates a JDBC `DataSource` when `SPRING_PROFILES_ACTIVE=mysql` is set. Without that profile, the
 in-memory repositories are active and no database connection is configured.
+
+## Docker Compose Local Development
+
+V3.2 adds an optional Docker Compose path for local app + MySQL startup. This is a local development setup only. It is
+not a production deployment model and it does not change the default in-memory test path.
+
+Start app + MySQL:
+
+```bash
+docker compose up --build
+```
+
+The compose file starts:
+
+- `mysql` on host port `3306`
+- `app` on host port `8080`
+
+The app service runs with:
+
+```text
+SPRING_PROFILES_ACTIVE=mysql
+AFTERSALE_MYSQL_URL=jdbc:mysql://mysql:3306/after_sale_agent?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+AFTERSALE_MYSQL_USERNAME=aftersale
+AFTERSALE_MYSQL_PASSWORD=aftersale
+```
+
+These are local placeholder credentials. Override them from your shell or an uncommitted local `.env` file when needed.
+Do not commit real passwords, API keys, tokens, or production configuration.
+
+MySQL initialization uses the V3.1 scripts:
+
+```text
+src/main/resources/schema-mysql.sql
+src/main/resources/data-mysql.sql
+```
+
+Check the running app:
+
+```bash
+curl http://localhost:8080/api/health
+curl http://localhost:8080/actuator/health
+```
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+Stop containers and remove the local MySQL volume:
+
+```bash
+docker compose down -v
+```
+
+Default validation still does not require Docker:
+
+```bash
+mvn test
+```
 
 ## Demo Walkthrough
 
@@ -582,8 +643,8 @@ LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals,
 
 ## V3 Roadmap
 
-V3 is the infrastructure closure phase. V3.1 MySQL Persistence is implemented as an explicit local profile; V3.2,
-V3.3, and V3.4 remain planned. V3 does not change the Agent business capability boundary.
+V3 is the infrastructure closure phase. V3.1 MySQL Persistence and V3.2 Docker Compose are implemented for explicit
+local infrastructure profiles. V3.3 and V3.4 remain planned. V3 does not change the Agent business capability boundary.
 
 ### V3.1 MySQL Persistence
 
@@ -598,11 +659,14 @@ Implemented focus:
 
 ### V3.2 Docker Compose
 
-Planned focus:
+Implemented focus:
 
 - Add local app + mysql startup through Docker Compose.
-- Keep redis optional and not required by default.
-- Manage local environment variables through examples only.
+- Build the app from the local Dockerfile.
+- Initialize MySQL from `schema-mysql.sql` and `data-mysql.sql`.
+- Run the app with the explicit `mysql` profile.
+- Keep Redis out of the default compose environment.
+- Manage local credentials through placeholder defaults and environment variable overrides.
 - Do not commit real secrets.
 - Treat Docker Compose as local development setup, not production deployment.
 

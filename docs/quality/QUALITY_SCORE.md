@@ -491,8 +491,8 @@ Completed:
 
 ## V3 Quality Targets
 
-V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL profile 和 Spring JDBC persistence；Docker Compose
-和 observability 仍是后续计划，不表示已经完成。
+V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL profile 和 Spring JDBC persistence，V3.2 已完成
+本地 Docker Compose 启动路径；observability 仍是后续计划，不表示已经完成。
 
 | 维度 | 当前目标 | 验收方式 |
 |---|---|---|
@@ -521,9 +521,28 @@ Completed:
 
 Remaining V3 follow-up:
 
-- Add Docker Compose local startup in V3.2.
 - Add structured logging and observability fields in V3.3.
 - Consider opt-in MySQL/Testcontainers integration tests without changing the default offline test path.
+
+### V3.2 Current Status
+
+Status: completed for local Docker Compose development startup.
+
+Completed:
+
+- Added `docker-compose.yml` with local `mysql` and `app` services.
+- Added a Dockerfile that builds the Spring Boot jar and runs it on Java 17.
+- MySQL container uses the V3.1 `schema-mysql.sql` and `data-mysql.sql` initialization scripts.
+- App container starts with `SPRING_PROFILES_ACTIVE=mysql` and connects to the compose `mysql` service.
+- Compose credentials are local placeholders with environment variable overrides, not real secrets.
+- Redis is not enabled.
+- Added offline harness tests for compose profile wiring, schema/seed mounting, Dockerfile presence, and secret safety.
+- README documents start, health check, stop, cleanup, and default offline test behavior.
+
+Remaining V3 follow-up:
+
+- Add structured logging and observability fields in V3.3.
+- Keep Docker Compose smoke validation explicit and outside the default Maven test path.
 
 ### V3 不接受的退化
 
