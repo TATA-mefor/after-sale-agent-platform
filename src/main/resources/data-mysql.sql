@@ -40,6 +40,73 @@ ON DUPLICATE KEY UPDATE
     delivered_at = VALUES(delivered_at),
     aftersale_deadline = VALUES(aftersale_deadline);
 
+INSERT INTO products (
+    product_id, product_name, category, department, division, source_dataset, created_at
+) VALUES
+    (
+        'P-HEADPHONE-001', 'Wireless Headphones', '电子数码', 'Audio', 'Demo Goods',
+        'manual-minimal-seed', '2026-05-01 00:00:00.000000'
+    ),
+    (
+        'P-CHARGER-001', 'USB-C Charger', '电子数码', 'Accessories', 'Demo Goods',
+        'manual-minimal-seed', '2026-05-01 00:00:00.000000'
+    ),
+    (
+        'P-SHOES-001', 'Running Shoes', '服饰鞋包', 'Shoes', 'Demo Goods',
+        'manual-minimal-seed', '2026-05-01 00:00:00.000000'
+    ),
+    (
+        'P-KEYBOARD-001', 'Mechanical Keyboard', '计算机', 'Computer Accessories', 'Demo Goods',
+        'manual-minimal-seed', '2026-05-01 00:00:00.000000'
+    ),
+    (
+        'P-CUSTOM-001', 'Customized Gift Box', '特殊商品', 'Custom Goods', 'Demo Goods',
+        'manual-minimal-seed', '2026-05-01 00:00:00.000000'
+    )
+ON DUPLICATE KEY UPDATE
+    product_name = VALUES(product_name),
+    category = VALUES(category),
+    department = VALUES(department),
+    division = VALUES(division),
+    source_dataset = VALUES(source_dataset),
+    created_at = VALUES(created_at);
+
+INSERT INTO order_items (
+    order_item_id, order_id, product_id, product_name, quantity, unit_price, category, created_at
+) VALUES
+    (
+        'OI-O-PAID-NOT-SHIPPED-1', 'O-PAID-NOT-SHIPPED', 'P-KEYBOARD-001', 'Mechanical Keyboard',
+        1, 299.00, '计算机', '2026-05-12 10:00:00.000000'
+    ),
+    (
+        'OI-O202605130001-1', 'O202605130001', 'P-HEADPHONE-001', 'Wireless Headphones',
+        1, 499.00, '电子数码', '2026-05-01 09:00:00.000000'
+    ),
+    (
+        'OI-O-7001-1', 'O-7001', 'P-HEADPHONE-001', 'Wireless Headphones',
+        1, 499.00, '电子数码', '2026-05-01 09:00:00.000000'
+    ),
+    (
+        'OI-O-7002-1', 'O-7002', 'P-CHARGER-001', 'USB-C Charger',
+        1, 89.00, '电子数码', '2026-05-03 12:00:00.000000'
+    ),
+    (
+        'OI-O-EXPIRED-AFTERSALE-1', 'O-EXPIRED-AFTERSALE', 'P-SHOES-001', 'Running Shoes',
+        1, 399.00, '服饰鞋包', '2026-03-01 09:00:00.000000'
+    ),
+    (
+        'OI-O-SPECIAL-GOODS-1', 'O-SPECIAL-GOODS', 'P-CUSTOM-001', 'Customized Gift Box',
+        1, 199.00, '特殊商品', '2026-05-08 08:30:00.000000'
+    )
+ON DUPLICATE KEY UPDATE
+    order_id = VALUES(order_id),
+    product_id = VALUES(product_id),
+    product_name = VALUES(product_name),
+    quantity = VALUES(quantity),
+    unit_price = VALUES(unit_price),
+    category = VALUES(category),
+    created_at = VALUES(created_at);
+
 INSERT INTO aftersale_policies (
     policy_id, category, product_type, policy_text, effective_from, effective_to
 ) VALUES

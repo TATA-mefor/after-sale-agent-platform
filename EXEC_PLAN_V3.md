@@ -13,6 +13,7 @@ local MySQL profile
 repeatable Docker Compose development environment
 structured logging and basic observability
 final system review
+demo dataset enrichment
 ```
 
 V3 的目标是让项目从“可演示的内存闭环”升级为“可本地复现、可持久化、可诊断的后端系统雏形”，同时保持
@@ -42,6 +43,7 @@ V3 只推进基础设施收口：
 - 增加本地 Docker Compose 启动路径；
 - 增加结构化日志和基础健康检查；
 - 做最终系统能力和限制复盘。
+- 增加可选 demo 数据集清洗和 seed 生成能力。
 
 V3 不改变：
 
@@ -408,13 +410,106 @@ V3.4 未做：
 
 ## 7. V3 当前状态
 
+## 7. V3.5 Demo Dataset Enrichment
+
+Status: completed for optional public dataset cleaning, product/order-item schema enrichment, and generated demo seed.
+
+### 7.1 目标
+
+基于本地下载的公开订单、中文评论和女性服装反馈数据集，增强 MySQL demo 数据能力，同时保持默认启动和默认测试不依赖
+外部 raw 数据。
+
+### 7.2 范围
+
+V3.5 覆盖：
+
+- 新增 `products` 表；
+- 新增 `order_items` 表；
+- 在 `data-mysql.sql` 中保留现有 seed 并增加最小 product / order-item seed；
+- 新增 `data/raw` 与 `data/generated` 目录说明；
+- 更新 `.gitignore`，忽略 `data/raw` 下的原始大文件；
+- 新增 `scripts/data/build_demo_seed.py`，使用 Python 标准库生成小规模 demo SQL 和可选 JSONL cases；
+- 新增 `docs/data/DATASET_MAPPING.md`，记录三个数据集到项目字段的映射和清洗边界；
+- 更新 README、质量目标和完成记录。
+
+### 7.3 不做
+
+V3.5 不做：
+
+- 不提交原始大数据文件；
+- 不接外部数据源 API 或爬虫；
+- 不接生产数据库；
+- 不把 `Age` 用于用户画像；
+- 不让默认 `mvn test` 依赖 `data/raw`；
+- 不改变 Agent、ToolRegistry、Approval、Trace、Workspace 或 order tools 的业务语义；
+- 不实现真实退款、真实换货、真实优惠券补偿、真实支付或真实物流。
+
+### 7.4 验收标准
+
+V3.5 完成时必须满足：
+
+1. `schema-mysql.sql` 包含 `products` 和 `order_items`；
+2. `data-mysql.sql` 或 `data/generated/demo_seed_extra.sql` 包含可演示的 product / order-item seed；
+3. `scripts/data/build_demo_seed.py` 支持 bounded 参数和帮助说明；
+4. `data/raw` 原始大文件被 Git 忽略；
+5. `docs/data/DATASET_MAPPING.md` 说明三个数据集映射、暂不使用字段和清洗规则；
+6. 默认 `mvn test` 不依赖 raw 文件；
+7. 默认质量门禁继续通过。
+
+### 7.5 测试要求
+
+至少覆盖：
+
+- schema 中 product / order-item 表结构；
+- base seed 或 generated seed 中的 product / order-item 数据；
+- build script 参数、UTF-8-SIG、XLSX 支持和 SQL 转义约束；
+- raw 文件 ignore 规则；
+- mapping 文档存在且覆盖三个数据集；
+- ArchitectureTest 继续通过。
+
+### 7.6 验证命令
+
+```bash
+python scripts/data/build_demo_seed.py --help
+python scripts/data/build_demo_seed.py
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+### 7.7 完成记录
+
+V3.5 已完成：
+
+- `schema-mysql.sql` 新增 `products` 和 `order_items`；
+- `data-mysql.sql` 新增最小 product / order-item seed，现有 orders 和 aftersale policies seed 保持不变；
+- `.gitignore` 忽略 `data/raw` 下常见大文件格式，同时允许 README 和 `.gitkeep`；
+- 新增 `data/raw/README.md`、`data/generated/README.md` 和 `docs/data/DATASET_MAPPING.md`；
+- 新增 `scripts/data/build_demo_seed.py`，使用 Python 标准库读取 CSV / basic XLSX，生成
+  `data/generated/demo_seed_extra.sql` 和 `data/generated/demo_evaluation_cases.jsonl`；
+- 新增离线 harness 测试验证 schema、seed、脚本、ignore 和 mapping 文档；
+- README 和 QUALITY_SCORE 记录 V3.5 数据质量边界。
+
+V3.5 未做：
+
+- 不新增 Java 业务 repository / service；
+- 不改变 order tools 为多商品逻辑；
+- 不把 optional generated evaluation cases 接入默认 Java evaluation dataset；
+- 不提交 raw 数据集；
+- 不让默认测试依赖 MySQL、Docker、真实 LLM、外部网络或 `data/raw`。
+
+## 8. V3 当前状态
+
 ```text
 V3.1 MySQL Persistence: completed
 V3.2 Docker Compose: completed
 V3.3 Structured Logging / Observability: completed
 V3.4 Final System Review: completed
+V3.5 Demo Dataset Enrichment: completed
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
 已完成本地 app + mysql Docker Compose 启动路径。V3.3 已完成 requestId 追踪、MDC 日志字段和关键路径结构化日志。
-V3.4 已完成最终系统复盘和文档收口。V3 基础设施收口阶段完成。
+V3.4 已完成最终系统复盘和文档收口。V3.5 已完成可选 demo dataset enrichment、products/order_items schema
+与 seed 生成路径。V3 基础设施收口阶段完成。

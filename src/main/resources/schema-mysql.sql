@@ -87,6 +87,37 @@ CREATE TABLE IF NOT EXISTS orders (
     INDEX idx_orders_order_status (order_status)
 );
 
+CREATE TABLE IF NOT EXISTS products (
+    product_id VARCHAR(64) PRIMARY KEY,
+    product_name VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    department VARCHAR(255) NULL,
+    division VARCHAR(255) NULL,
+    source_dataset VARCHAR(128) NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL,
+    INDEX idx_products_category (category),
+    INDEX idx_products_source_dataset (source_dataset)
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+    order_item_id VARCHAR(64) PRIMARY KEY,
+    order_id VARCHAR(64) NOT NULL,
+    product_id VARCHAR(64) NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(18, 2) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL,
+    INDEX idx_order_items_order_id (order_id),
+    INDEX idx_order_items_product_id (product_id),
+    CONSTRAINT fk_order_items_order_id
+        FOREIGN KEY (order_id) REFERENCES orders (order_id)
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_order_items_product_id
+        FOREIGN KEY (product_id) REFERENCES products (product_id)
+        ON DELETE RESTRICT
+);
+
 CREATE TABLE IF NOT EXISTS aftersale_policies (
     policy_id VARCHAR(64) PRIMARY KEY,
     category VARCHAR(255) NOT NULL,

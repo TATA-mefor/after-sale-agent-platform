@@ -7,3 +7,16 @@ target/
 
 .DS_Store
 Thumbs.db
+
+# Public raw datasets are kept locally only. Commit mapping docs and generated
+# small demo seeds, not downloaded source files.
+data/raw/**/*.csv
+data/raw/**/*.tsv
+data/raw/**/*.xlsx
+data/raw/**/*.xls
+data/raw/**/*.json
+data/raw/**/*.jsonl
+data/raw/**/*.zip
+data/raw/**/*.parquet
+!data/raw/**/.gitkeep
+!data/raw/README.md

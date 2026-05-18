@@ -492,7 +492,8 @@ Completed:
 ## V3 Quality Targets
 
 V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL profile 和 Spring JDBC persistence，V3.2 已完成
-本地 Docker Compose 启动路径，V3.3 已完成 requestId 追踪和结构化日志基础能力。
+本地 Docker Compose 启动路径，V3.3 已完成 requestId 追踪和结构化日志基础能力，V3.5 已完成可选 demo
+dataset enrichment。
 
 | 维度 | 当前目标 | 验收方式 |
 |---|---|---|
@@ -503,6 +504,11 @@ V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL prof
 | Secret safety | 数据库密码、API Key、token 和敏感凭证不进入仓库 | 配置检查 + review |
 | Backward compatibility with V2 demo | V2 ticket、AgentRun、approval、execution tree 和 evaluation demo 不退化 | 回归测试 + README demo |
 | No regression of Agent boundaries | Agent/Handler 不访问 Repository，不绕过 ToolRegistry、Approval、Trace 或 Workspace | ArchitectureTest + 单元测试 |
+| Seed reproducibility | generated seed 可由脚本以 bounded 参数复现 | Python script smoke + harness test |
+| Raw data boundary | `data/raw` 原始大文件不入仓 | `.gitignore` + review |
+| Product/item demo support | `products` / `order_items` 支撑多商品售后 demo 数据 | schema / seed harness test |
+| Dataset traceability | 三个公开数据集字段映射、清洗规则和未使用字段可追踪 | `docs/data/DATASET_MAPPING.md` |
+| External data independence | 默认测试和默认启动不依赖 raw 数据集 | 默认 `mvn test` |
 
 ### V3.1 Current Status
 
@@ -571,11 +577,11 @@ Status: completed for V3 infrastructure closure review.
 
 Current validation baseline:
 
-- Test classes: 27 under `src/test/java/com/example/aftersale`.
-- JUnit test methods: 118 discovered by the default Maven test run, with the live LLM smoke test skipped unless
+- Test classes: 28 under `src/test/java/com/example/aftersale`.
+- JUnit test methods: 124 discovered by the default Maven test run, with the live LLM smoke test skipped unless
   explicitly enabled.
 - Architecture test methods: 11.
-- ArchUnit rule checks: 16 `noClasses` boundary checks across API, domain, Agent, Tool, LLM infrastructure, Specialist
+- ArchUnit rule checks: 15 `noClasses` boundary checks across API, domain, Agent, Tool, LLM infrastructure, Specialist
   Handler, Workspace, and Approval boundaries.
 - Default validation commands remain:
 
@@ -608,6 +614,30 @@ V3 final non-regression targets:
 - No Agent or Specialist Handler direct Repository access.
 - No persistence bypass around ApplicationService, ToolRegistry, Approval, Trace, or Workspace boundaries.
 - No log output of API keys, database passwords, full LLM prompts, sensitive credentials, or long raw text.
+
+### V3.5 Data Quality Summary
+
+Status: completed for optional demo dataset enrichment.
+
+Current data infrastructure status:
+
+- `schema-mysql.sql` contains `products` and `order_items` tables with foreign keys to existing order/product IDs.
+- `data-mysql.sql` keeps the existing order and policy seed while adding minimal product and order-item rows.
+- `scripts/data/build_demo_seed.py` uses the Python standard library to read UTF-8 / UTF-8-SIG CSV and basic XLSX files.
+- Generated artifacts are small and reviewable under `data/generated`.
+- Raw public datasets remain local under `data/raw` and are ignored by Git.
+- `docs/data/DATASET_MAPPING.md` documents source usage, field mapping, status normalization, aftersale deadline rules,
+  ignored fields such as `Age`, import steps, and limitations.
+- Default `mvn test` does not require raw datasets, generated files from a fresh local run, MySQL, Docker, real LLMs,
+  API keys, or external network.
+
+V3.5 non-regression targets:
+
+- Generated seed must remain optional enrichment for the explicit MySQL profile.
+- Raw data files must not enter source control.
+- `Age` must not be used for user profiling, ranking, segmentation, or personalization.
+- Product/order-item seed must not force a rewrite of Agent tools or order domain behavior.
+- Optional generated JSONL cases must not replace the default curated evaluation dataset without a separate plan.
 
 ### V3 不接受的退化
 

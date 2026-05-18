@@ -29,6 +29,7 @@ checks, and executable tests as the guardrails.
 - Run with default in-memory repositories or an explicit MySQL profile.
 - Start a local app + MySQL environment with Docker Compose.
 - Correlate requests and Agent execution logs with `X-Request-Id` and MDC fields.
+- Enrich local MySQL demo data with optional product and order-item seed generated from public datasets.
 
 ## Tech Stack
 
@@ -41,6 +42,7 @@ checks, and executable tests as the guardrails.
 - SpotBugs
 - In-memory repositories for default offline demo data
 - Spring JDBC + explicit MySQL profile for V3.1 persistence
+- Python standard library script for optional V3.5 demo seed generation
 
 ## Requirements
 
@@ -123,10 +125,65 @@ Manual local verification completed on 2026-05-18:
 This verification used local environment variables only. Do not commit real database passwords, local absolute paths,
 API keys, tokens, or production configuration.
 
+## Demo Dataset Enrichment
+
+V3.5 adds optional demo data enrichment for public local datasets. The default app startup and default `mvn test` path
+do not require these raw files.
+
+Place downloaded raw datasets under:
+
+```text
+data/raw/orders/
+data/raw/chinese_reviews/
+data/raw/clothing_reviews/
+```
+
+Raw CSV, XLSX, JSON, archive, and parquet files under `data/raw` are ignored by Git. Keep only local public downloads
+there; do not commit raw large files, personal paths, credentials, or private customer data.
+
+Generate small reviewable seed artifacts:
+
+```bash
+python scripts/data/build_demo_seed.py
+```
+
+Optional scale controls:
+
+```bash
+python scripts/data/build_demo_seed.py \
+  --max-orders 1000 \
+  --max-products 500 \
+  --max-order-items 3000 \
+  --max-tickets 500 \
+  --max-evaluation-cases 100
+```
+
+The script writes:
+
+```text
+data/generated/demo_seed_extra.sql
+data/generated/demo_evaluation_cases.jsonl
+```
+
+Import generated enrichment after the base MySQL schema and seed:
+
+```bash
+mysql --default-character-set=utf8mb4 -u <user> -p after_sale_agent < src/main/resources/schema-mysql.sql
+mysql --default-character-set=utf8mb4 -u <user> -p after_sale_agent < src/main/resources/data-mysql.sql
+mysql --default-character-set=utf8mb4 -u <user> -p after_sale_agent < data/generated/demo_seed_extra.sql
+```
+
+The base `data-mysql.sql` already includes minimal `products` and `order_items` rows, so the MySQL demo remains usable
+even when the optional generation script is not run.
+
+See `docs/data/DATASET_MAPPING.md` for dataset field mapping, cleaning rules, limits, and current boundaries.
+
 ## Docker Compose Local Development
 
 V3.2 adds an optional Docker Compose path for local app + MySQL startup. This is a local development setup only. It is
 not a production deployment model and it does not change the default in-memory test path.
+The first run may need to build the local app image and pull base/MySQL images, so startup can be affected by the local
+Docker cache and network access.
 
 Start app + MySQL:
 
@@ -777,8 +834,9 @@ LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals,
 
 V3 is the infrastructure closure phase. V3.1 MySQL Persistence and V3.2 Docker Compose are implemented for explicit
 local infrastructure profiles. V3.3 Structured Logging / Observability is implemented for request correlation and
-structured diagnostic fields. V3.4 Final Review is completed as the infrastructure closure review. V3 does not change
-the Agent business capability boundary.
+structured diagnostic fields. V3.4 Final Review is completed as the infrastructure closure review. V3.5 Demo Dataset
+Enrichment is implemented for optional local seed generation. V3 does not change the Agent business capability
+boundary.
 
 ### V3.1 MySQL Persistence
 
@@ -825,6 +883,17 @@ Completed focus:
 - Verify demo flow and validation commands.
 - Record follow-up directions without claiming unfinished capabilities as completed.
 
+### V3.5 Demo Dataset Enrichment
+
+Implemented focus:
+
+- Add `products` and `order_items` MySQL tables for richer local demo data.
+- Keep minimal product and order-item seed in `data-mysql.sql`.
+- Keep raw downloaded datasets out of Git under `data/raw`.
+- Generate optional enrichment SQL and JSONL cases under `data/generated`.
+- Document mapping from public order, Chinese review, and clothing feedback datasets.
+- Keep default startup and default tests independent from external dataset files.
+
 ## Known Limitations
 
 - The default runtime uses in-memory repositories, so default local data is reset on restart.
@@ -838,6 +907,7 @@ Completed focus:
 - Approval APIs record manual decisions but do not execute real high-risk business actions.
 - Policy retrieval is controlled local keyword retrieval, not vector search or hybrid retrieval.
 - Logs are diagnostic only; ToolCallTrace, ApprovalRequest records, and Execution Tree remain the audit surfaces.
+- Demo dataset enrichment is optional; generated `products` and `order_items` seed does not change Agent tool behavior.
 - Docker, MySQL, Redis, real LLMs, API keys, and external network access are intentionally outside the default
   `mvn test` path.
 
