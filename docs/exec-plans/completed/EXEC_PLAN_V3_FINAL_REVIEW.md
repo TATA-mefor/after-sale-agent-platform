@@ -77,6 +77,24 @@ deployment model.
 - MDC-backed log fields for `requestId`, `ticketId`, `agentRunId`, `subtaskId`, `toolName`, and `approvalRequestId`.
 - Actuator health endpoint.
 
+## Manual MySQL Profile Verification
+
+Date: 2026-05-18
+
+The V3.1 MySQL persistence path was manually verified with local MySQL 8.0.44.
+
+Verified results:
+
+- `schema-mysql.sql` imported successfully.
+- `data-mysql.sql` imported successfully.
+- `orders` seed count: 6.
+- `aftersale_policies` seed count: 6.
+- The application started successfully with the explicit `mysql` profile.
+- Ticket creation, AgentRun trigger, and Execution Tree query were verified through local HTTP API calls.
+
+The manual verification did not add committed credentials, personal absolute paths, or machine-specific configuration.
+Default Maven validation remains offline and independent from MySQL.
+
 ## Validation Commands
 
 The V3 completion gate remains:

@@ -110,6 +110,19 @@ mvn spring-boot:run
 The application only creates a JDBC `DataSource` when `SPRING_PROFILES_ACTIVE=mysql` is set. Without that profile, the
 in-memory repositories are active and no database connection is configured.
 
+Manual local verification completed on 2026-05-18:
+
+- Local MySQL version: 8.0.44.
+- `schema-mysql.sql` imported successfully.
+- `data-mysql.sql` imported successfully.
+- `orders` seed count: 6.
+- `aftersale_policies` seed count: 6.
+- Application startup with the explicit `mysql` profile succeeded.
+- Creating a Ticket, triggering an AgentRun, and querying the Execution Tree passed through local HTTP API verification.
+
+This verification used local environment variables only. Do not commit real database passwords, local absolute paths,
+API keys, tokens, or production configuration.
+
 ## Docker Compose Local Development
 
 V3.2 adds an optional Docker Compose path for local app + MySQL startup. This is a local development setup only. It is

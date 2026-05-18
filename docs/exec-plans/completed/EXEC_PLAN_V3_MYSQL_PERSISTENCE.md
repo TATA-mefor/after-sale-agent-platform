@@ -70,6 +70,26 @@ mvn spotbugs:check
 mvn test -Dtest=ArchitectureTest
 ```
 
+## Manual MySQL Profile Verification
+
+Date: 2026-05-18
+
+Manual local verification was completed against MySQL 8.0.44 with the explicit `mysql` profile.
+
+Verified results:
+
+- `schema-mysql.sql` imported successfully.
+- `data-mysql.sql` imported successfully.
+- `orders` seed count: 6.
+- `aftersale_policies` seed count: 6.
+- Application startup with `SPRING_PROFILES_ACTIVE=mysql` succeeded.
+- Creating a Ticket through the HTTP API succeeded.
+- Triggering an AgentRun for the created Ticket succeeded.
+- Querying the read-only Execution Tree for the AgentRun succeeded.
+
+The verification used local environment variables for database connection values. No database password, personal
+filesystem path, API key, or production secret is recorded in this repository.
+
 ## Risks
 
 - The JDBC repositories are covered by configuration/schema harness tests, but not by a real MySQL integration test in
