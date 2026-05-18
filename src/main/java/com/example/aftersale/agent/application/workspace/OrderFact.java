@@ -1,7 +1,9 @@
 package com.example.aftersale.agent.application.workspace;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public record OrderFact(
         String orderId,
@@ -11,6 +13,7 @@ public record OrderFact(
         String deliveredAt,
         String aftersaleDeadline,
         boolean whetherInAftersaleWindow,
+        String itemSummary,
         String sourceToolName,
         String subtaskId) {
 
@@ -21,6 +24,7 @@ public record OrderFact(
         paidAmount = requireText(paidAmount, "paidAmount");
         deliveredAt = requireText(deliveredAt, "deliveredAt");
         aftersaleDeadline = requireText(aftersaleDeadline, "aftersaleDeadline");
+        itemSummary = requireText(itemSummary, "itemSummary");
         sourceToolName = requireText(sourceToolName, "sourceToolName");
         subtaskId = subtaskId == null ? "" : subtaskId;
     }
@@ -37,6 +41,7 @@ public record OrderFact(
                 text(data, "deliveredAt"),
                 text(data, "aftersaleDeadline"),
                 Boolean.TRUE.equals(data.get("whetherInAftersaleWindow")),
+                itemSummary(data.get("orderItems")),
                 sourceToolName,
                 subtaskId);
     }
@@ -46,10 +51,23 @@ public record OrderFact(
                 + ": " + productName
                 + ", status=" + orderStatus
                 + ", aftersaleWindow=" + whetherInAftersaleWindow
+                + ", items=" + itemSummary
                 + ", deadline=" + aftersaleDeadline;
     }
 
-    private static String text(Map<String, Object> data, String key) {
+    private static String itemSummary(Object value) {
+        if (!(value instanceof List<?> items) || items.isEmpty()) {
+            return "N/A";
+        }
+        return items.stream()
+                .filter(Map.class::isInstance)
+                .map(item -> (Map<?, ?>) item)
+                .map(item -> text(item, "productName") + " x" + text(item, "quantity")
+                        + " category=" + text(item, "category"))
+                .collect(Collectors.joining(", "));
+    }
+
+    private static String text(Map<?, ?> data, String key) {
         Objects.requireNonNull(data, "data must not be null");
         Object value = data.get(key);
         if (value == null) {

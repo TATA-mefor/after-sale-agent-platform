@@ -33,6 +33,36 @@ class OrderToolTest {
                 .containsEntry("orderStatus", "DELIVERED")
                 .containsEntry("whetherInAftersaleWindow", true);
         assertThat(output.data()).containsKeys("paidAmount", "paidAt", "deliveredAt", "aftersaleDeadline");
+        assertThat(output.data().get("orderItems")).isInstanceOf(List.class);
+        List<?> orderItems = (List<?>) output.data().get("orderItems");
+        assertThat(orderItems).isNotEmpty();
+        Map<?, ?> orderItem = (Map<?, ?>) orderItems.get(0);
+        assertThat(orderItem.get("orderItemId")).isEqualTo("OI-O202605130001-1");
+        assertThat(orderItem.get("productId")).isEqualTo("P-HEADPHONE-001");
+        assertThat(orderItem.get("productName")).isEqualTo("Wireless Headphones");
+        assertThat(orderItem.get("category")).isEqualTo("电子数码");
+        assertThat(orderItem.get("quantity")).isEqualTo(1);
+        assertThat(orderItem.get("itemStatus")).isEqualTo("DELIVERED");
+        assertThat(orderItem.get("supportReturn")).isEqualTo(true);
+        assertThat(orderItem.get("supportExchange")).isEqualTo(true);
+        assertThat(orderItem.get("isSpecialItem")).isEqualTo(false);
+    }
+
+    @Test
+    void getOrderByIdToolOutputContainsStructuredOrderItems() {
+        ToolOutput output = toolRegistry.execute("get_order_by_id", ToolInput.of(Map.of(
+                "orderId", "O-SPECIAL-GOODS")));
+
+        assertThat(output.status()).isEqualTo(ToolExecutionStatus.SUCCEEDED);
+        assertThat(output.data()).containsKey("orderItems");
+        List<?> orderItems = (List<?>) output.data().get("orderItems");
+        assertThat(orderItems).hasSize(1);
+        Map<?, ?> orderItem = (Map<?, ?>) orderItems.get(0);
+        assertThat(orderItem.get("productId")).isEqualTo("P-CUSTOM-001");
+        assertThat(orderItem.get("category")).isEqualTo("特殊商品");
+        assertThat(orderItem.get("supportReturn")).isEqualTo(false);
+        assertThat(orderItem.get("supportExchange")).isEqualTo(false);
+        assertThat(orderItem.get("isSpecialItem")).isEqualTo(true);
     }
 
     @Test

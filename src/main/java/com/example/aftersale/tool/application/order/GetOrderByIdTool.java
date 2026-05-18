@@ -23,7 +23,10 @@ public class GetOrderByIdTool implements ToolExecutor {
             "{\"orderId\":\"string\",\"userId\":\"string\",\"productId\":\"string\",\"productName\":\"string\","
                     + "\"orderStatus\":\"string\",\"paidAmount\":\"number\",\"paidAt\":\"string\","
                     + "\"deliveredAt\":\"string|null\",\"aftersaleDeadline\":\"string\","
-                    + "\"whetherInAftersaleWindow\":\"boolean\"}",
+                    + "\"whetherInAftersaleWindow\":\"boolean\",\"orderItems\":[{\"orderItemId\":\"string\","
+                    + "\"productId\":\"string\",\"productName\":\"string\",\"category\":\"string\","
+                    + "\"quantity\":\"number\",\"unitPrice\":\"number\",\"itemStatus\":\"string\","
+                    + "\"supportReturn\":\"boolean\",\"supportExchange\":\"boolean\",\"isSpecialItem\":\"boolean\"}]}",
             ToolRiskLevel.LOW);
 
     private final OrderApplicationService orderApplicationService;

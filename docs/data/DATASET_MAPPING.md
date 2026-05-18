@@ -155,9 +155,9 @@ Git prevents repository bloat and avoids mixing public raw data with project sou
 ## Current Limitations
 
 - Generated data is demo data, not production truth.
-- `products` and `order_items` currently enrich MySQL demo data but do not change Agent tool behavior.
-- The current `orders` domain remains single-product for existing tool compatibility.
+- V3.6 exposes available `products` and `order_items` data through the order query tool output, but it remains demo
+  data and does not connect to a production order center.
+- `get_user_orders` remains a lightweight lookup even if the shared mapper includes item details.
 - XLSX support in the script covers basic worksheet strings and inline strings; CSV is preferred for repeatable local
   generation.
 - Optional generated evaluation cases are not part of the default Java evaluation dataset.
-

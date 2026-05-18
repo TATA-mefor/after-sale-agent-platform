@@ -23,7 +23,7 @@ public class GetUserOrdersTool implements ToolExecutor {
             "{\"orders\":[{\"orderId\":\"string\",\"userId\":\"string\",\"productId\":\"string\","
                     + "\"productName\":\"string\",\"orderStatus\":\"string\",\"paidAmount\":\"number\","
                     + "\"paidAt\":\"string\",\"deliveredAt\":\"string|null\",\"aftersaleDeadline\":\"string\","
-                    + "\"whetherInAftersaleWindow\":\"boolean\"}]}",
+                    + "\"whetherInAftersaleWindow\":\"boolean\",\"orderItems\":\"array\"}]}",
             ToolRiskLevel.LOW);
 
     private final OrderApplicationService orderApplicationService;

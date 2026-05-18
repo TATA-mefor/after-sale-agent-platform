@@ -71,7 +71,8 @@ mvn test -Dtest=ArchitectureTest
 ## Known Limitations
 
 - Generated data is demo enrichment, not production truth.
-- `products` and `order_items` currently enrich MySQL seed data but do not change Agent tool behavior.
+- V3.5 itself only prepared `products` and `order_items` seed data; V3.6 later exposed those details through the order
+  query tool output.
 - Optional generated evaluation cases are not part of the curated default Java evaluation dataset.
 - XLSX parsing is intentionally basic and intended for simple worksheet exports.
 - Raw datasets are not committed and must be supplied locally.

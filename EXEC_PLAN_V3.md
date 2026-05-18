@@ -14,6 +14,7 @@ repeatable Docker Compose development environment
 structured logging and basic observability
 final system review
 demo dataset enrichment
+order-item-aware order tools
 ```
 
 V3 的目标是让项目从“可演示的内存闭环”升级为“可本地复现、可持久化、可诊断的后端系统雏形”，同时保持
@@ -44,6 +45,7 @@ V3 只推进基础设施收口：
 - 增加结构化日志和基础健康检查；
 - 做最终系统能力和限制复盘。
 - 增加可选 demo 数据集清洗和 seed 生成能力。
+- 让已有 products / order_items demo 数据进入订单查询工具结果。
 
 V3 不改变：
 
@@ -408,8 +410,6 @@ V3.4 未做：
 - 不把 Docker Compose 写成生产部署方案；
 - 不实现真实退款、真实换货、真实优惠券补偿、真实支付或真实物流。
 
-## 7. V3 当前状态
-
 ## 7. V3.5 Demo Dataset Enrichment
 
 Status: completed for optional public dataset cleaning, product/order-item schema enrichment, and generated demo seed.
@@ -441,7 +441,8 @@ V3.5 不做：
 - 不接生产数据库；
 - 不把 `Age` 用于用户画像；
 - 不让默认 `mvn test` 依赖 `data/raw`；
-- 不改变 Agent、ToolRegistry、Approval、Trace、Workspace 或 order tools 的业务语义；
+- 不改变 Agent、ToolRegistry、Approval、Trace、Workspace 或 order tools 的业务语义；V3.5 只准备数据基础，
+  V3.6 再把 order item 明细接入工具输出；
 - 不实现真实退款、真实换货、真实优惠券补偿、真实支付或真实物流。
 
 ### 7.4 验收标准
@@ -494,12 +495,99 @@ V3.5 已完成：
 V3.5 未做：
 
 - 不新增 Java 业务 repository / service；
-- 不改变 order tools 为多商品逻辑；
+- V3.5 本身不改变 order tools 为多商品逻辑，后续由 V3.6 单独收口；
 - 不把 optional generated evaluation cases 接入默认 Java evaluation dataset；
 - 不提交 raw 数据集；
 - 不让默认测试依赖 MySQL、Docker、真实 LLM、外部网络或 `data/raw`。
 
-## 8. V3 当前状态
+## 8. V3.6 Order Items Tool Enrichment
+
+Status: completed for structured order-item output in order query tools.
+
+### 8.1 目标
+
+让 V3.5 引入的 `products` / `order_items` 数据进入现有订单查询工具结果，使 Agent 可以基于订单主表和商品明细生成
+处理建议，同时保持默认 in-memory 测试路径离线运行。
+
+### 8.2 范围
+
+V3.6 覆盖：
+
+- 新增纯 domain `OrderItem` 模型；
+- 扩展 `Order` 返回 `orderItems`；
+- MySQL `JdbcOrderRepository` 从 `order_items` join `products` 查询订单明细；
+- in-memory order seed 为每个 demo order 提供最小 order item；
+- `get_order_by_id` 工具输出结构化 `orderItems`；
+- `AgentWorkspace` 的 `OrderFact` 记录商品明细摘要；
+- ToolCallTrace / Execution Tree 通过现有 `outputJson` 可看到 `orderItems`；
+- README、质量目标和完成记录同步更新。
+
+### 8.3 不做
+
+V3.6 不做：
+
+- 不改 Agent 主流程；
+- 不接真实订单中心、支付、物流、退款、库存或优惠券系统；
+- 不让 Handler 或 Agent 直接访问 Repository；
+- 不删除 in-memory repository；
+- 不让默认测试依赖 MySQL、Docker、真实 LLM、API Key、外部网络或 `data/raw`；
+- 不把 order tools 改成执行任何真实业务动作。
+
+### 8.4 验收标准
+
+V3.6 完成时必须满足：
+
+1. `get_order_by_id` 返回 `orderItems`；
+2. 每个 order item 至少包含 `orderItemId`、`productId`、`productName`、`category`、`quantity`、`unitPrice`、
+   `itemStatus`、`supportReturn`、`supportExchange` 和 `isSpecialItem`；
+3. MySQL schema harness 检查 `products` / `order_items` 表和 seed；
+4. in-memory 默认测试能返回至少一个 order item；
+5. ToolRegistry 执行 `get_order_by_id` 后 output data 包含 `orderItems`；
+6. AgentRun trace 中 `get_order_by_id` 的 `outputJson` 包含 `orderItems`；
+7. 默认 `mvn test` 不依赖 MySQL；
+8. ArchitectureTest、Checkstyle、SpotBugs 继续通过。
+
+### 8.5 测试要求
+
+至少覆盖：
+
+- order tool 直接调用的 `orderItems` 输出；
+- special item 的 return / exchange support flag；
+- AgentRun trace 中 tool output JSON 的 order item 字段；
+- MySQL schema / seed harness 对 `products` 和 `order_items` 的检查；
+- 默认 in-memory 流程回归；
+- 架构边界回归。
+
+### 8.6 验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+### 8.7 完成记录
+
+V3.6 已完成：
+
+- 新增 `OrderItem` 纯领域模型；
+- `Order` 支持结构化 order item 列表，同时保留旧构造入口的 fallback item；
+- `JdbcOrderRepository` 查询 `order_items` 和 `products`，并对旧数据提供主商品 fallback item；
+- `InMemoryOrderRepository` seed 增加最小商品明细；
+- `get_order_by_id` 输出包含结构化 `orderItems`；
+- `get_user_orders` 复用共享 mapper，可保留结构化 item list；
+- `OrderFact` 从工具结果提取 item summary；
+- 测试覆盖 ToolRegistry output、AgentRun trace output 和 MySQL schema/seed harness。
+
+V3.6 未做：
+
+- 不新增真实外部订单中心；
+- 不新增真实支付、物流、退款或优惠券动作；
+- 不重构 Execution Tree 或 ToolCallTrace 数据结构；
+- 不让默认测试依赖 MySQL、Docker、真实 LLM、API Key、外部网络或 raw datasets。
+
+## 9. V3 当前状态
 
 ```text
 V3.1 MySQL Persistence: completed
@@ -507,9 +595,11 @@ V3.2 Docker Compose: completed
 V3.3 Structured Logging / Observability: completed
 V3.4 Final System Review: completed
 V3.5 Demo Dataset Enrichment: completed
+V3.6 Order Items Tool Enrichment: completed
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
 已完成本地 app + mysql Docker Compose 启动路径。V3.3 已完成 requestId 追踪、MDC 日志字段和关键路径结构化日志。
 V3.4 已完成最终系统复盘和文档收口。V3.5 已完成可选 demo dataset enrichment、products/order_items schema
-与 seed 生成路径。V3 基础设施收口阶段完成。
+与 seed 生成路径。V3.6 已完成 order-item-aware order tool output，使 demo 商品明细能进入 Agent 工具结果和
+trace。V3 基础设施收口阶段完成。

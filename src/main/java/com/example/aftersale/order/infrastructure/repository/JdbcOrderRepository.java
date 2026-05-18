@@ -1,9 +1,11 @@
 package com.example.aftersale.order.infrastructure.repository;
 
 import com.example.aftersale.order.domain.Order;
+import com.example.aftersale.order.domain.OrderItem;
 import com.example.aftersale.order.domain.OrderRepository;
 import com.example.aftersale.order.domain.OrderStatus;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -48,17 +50,68 @@ public class JdbcOrderRepository implements OrderRepository {
                 """, (resultSet, rowNumber) -> mapOrder(resultSet), userId);
     }
 
-    private static Order mapOrder(ResultSet resultSet) throws SQLException {
+    private Order mapOrder(ResultSet resultSet) throws SQLException {
+        String orderId = resultSet.getString("order_id");
+        String productId = resultSet.getString("product_id");
+        String productName = resultSet.getString("product_name");
+        OrderStatus orderStatus = OrderStatus.valueOf(resultSet.getString("order_status"));
+        BigDecimal paidAmount = resultSet.getBigDecimal("paid_amount");
+        List<OrderItem> orderItems = findOrderItems(orderId, orderStatus);
         return new Order(
-                resultSet.getString("order_id"),
+                orderId,
                 resultSet.getString("user_id"),
-                resultSet.getString("product_id"),
-                resultSet.getString("product_name"),
-                OrderStatus.valueOf(resultSet.getString("order_status")),
-                resultSet.getBigDecimal("paid_amount"),
+                productId,
+                productName,
+                orderStatus,
+                paidAmount,
                 instant(resultSet.getTimestamp("paid_at")),
                 nullableInstant(resultSet.getTimestamp("delivered_at")),
-                instant(resultSet.getTimestamp("aftersale_deadline")));
+                instant(resultSet.getTimestamp("aftersale_deadline")),
+                orderItems.isEmpty()
+                        ? fallbackOrderItem(orderId, productId, productName, paidAmount, orderStatus)
+                        : orderItems);
+    }
+
+    private List<OrderItem> findOrderItems(String orderId, OrderStatus orderStatus) {
+        return jdbcTemplate.query("""
+                SELECT oi.order_item_id,
+                       oi.product_id,
+                       COALESCE(p.product_name, oi.product_name) AS product_name,
+                       COALESCE(p.category, oi.category) AS category,
+                       oi.quantity,
+                       oi.unit_price
+                FROM order_items oi
+                LEFT JOIN products p ON p.product_id = oi.product_id
+                WHERE oi.order_id = ?
+                ORDER BY oi.order_item_id ASC
+                """, (resultSet, rowNumber) -> mapOrderItem(resultSet, orderStatus), orderId);
+    }
+
+    private static OrderItem mapOrderItem(ResultSet resultSet, OrderStatus orderStatus) throws SQLException {
+        return OrderItem.fromOrderLine(
+                resultSet.getString("order_item_id"),
+                resultSet.getString("product_id"),
+                resultSet.getString("product_name"),
+                resultSet.getString("category"),
+                resultSet.getInt("quantity"),
+                resultSet.getBigDecimal("unit_price"),
+                orderStatus);
+    }
+
+    private static List<OrderItem> fallbackOrderItem(
+            String orderId,
+            String productId,
+            String productName,
+            BigDecimal paidAmount,
+            OrderStatus orderStatus) {
+        return List.of(OrderItem.fromOrderLine(
+                "OI-" + orderId + "-PRIMARY",
+                productId,
+                productName,
+                "N/A",
+                1,
+                paidAmount,
+                orderStatus));
     }
 
     private static Instant instant(Timestamp value) {

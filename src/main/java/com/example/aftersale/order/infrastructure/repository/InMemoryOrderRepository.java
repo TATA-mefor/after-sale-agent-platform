@@ -1,6 +1,7 @@
 package com.example.aftersale.order.infrastructure.repository;
 
 import com.example.aftersale.order.domain.Order;
+import com.example.aftersale.order.domain.OrderItem;
 import com.example.aftersale.order.domain.OrderRepository;
 import com.example.aftersale.order.domain.OrderStatus;
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.annotation.Profile;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -46,7 +48,8 @@ public class InMemoryOrderRepository implements OrderRepository {
                         OrderStatus.PAID,
                         "299.00",
                         "2026-05-12T10:00:00Z",
-                        "2026-06-12T23:59:59Z"),
+                        "2026-06-12T23:59:59Z",
+                        "计算机"),
                 order(
                         "O202605130001",
                         "U-DEMO-1",
@@ -56,7 +59,8 @@ public class InMemoryOrderRepository implements OrderRepository {
                         "499.00",
                         "2026-05-01T09:00:00Z",
                         "2026-05-10T15:00:00Z",
-                        "2026-05-25T23:59:59Z"),
+                        "2026-05-25T23:59:59Z",
+                        "电子数码"),
                 order(
                         "O-7001",
                         "U-7001",
@@ -66,7 +70,8 @@ public class InMemoryOrderRepository implements OrderRepository {
                         "499.00",
                         "2026-05-01T09:00:00Z",
                         "2026-05-10T15:00:00Z",
-                        "2026-05-25T23:59:59Z"),
+                        "2026-05-25T23:59:59Z",
+                        "电子数码"),
                 order(
                         "O-7002",
                         "U-7002",
@@ -75,7 +80,8 @@ public class InMemoryOrderRepository implements OrderRepository {
                         OrderStatus.LOGISTICS_EXCEPTION,
                         "89.00",
                         "2026-05-03T12:00:00Z",
-                        "2026-06-03T23:59:59Z"),
+                        "2026-06-03T23:59:59Z",
+                        "电子数码"),
                 order(
                         "O-EXPIRED-AFTERSALE",
                         "U-DEMO-ORDER",
@@ -85,7 +91,8 @@ public class InMemoryOrderRepository implements OrderRepository {
                         "399.00",
                         "2026-03-01T09:00:00Z",
                         "2026-03-05T14:00:00Z",
-                        "2026-03-20T23:59:59Z"),
+                        "2026-03-20T23:59:59Z",
+                        "服饰鞋包"),
                 order(
                         "O-SPECIAL-GOODS",
                         "U-DEMO-ORDER",
@@ -95,7 +102,8 @@ public class InMemoryOrderRepository implements OrderRepository {
                         "199.00",
                         "2026-05-08T08:30:00Z",
                         "2026-05-12T18:00:00Z",
-                        "2026-05-19T23:59:59Z"));
+                        "2026-05-19T23:59:59Z",
+                        "特殊商品"));
     }
 
     private static Order order(
@@ -106,17 +114,19 @@ public class InMemoryOrderRepository implements OrderRepository {
             OrderStatus orderStatus,
             String paidAmount,
             String paidAt,
-            String aftersaleDeadline) {
-        return new Order(
+            String aftersaleDeadline,
+            String category) {
+        return order(
                 orderId,
                 userId,
                 productId,
                 productName,
                 orderStatus,
-                new BigDecimal(paidAmount),
-                Instant.parse(paidAt),
+                paidAmount,
+                paidAt,
                 null,
-                Instant.parse(aftersaleDeadline));
+                aftersaleDeadline,
+                category);
     }
 
     private static Order order(
@@ -127,17 +137,27 @@ public class InMemoryOrderRepository implements OrderRepository {
             OrderStatus orderStatus,
             String paidAmount,
             String paidAt,
-            String deliveredAt,
-            String aftersaleDeadline) {
+            @Nullable String deliveredAt,
+            String aftersaleDeadline,
+            String category) {
+        BigDecimal amount = new BigDecimal(paidAmount);
         return new Order(
                 orderId,
                 userId,
                 productId,
                 productName,
                 orderStatus,
-                new BigDecimal(paidAmount),
+                amount,
                 Instant.parse(paidAt),
                 deliveredAt == null ? null : Instant.parse(deliveredAt),
-                Instant.parse(aftersaleDeadline));
+                Instant.parse(aftersaleDeadline),
+                List.of(OrderItem.fromOrderLine(
+                        "OI-" + orderId + "-1",
+                        productId,
+                        productName,
+                        category,
+                        1,
+                        amount,
+                        orderStatus)));
     }
 }

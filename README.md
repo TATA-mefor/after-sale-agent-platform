@@ -30,6 +30,7 @@ checks, and executable tests as the guardrails.
 - Start a local app + MySQL environment with Docker Compose.
 - Correlate requests and Agent execution logs with `X-Request-Id` and MDC fields.
 - Enrich local MySQL demo data with optional product and order-item seed generated from public datasets.
+- Return structured `orderItems` from the `get_order_by_id` order tool for product-level after-sale context.
 
 ## Tech Stack
 
@@ -177,6 +178,11 @@ The base `data-mysql.sql` already includes minimal `products` and `order_items` 
 even when the optional generation script is not run.
 
 See `docs/data/DATASET_MAPPING.md` for dataset field mapping, cleaning rules, limits, and current boundaries.
+
+V3.6 wires these product and order-item records into the order query tool output. `get_order_by_id` now returns
+structured `orderItems` with product name, category, quantity, price, item status, return/exchange support flags, and
+the special-item flag. The default in-memory repository also includes matching demo item data, so this behavior does
+not require MySQL or generated raw datasets.
 
 ## Docker Compose Local Development
 
@@ -398,9 +404,11 @@ Expected result:
     "plan": "{...}",
     "finalSuggestion": "Intent RETURN_AND_REFUND identified...",
     "evidence": [
+      "Order O202605130001: Wireless Headphones...",
       "POL-QUALITY-RETURN-EXCHANGE: 质量问题退换货规则"
     ],
     "toolCalls": [
+      "get_order_by_id",
       "search_aftersale_policy",
       "add_ticket_note"
     ]
@@ -443,6 +451,13 @@ Expected result:
   "code": "SUCCESS",
   "message": "ok",
   "data": [
+    {
+      "runId": "RUN-...",
+      "toolName": "get_order_by_id",
+      "status": "SUCCEEDED",
+      "inputJson": "{\"orderId\":\"O202605130001\"}",
+      "outputJson": "{\"orderId\":\"O202605130001\",\"orderItems\":[{\"productName\":\"Wireless Headphones\",\"supportReturn\":true}]}"
+    },
     {
       "runId": "RUN-...",
       "toolName": "search_aftersale_policy",
@@ -638,7 +653,24 @@ V2.2 adds two low-risk order tools backed by in-memory demo data:
 
 The rule-based AgentRun now plans `get_order_by_id` before policy retrieval, so the final suggestion and trace can show
 both order facts and policy evidence. This is still demo data only; the project does not connect to a real order center,
-real logistics provider, real payment provider, or real database.
+real logistics provider, real payment provider, or production order database.
+
+V3.6 enriches `get_order_by_id` with structured `orderItems`. Each item includes:
+
+- `orderItemId`
+- `productId`
+- `productName`
+- `category`
+- `quantity`
+- `unitPrice`
+- `itemStatus`
+- `supportReturn`
+- `supportExchange`
+- `isSpecialItem`
+
+`get_user_orders` may include the same structured item list because it uses the shared order tool output mapper, but it
+remains intended as a lightweight user-order lookup. ToolCallTrace and Execution Tree output can inspect the serialized
+`orderItems` through the `get_order_by_id` `outputJson`.
 
 ### V2.3 Multi-Intent Planning
 
@@ -835,8 +867,8 @@ LLM provider, require an API key, use LLM-as-judge, mutate tickets or approvals,
 V3 is the infrastructure closure phase. V3.1 MySQL Persistence and V3.2 Docker Compose are implemented for explicit
 local infrastructure profiles. V3.3 Structured Logging / Observability is implemented for request correlation and
 structured diagnostic fields. V3.4 Final Review is completed as the infrastructure closure review. V3.5 Demo Dataset
-Enrichment is implemented for optional local seed generation. V3 does not change the Agent business capability
-boundary.
+Enrichment is implemented for optional local seed generation. V3.6 Order Items Tool Enrichment is implemented so
+existing order tools can expose product-level order detail. V3 does not change the Agent business capability boundary.
 
 ### V3.1 MySQL Persistence
 
@@ -894,6 +926,16 @@ Implemented focus:
 - Document mapping from public order, Chinese review, and clothing feedback datasets.
 - Keep default startup and default tests independent from external dataset files.
 
+### V3.6 Order Items Tool Enrichment
+
+Implemented focus:
+
+- Extend the order domain and tool output with structured `orderItems`.
+- Query `order_items` joined with `products` in the explicit MySQL profile.
+- Keep default in-memory order demo data with at least one item per seeded order.
+- Preserve Agent, Handler, ToolRegistry, Approval, Trace, and Workspace execution boundaries.
+- Keep default tests independent from MySQL, Docker, raw datasets, real LLMs, API keys, and external network.
+
 ## Known Limitations
 
 - The default runtime uses in-memory repositories, so default local data is reset on restart.
@@ -907,7 +949,8 @@ Implemented focus:
 - Approval APIs record manual decisions but do not execute real high-risk business actions.
 - Policy retrieval is controlled local keyword retrieval, not vector search or hybrid retrieval.
 - Logs are diagnostic only; ToolCallTrace, ApprovalRequest records, and Execution Tree remain the audit surfaces.
-- Demo dataset enrichment is optional; generated `products` and `order_items` seed does not change Agent tool behavior.
+- Demo dataset enrichment is optional; V3.6 exposes available `products` and `order_items` data through order tool
+  output, but it remains demo data and does not connect to a production order center.
 - Docker, MySQL, Redis, real LLMs, API keys, and external network access are intentionally outside the default
   `mvn test` path.
 

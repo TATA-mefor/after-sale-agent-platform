@@ -493,7 +493,7 @@ Completed:
 
 V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL profile 和 Spring JDBC persistence，V3.2 已完成
 本地 Docker Compose 启动路径，V3.3 已完成 requestId 追踪和结构化日志基础能力，V3.5 已完成可选 demo
-dataset enrichment。
+dataset enrichment，V3.6 已完成 order-item-aware order tool output。
 
 | 维度 | 当前目标 | 验收方式 |
 |---|---|---|
@@ -507,6 +507,7 @@ dataset enrichment。
 | Seed reproducibility | generated seed 可由脚本以 bounded 参数复现 | Python script smoke + harness test |
 | Raw data boundary | `data/raw` 原始大文件不入仓 | `.gitignore` + review |
 | Product/item demo support | `products` / `order_items` 支撑多商品售后 demo 数据 | schema / seed harness test |
+| Order item tool traceability | `get_order_by_id` 输出和 AgentRun trace 可看到结构化 `orderItems` | OrderToolTest + AgentRunFlowTest |
 | Dataset traceability | 三个公开数据集字段映射、清洗规则和未使用字段可追踪 | `docs/data/DATASET_MAPPING.md` |
 | External data independence | 默认测试和默认启动不依赖 raw 数据集 | 默认 `mvn test` |
 
@@ -636,8 +637,34 @@ V3.5 non-regression targets:
 - Generated seed must remain optional enrichment for the explicit MySQL profile.
 - Raw data files must not enter source control.
 - `Age` must not be used for user profiling, ranking, segmentation, or personalization.
-- Product/order-item seed must not force a rewrite of Agent tools or order domain behavior.
+- Product/order-item seed must not force Agent main-flow changes or any real external order-center integration.
 - Optional generated JSONL cases must not replace the default curated evaluation dataset without a separate plan.
+
+### V3.6 Order Items Tool Quality Summary
+
+Status: completed for order-item-aware order tool output.
+
+Current order-item tool status:
+
+- `OrderItem` is a pure domain model with no database framework dependency.
+- `Order` now carries structured `orderItems` while preserving a compatibility constructor for existing callers.
+- The explicit MySQL repository queries `order_items` joined with `products`, with a fallback primary item for older
+  local seed data.
+- The default in-memory repository seeds at least one item for every demo order.
+- `get_order_by_id` returns `orderItems` with product, category, quantity, unit price, item status, return/exchange
+  support flags, and special-item flag.
+- `OrderFact` captures an item summary for workspace-based final suggestions.
+- ToolCallTrace output JSON for `get_order_by_id` contains `orderItems`, so Execution Tree inspection can see the same
+  serialized tool evidence.
+- Default tests remain independent from MySQL, Docker, raw datasets, real LLMs, API keys, and external network.
+
+V3.6 non-regression targets:
+
+- Order tools remain low-risk read-only tools.
+- Agent and Specialist Handler must still call order data only through ToolRegistry and application services.
+- `orderItems` enrichment must not introduce real refund, exchange, payment, logistics, inventory, or coupon actions.
+- MySQL order-item support must stay behind the explicit `mysql` profile.
+- Default in-memory tests must continue to expose at least one item for `get_order_by_id`.
 
 ### V3 不接受的退化
 

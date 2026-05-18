@@ -49,6 +49,11 @@ class MySqlPersistenceHarnessTest {
         assertTableFields(schema, "orders",
                 "order_id", "user_id", "product_id", "product_name", "order_status", "paid_amount", "paid_at",
                 "delivered_at", "aftersale_deadline");
+        assertTableFields(schema, "products",
+                "product_id", "product_name", "category", "department", "division", "source_dataset", "created_at");
+        assertTableFields(schema, "order_items",
+                "order_item_id", "order_id", "product_id", "product_name", "quantity", "unit_price", "category",
+                "created_at");
         assertTableFields(schema, "aftersale_policies",
                 "policy_id", "category", "product_type", "policy_text", "effective_from", "effective_to");
     }
@@ -59,6 +64,9 @@ class MySqlPersistenceHarnessTest {
 
         assertThat(data).contains("O202605130001");
         assertThat(data).contains("O-PAID-NOT-SHIPPED");
+        assertThat(data).contains("INSERT INTO products");
+        assertThat(data).contains("INSERT INTO order_items");
+        assertThat(data).contains("OI-O202605130001-1");
         assertThat(data).contains("POL-QUALITY-RETURN-EXCHANGE");
         assertThat(data).contains("POL-LOGISTICS-NOT-RECEIVED");
         assertThat(data).contains("ON DUPLICATE KEY UPDATE");

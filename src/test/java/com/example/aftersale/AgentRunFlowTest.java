@@ -119,6 +119,15 @@ class AgentRunFlowTest {
         assertThat(traceApplicationService.findByRunId(runId))
                 .extracting(ToolCallTrace::getToolName)
                 .contains("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
+        assertThat(traceApplicationService.findByRunId(runId))
+                .filteredOn(trace -> "get_order_by_id".equals(trace.getToolName()))
+                .extracting(ToolCallTrace::getOutputJson)
+                .anySatisfy(outputJson -> assertThat(outputJson).contains(
+                        "\"orderItems\"",
+                        "\"orderItemId\"",
+                        "\"supportReturn\"",
+                        "\"supportExchange\"",
+                        "\"isSpecialItem\""));
     }
 
     @Test
@@ -197,6 +206,8 @@ class AgentRunFlowTest {
                         hasItem(containsString("\"query\""))))
                 .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].outputJson",
                         hasItem(containsString("\"results\""))))
+                .andExpect(jsonPath("$.data[?(@.toolName == 'get_order_by_id')].outputJson",
+                        hasItem(containsString("\"orderItems\""))))
                 .andExpect(jsonPath("$.data[?(@.toolName == 'add_ticket_note')].inputJson",
                         hasItem(containsString("\"note\""))))
                 .andExpect(jsonPath("$.data[*].status", hasItems("SUCCEEDED", "SUCCEEDED")));
