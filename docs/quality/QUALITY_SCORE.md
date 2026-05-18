@@ -493,7 +493,8 @@ Completed:
 
 V3 质量目标聚焦基础设施收口。当前 V3.1 已完成显式 MySQL profile 和 Spring JDBC persistence，V3.2 已完成
 本地 Docker Compose 启动路径，V3.3 已完成 requestId 追踪和结构化日志基础能力，V3.5 已完成可选 demo
-dataset enrichment，V3.6 已完成 order-item-aware order tool output。
+dataset enrichment，V3.6 已完成 order-item-aware order tool output，V3.7 已完成 item-specific return/exchange
+recommendation。
 
 | 维度 | 当前目标 | 验收方式 |
 |---|---|---|
@@ -508,6 +509,7 @@ dataset enrichment，V3.6 已完成 order-item-aware order tool output。
 | Raw data boundary | `data/raw` 原始大文件不入仓 | `.gitignore` + review |
 | Product/item demo support | `products` / `order_items` 支撑多商品售后 demo 数据 | schema / seed harness test |
 | Order item tool traceability | `get_order_by_id` 输出和 AgentRun trace 可看到结构化 `orderItems` | OrderToolTest + AgentRunFlowTest |
+| Item-specific recommendation | Return / Exchange handler 基于 workspace `orderItems` 生成商品明细级建议 | SpecialistAgentHandlerTest + AgentRunFlowTest |
 | Dataset traceability | 三个公开数据集字段映射、清洗规则和未使用字段可追踪 | `docs/data/DATASET_MAPPING.md` |
 | External data independence | 默认测试和默认启动不依赖 raw 数据集 | 默认 `mvn test` |
 
@@ -578,8 +580,8 @@ Status: completed for V3 infrastructure closure review.
 
 Current validation baseline:
 
-- Test classes: 28 under `src/test/java/com/example/aftersale`.
-- JUnit test methods: 124 discovered by the default Maven test run, with the live LLM smoke test skipped unless
+- Test classes: 26 under `src/test/java/com/example/aftersale`.
+- JUnit test methods: 130 discovered by the default Maven test run, with the live LLM smoke test skipped unless
   explicitly enabled.
 - Architecture test methods: 11.
 - ArchUnit rule checks: 15 `noClasses` boundary checks across API, domain, Agent, Tool, LLM infrastructure, Specialist
@@ -665,6 +667,36 @@ V3.6 non-regression targets:
 - `orderItems` enrichment must not introduce real refund, exchange, payment, logistics, inventory, or coupon actions.
 - MySQL order-item support must stay behind the explicit `mysql` profile.
 - Default in-memory tests must continue to expose at least one item for `get_order_by_id`.
+
+### V3.7 Item-Specific Recommendation Quality Summary
+
+Status: completed for deterministic item-level return and exchange recommendations.
+
+Current item recommendation status:
+
+- `OrderItemFact` captures structured item facts in AgentWorkspace from `get_order_by_id` tool output.
+- `ReturnAgentHandler` appends item-level return recommendations to subtask summary and Ticket note.
+- `ExchangeAgentHandler` appends item-level exchange recommendations to subtask summary and Ticket note.
+- Item matching is deterministic: product name first, then category, then coarse clothing keywords, then explicit
+  fallback to the first item.
+- Recommendations include order item ID, product ID, product name, category, return/exchange support flags,
+  special-item flag, recommendation text, and reason.
+- `supportReturn`, `supportExchange`, and `isSpecialItem` remain Java demo-rule derivations from current product and
+  category data; V3.7 does not require new MySQL columns.
+- Unsupported or special items route to policy/manual-review guidance and do not claim direct return or exchange can be
+  executed.
+- ToolCallTrace and Execution Tree are not structurally changed; tool evidence still comes through existing trace
+  output and final summaries.
+- Default tests remain independent from MySQL, Docker, raw datasets, real LLMs, API keys, and external network.
+
+V3.7 non-regression targets:
+
+- Handler must not directly access OrderRepository or any business Repository.
+- Handler must continue to obtain order facts through ToolRegistry and workspace.
+- Item-level recommendation must not execute real refund, exchange, inventory, logistics, payment, coupon, or dispute
+  actions.
+- Unsupported support flags and special-item flags must prevent direct return/exchange recommendation language.
+- Fallback item selection must stay explicit in the recommendation reason.
 
 ### V3 不接受的退化
 

@@ -21,4 +21,9 @@ public class ReturnAgentHandler extends AbstractSpecialistAgentHandler {
     protected List<String> requiredToolNames() {
         return List.of(GET_ORDER_BY_ID_TOOL, SEARCH_POLICY_TOOL, ADD_TICKET_NOTE_TOOL);
     }
+
+    @Override
+    protected String successRecommendation(SubtaskExecutionContext context) {
+        return ItemRecommendationSupport.returnRecommendation(context);
+    }
 }

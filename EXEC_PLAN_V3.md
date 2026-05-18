@@ -15,6 +15,7 @@ structured logging and basic observability
 final system review
 demo dataset enrichment
 order-item-aware order tools
+item-specific recommendation
 ```
 
 V3 的目标是让项目从“可演示的内存闭环”升级为“可本地复现、可持久化、可诊断的后端系统雏形”，同时保持
@@ -46,6 +47,7 @@ V3 只推进基础设施收口：
 - 做最终系统能力和限制复盘。
 - 增加可选 demo 数据集清洗和 seed 生成能力。
 - 让已有 products / order_items demo 数据进入订单查询工具结果。
+- 让 Return / Exchange specialist handler 基于 orderItems 生成商品明细级建议。
 
 V3 不改变：
 
@@ -587,7 +589,99 @@ V3.6 未做：
 - 不重构 Execution Tree 或 ToolCallTrace 数据结构；
 - 不让默认测试依赖 MySQL、Docker、真实 LLM、API Key、外部网络或 raw datasets。
 
-## 9. V3 当前状态
+## 9. V3.7 Item-Specific Recommendation
+
+Status: completed for deterministic item-level return and exchange recommendations.
+
+### 9.1 目标
+
+让 Return / Exchange Specialist Handler 使用 `get_order_by_id` 工具返回的 `orderItems`，在 final summary 和
+Ticket note 中生成商品明细级售后建议，同时保持 Handler 不直接访问 Repository、不执行真实退款或换货。
+
+### 9.2 范围
+
+V3.7 覆盖：
+
+- 扩展 AgentWorkspace 的订单事实，保存结构化 `OrderItemFact`；
+- 从 `get_order_by_id` 工具输出解析 `orderItems`，作为 handler 内部建议依据；
+- ReturnAgentHandler 生成 item-level return recommendation；
+- ExchangeAgentHandler 生成 item-level exchange recommendation；
+- 通过 productName、category 和简单服装关键词匹配相关商品；
+- 匹配失败时 fallback 到订单第一个 item，并在 reason 中说明 fallback；
+- 对 `supportReturn=false`、`supportExchange=false` 或 `isSpecialItem=true` 的 item，不建议直接退换，进入政策或人工边界；
+- summary、subtask memory 和 Ticket note 能看到商品明细级建议；
+- 测试覆盖正向、限制、特殊商品、fallback、Ticket note 和 trace 非退化。
+
+### 9.3 不做
+
+V3.7 不做：
+
+- 不修改 MySQL `products` / `order_items` schema；
+- 不要求数据库表包含 `support_return`、`support_exchange` 或 `is_special_item` 字段；
+- 不接真实退款、真实换货、真实库存、真实物流、真实支付或真实订单中心；
+- 不让 Handler 直接访问 OrderRepository 或任何业务 Repository；
+- 不调用真实 LLM；
+- 不重构 ToolCallTrace 或 Execution Tree 数据结构；
+- 不让默认测试依赖 MySQL、Docker、真实 LLM、API Key、外部网络或 raw datasets。
+
+### 9.4 验收标准
+
+V3.7 完成时必须满足：
+
+1. `get_order_by_id` 输出中的 `orderItems` 能进入 AgentWorkspace；
+2. ReturnAgentHandler 能基于 `orderItems` 生成商品明细级退货建议；
+3. ExchangeAgentHandler 能基于 `orderItems` 生成商品明细级换货建议；
+4. `supportReturn=false` 时不建议直接退货；
+5. `supportExchange=false` 时不建议直接换货；
+6. `isSpecialItem=true` 时建议中体现特殊商品限制；
+7. item 匹配失败时有清晰 fallback reason；
+8. AgentRun final summary 和 Ticket note 包含商品明细级建议；
+9. ToolCallTrace 继续记录 handler 内部工具调用；
+10. ArchitectureTest、Checkstyle、SpotBugs 和默认测试继续通过。
+
+### 9.5 测试要求
+
+至少覆盖：
+
+- Return handler item-level recommendation；
+- Exchange handler item-level recommendation；
+- unsupported return / exchange flags；
+- special item restriction；
+- fallback item selection；
+- Ticket note 中的 item-level recommendation；
+- AgentRun final summary 中的 item-level recommendation；
+- ToolCallTrace 非退化；
+- 默认 in-memory 流程回归；
+- 架构边界回归。
+
+### 9.6 验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+### 9.7 完成记录
+
+V3.7 已完成：
+
+- 新增 `OrderItemFact`，让 workspace 保存工具输出中的商品明细；
+- `OrderFact` 从 `orderItems` 同时提取 item summary 和结构化 item facts；
+- 新增确定性 `ItemRecommendationSupport`，按商品名、类目和简单服装关键词匹配 item；
+- Return / Exchange handler 在成功 summary 与 Ticket note 中追加 item-level recommendation；
+- 对 unsupported 或 special item 只给出政策 / 人工边界建议，不声称可直接退换；
+- 保持 Handler 只通过 ToolRegistry 获取订单信息，不直接访问 Repository；
+- 测试覆盖 item-level return / exchange、限制场景、fallback、Ticket note、final summary 和 trace 非退化。
+
+V3.7 未做：
+
+- 不新增数据库字段；`supportReturn`、`supportExchange` 和 `isSpecialItem` 仍由 Java demo 规则从现有商品字段派生；
+- 不新增真实退款、真实换货、真实库存、真实支付、真实物流或外部订单中心集成；
+- 不把 item recommendation 写成最终业务执行结果。
+
+## 10. V3 当前状态
 
 ```text
 V3.1 MySQL Persistence: completed
@@ -596,10 +690,12 @@ V3.3 Structured Logging / Observability: completed
 V3.4 Final System Review: completed
 V3.5 Demo Dataset Enrichment: completed
 V3.6 Order Items Tool Enrichment: completed
+V3.7 Item-Specific Recommendation: completed
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
 已完成本地 app + mysql Docker Compose 启动路径。V3.3 已完成 requestId 追踪、MDC 日志字段和关键路径结构化日志。
 V3.4 已完成最终系统复盘和文档收口。V3.5 已完成可选 demo dataset enrichment、products/order_items schema
 与 seed 生成路径。V3.6 已完成 order-item-aware order tool output，使 demo 商品明细能进入 Agent 工具结果和
-trace。V3 基础设施收口阶段完成。
+trace。V3.7 已完成 Return / Exchange handler 的商品明细级建议，使工具结果能进入最终建议和 Ticket note。
+V3 基础设施收口阶段完成。

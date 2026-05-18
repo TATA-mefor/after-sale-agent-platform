@@ -145,6 +145,128 @@ class SpecialistAgentHandlerTest {
     }
 
     @Test
+    void returnHandlerGeneratesItemLevelReturnRecommendationFromOrderItems() {
+        SubtaskExecutionContext context = contextFor(
+                SubtaskType.RETURN,
+                "O202605130001",
+                "Wireless Headphones",
+                "Wireless Headphones 左耳没声音，想退货。",
+                ToolRiskLevel.LOW,
+                defaultPlannedTools());
+
+        SubtaskExecutionResult result = returnAgentHandler.handle(context);
+
+        assertThat(result.status()).isEqualTo(SubtaskStatus.SUCCEEDED);
+        assertThat(result.summary())
+                .contains(
+                        "Item-level return recommendation",
+                        "orderItemId=OI-O202605130001-1",
+                        "productId=P-HEADPHONE-001",
+                        "productName=Wireless Headphones",
+                        "category=电子数码",
+                        "supportReturn=true",
+                        "supportExchange=true",
+                        "isSpecialItem=false",
+                        "no real return action is executed",
+                        "no special restriction found in current demo data");
+        assertThat(context.workspace().orderFacts().get(0).orderItems()).hasSize(1);
+        assertThat(context.workspace().subtaskMemories().get(0).summary())
+                .contains("Item-level return recommendation");
+        assertThat(ticketApplicationService.getTicket(context.ticket().getTicketId()).getInternalNote())
+                .contains("Item-level return recommendation", "orderItemId=OI-O202605130001-1");
+        assertTraceTools(context.runId(), "get_order_by_id", "search_aftersale_policy", "add_ticket_note");
+    }
+
+    @Test
+    void exchangeHandlerGeneratesItemLevelExchangeRecommendationFromOrderItems() {
+        SubtaskExecutionContext context = contextFor(
+                SubtaskType.EXCHANGE,
+                "O202605130001",
+                "Wireless Headphones",
+                "Wireless Headphones 想换货。",
+                ToolRiskLevel.LOW,
+                defaultPlannedTools());
+
+        SubtaskExecutionResult result = exchangeAgentHandler.handle(context);
+
+        assertThat(result.status()).isEqualTo(SubtaskStatus.SUCCEEDED);
+        assertThat(result.summary())
+                .contains(
+                        "Item-level exchange recommendation",
+                        "orderItemId=OI-O202605130001-1",
+                        "productName=Wireless Headphones",
+                        "supportExchange=true",
+                        "isSpecialItem=false",
+                        "no real exchange action is executed");
+        assertThat(ticketApplicationService.getTicket(context.ticket().getTicketId()).getInternalNote())
+                .contains("Item-level exchange recommendation", "orderItemId=OI-O202605130001-1");
+        assertTraceTools(context.runId(), "get_order_by_id", "search_aftersale_policy", "add_ticket_note");
+    }
+
+    @Test
+    void returnHandlerDoesNotRecommendDirectReturnForUnsupportedSpecialItem() {
+        SubtaskExecutionContext context = contextFor(
+                SubtaskType.RETURN,
+                "O-SPECIAL-GOODS",
+                "Customized Gift Box",
+                "Customized Gift Box 想退货。",
+                ToolRiskLevel.LOW,
+                defaultPlannedTools());
+
+        SubtaskExecutionResult result = returnAgentHandler.handle(context);
+
+        assertThat(result.summary())
+                .contains(
+                        "Item-level return recommendation",
+                        "productName=Customized Gift Box",
+                        "supportReturn=false",
+                        "isSpecialItem=true",
+                        "Do not recommend direct return",
+                        "special item restriction applies");
+    }
+
+    @Test
+    void exchangeHandlerDoesNotRecommendDirectExchangeForUnsupportedSpecialItem() {
+        SubtaskExecutionContext context = contextFor(
+                SubtaskType.EXCHANGE,
+                "O-SPECIAL-GOODS",
+                "Customized Gift Box",
+                "Customized Gift Box 想换货。",
+                ToolRiskLevel.LOW,
+                defaultPlannedTools());
+
+        SubtaskExecutionResult result = exchangeAgentHandler.handle(context);
+
+        assertThat(result.summary())
+                .contains(
+                        "Item-level exchange recommendation",
+                        "productName=Customized Gift Box",
+                        "supportExchange=false",
+                        "isSpecialItem=true",
+                        "Do not recommend direct exchange",
+                        "special item restriction applies");
+    }
+
+    @Test
+    void itemLevelRecommendationUsesClearFallbackWhenTargetDoesNotMatchAnyItem() {
+        SubtaskExecutionContext context = contextFor(
+                SubtaskType.RETURN,
+                "O202605130001",
+                "完全不匹配的商品",
+                "用户描述没有商品名也没有类目。",
+                ToolRiskLevel.LOW,
+                defaultPlannedTools());
+
+        SubtaskExecutionResult result = returnAgentHandler.handle(context);
+
+        assertThat(result.summary())
+                .contains(
+                        "Item-level return recommendation",
+                        "productName=Wireless Headphones",
+                        "fallback item selected because target/message did not match productName or category");
+    }
+
+    @Test
     void couponHandlerCallsPolicyAndTicketNoteToolsThroughToolRegistry() {
         SubtaskExecutionContext context = contextFor(SubtaskType.COUPON_CONSULTATION, List.of(
                 new PlannedToolCall("search_aftersale_policy", "Policy evidence."),
@@ -186,15 +308,25 @@ class SpecialistAgentHandlerTest {
             SubtaskType type,
             ToolRiskLevel riskLevel,
             List<PlannedToolCall> plannedTools) {
+        return contextFor(type, "O202605130001", "handler target", "handler fragment", riskLevel, plannedTools);
+    }
+
+    private SubtaskExecutionContext contextFor(
+            SubtaskType type,
+            String orderId,
+            String target,
+            String fragment,
+            ToolRiskLevel riskLevel,
+            List<PlannedToolCall> plannedTools) {
         Ticket ticket = ticketApplicationService.createTicket(
                 "U-HANDLER-" + UUID.randomUUID(),
-                "O202605130001",
-                "Handler test message.");
+                orderId,
+                "Handler test message. " + fragment);
         AgentSubtask subtask = new AgentSubtask(
                 "subtask-" + type.name().toLowerCase(),
                 type,
-                "handler target",
-                "handler fragment",
+                target,
+                fragment,
                 1,
                 riskLevel,
                 "质量问题 退货 换货 优惠券",
@@ -222,6 +354,13 @@ class SpecialistAgentHandlerTest {
                 List.of("get_order_by_id", "search_aftersale_policy", "add_ticket_note"),
                 RISK_POLICY_SUMMARY,
                 List.of());
+    }
+
+    private static List<PlannedToolCall> defaultPlannedTools() {
+        return List.of(
+                new PlannedToolCall("get_order_by_id", "Order facts."),
+                new PlannedToolCall("search_aftersale_policy", "Policy evidence."),
+                new PlannedToolCall("add_ticket_note", "Record note."));
     }
 
     private void assertTraceTools(String runId, String... expectedToolNames) {

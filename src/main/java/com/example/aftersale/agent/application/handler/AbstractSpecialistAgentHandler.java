@@ -101,6 +101,10 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
 
     protected abstract List<String> requiredToolNames();
 
+    protected String successRecommendation(SubtaskExecutionContext context) {
+        return "";
+    }
+
     protected List<PlannedToolCall> toolPlan(SubtaskExecutionContext context) {
         LinkedHashSet<String> toolNames = new LinkedHashSet<>();
         List<PlannedToolCall> plannedTools = new ArrayList<>();
@@ -167,7 +171,7 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
                         false);
             }
         }
-        String summary = successSummary(context.subtask(), evidence);
+        String summary = enrichSuccessSummary(context, successSummary(context.subtask(), evidence));
         context.workspace().addSubtaskMemory(new SubtaskMemory(
                 context.subtask().subtaskId(),
                 context.subtask().type(),
@@ -263,6 +267,10 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
                 + " " + context.subtask().type().name()
                 + " target=" + context.subtask().target()
                 + ". " + context.agentPlan().noteToAdd();
+        String recommendation = successRecommendation(context);
+        if (!recommendation.isBlank()) {
+            note = note + " " + recommendation;
+        }
         if (evidence.isEmpty()) {
             return note;
         }
@@ -311,6 +319,14 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
     private static String successSummary(AgentSubtask subtask, List<String> evidence) {
         return subtask.subtaskId() + " " + subtask.type().name()
                 + " succeeded with " + evidence.size() + " evidence item(s).";
+    }
+
+    private String enrichSuccessSummary(SubtaskExecutionContext context, String summary) {
+        String recommendation = successRecommendation(context);
+        if (recommendation.isBlank()) {
+            return summary;
+        }
+        return summary + " " + recommendation;
     }
 
     private static String failureSummary(AgentSubtask subtask, RuntimeException exception) {

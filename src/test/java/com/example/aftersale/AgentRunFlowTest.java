@@ -144,6 +144,8 @@ class AgentRunFlowTest {
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("RETURN")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("EXCHANGE")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("COUPON_CONSULTATION")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("Item-level return recommendation")))
+                .andExpect(jsonPath("$.data.finalSuggestion", containsString("Item-level exchange recommendation")))
                 .andExpect(jsonPath("$.data.finalSuggestion", containsString("Workspace summary")))
                 .andExpect(jsonPath("$.data.plan", containsString("completedSubtasks")))
                 .andExpect(jsonPath("$.data.toolCalls", hasItems("get_order_by_id", "search_aftersale_policy",

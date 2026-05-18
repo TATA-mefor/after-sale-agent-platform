@@ -14,6 +14,7 @@ public record OrderFact(
         String aftersaleDeadline,
         boolean whetherInAftersaleWindow,
         String itemSummary,
+        List<OrderItemFact> orderItems,
         String sourceToolName,
         String subtaskId) {
 
@@ -25,6 +26,7 @@ public record OrderFact(
         deliveredAt = requireText(deliveredAt, "deliveredAt");
         aftersaleDeadline = requireText(aftersaleDeadline, "aftersaleDeadline");
         itemSummary = requireText(itemSummary, "itemSummary");
+        orderItems = List.copyOf(Objects.requireNonNull(orderItems, "orderItems must not be null"));
         sourceToolName = requireText(sourceToolName, "sourceToolName");
         subtaskId = subtaskId == null ? "" : subtaskId;
     }
@@ -42,6 +44,7 @@ public record OrderFact(
                 text(data, "aftersaleDeadline"),
                 Boolean.TRUE.equals(data.get("whetherInAftersaleWindow")),
                 itemSummary(data.get("orderItems")),
+                orderItems(data.get("orderItems")),
                 sourceToolName,
                 subtaskId);
     }
@@ -65,6 +68,17 @@ public record OrderFact(
                 .map(item -> text(item, "productName") + " x" + text(item, "quantity")
                         + " category=" + text(item, "category"))
                 .collect(Collectors.joining(", "));
+    }
+
+    private static List<OrderItemFact> orderItems(Object value) {
+        if (!(value instanceof List<?> items) || items.isEmpty()) {
+            return List.of();
+        }
+        return items.stream()
+                .filter(Map.class::isInstance)
+                .map(item -> (Map<?, ?>) item)
+                .map(OrderItemFact::fromToolItem)
+                .toList();
     }
 
     private static String text(Map<?, ?> data, String key) {

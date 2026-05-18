@@ -31,6 +31,7 @@ checks, and executable tests as the guardrails.
 - Correlate requests and Agent execution logs with `X-Request-Id` and MDC fields.
 - Enrich local MySQL demo data with optional product and order-item seed generated from public datasets.
 - Return structured `orderItems` from the `get_order_by_id` order tool for product-level after-sale context.
+- Generate item-level return and exchange recommendations from `orderItems` in specialist handlers.
 
 ## Tech Stack
 
@@ -183,6 +184,10 @@ V3.6 wires these product and order-item records into the order query tool output
 structured `orderItems` with product name, category, quantity, price, item status, return/exchange support flags, and
 the special-item flag. The default in-memory repository also includes matching demo item data, so this behavior does
 not require MySQL or generated raw datasets.
+
+The MySQL `products` and `order_items` tables intentionally store only demo product and line-item fields. The
+`supportReturn`, `supportExchange`, and `isSpecialItem` values in Java tool output are deterministic demo-rule
+derivations from existing product/category fields; they are not separate MySQL columns.
 
 ## Docker Compose Local Development
 
@@ -672,6 +677,21 @@ V3.6 enriches `get_order_by_id` with structured `orderItems`. Each item includes
 remains intended as a lightweight user-order lookup. ToolCallTrace and Execution Tree output can inspect the serialized
 `orderItems` through the `get_order_by_id` `outputJson`.
 
+V3.7 uses the same `orderItems` evidence inside Return and Exchange specialist handlers. The handlers still obtain order
+data only through `ToolRegistry`, then write item-level recommendations into the final summary and Ticket note. A
+recommendation includes the selected `orderItemId`, `productId`, `productName`, `category`, support flags, special-item
+flag, recommendation text, and reason.
+
+Current deterministic matching rules are intentionally simple:
+
+- Prefer an item whose `productName` appears in the subtask target or user message.
+- Otherwise match by `category`.
+- Treat common clothing words such as `裙子`, `衣服`, `上衣`, `裤子`, `服装`, and `尺码` as coarse clothing signals.
+- If no item matches, fall back to the first item and state that fallback in the reason.
+
+Unsupported or special items do not produce a direct return/exchange recommendation. The handler recommends policy or
+manual-review handling instead and does not execute real refund, exchange, inventory, logistics, or payment actions.
+
 ### V2.3 Multi-Intent Planning
 
 V2.3 adds Multi-Intent Planning while preserving the V2.2 single-intent flow.
@@ -868,7 +888,9 @@ V3 is the infrastructure closure phase. V3.1 MySQL Persistence and V3.2 Docker C
 local infrastructure profiles. V3.3 Structured Logging / Observability is implemented for request correlation and
 structured diagnostic fields. V3.4 Final Review is completed as the infrastructure closure review. V3.5 Demo Dataset
 Enrichment is implemented for optional local seed generation. V3.6 Order Items Tool Enrichment is implemented so
-existing order tools can expose product-level order detail. V3 does not change the Agent business capability boundary.
+existing order tools can expose product-level order detail. V3.7 Item-Specific Recommendation is implemented so Return
+and Exchange specialist handlers can produce item-level suggestions from those tool results. V3 does not change the
+Agent business capability boundary.
 
 ### V3.1 MySQL Persistence
 
@@ -936,6 +958,18 @@ Implemented focus:
 - Preserve Agent, Handler, ToolRegistry, Approval, Trace, and Workspace execution boundaries.
 - Keep default tests independent from MySQL, Docker, raw datasets, real LLMs, API keys, and external network.
 
+### V3.7 Item-Specific Recommendation
+
+Implemented focus:
+
+- Parse `get_order_by_id` `orderItems` into AgentWorkspace order facts.
+- Generate item-level return recommendations in `ReturnAgentHandler`.
+- Generate item-level exchange recommendations in `ExchangeAgentHandler`.
+- Match items deterministically by product name, category, or coarse clothing keywords.
+- Fall back to the first order item with an explicit reason when no specific item can be matched.
+- Respect Java-derived `supportReturn`, `supportExchange`, and `isSpecialItem` flags.
+- Keep Handler access to order data behind ToolRegistry and avoid real refund/exchange/inventory actions.
+
 ## Known Limitations
 
 - The default runtime uses in-memory repositories, so default local data is reset on restart.
@@ -951,6 +985,8 @@ Implemented focus:
 - Logs are diagnostic only; ToolCallTrace, ApprovalRequest records, and Execution Tree remain the audit surfaces.
 - Demo dataset enrichment is optional; V3.6 exposes available `products` and `order_items` data through order tool
   output, but it remains demo data and does not connect to a production order center.
+- V3.7 item-level recommendations are deterministic demo guidance. Support flags are derived in Java from existing
+  product/category fields, not read from dedicated MySQL columns.
 - Docker, MySQL, Redis, real LLMs, API keys, and external network access are intentionally outside the default
   `mvn test` path.
 
