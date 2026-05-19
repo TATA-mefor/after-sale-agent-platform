@@ -44,6 +44,8 @@ public class AgentPlannerProperties {
 
         private int timeoutSeconds = 30;
 
+        private Budget budget = new Budget();
+
         public String getProvider() {
             return provider;
         }
@@ -82,6 +84,83 @@ public class AgentPlannerProperties {
 
         public void setTimeoutSeconds(int timeoutSeconds) {
             this.timeoutSeconds = timeoutSeconds;
+        }
+
+        @SuppressFBWarnings(
+                value = "EI_EXPOSE_REP",
+                justification = "Spring Boot configuration properties expose nested mutable property objects.")
+        public Budget getBudget() {
+            return budget;
+        }
+
+        @SuppressFBWarnings(
+                value = "EI_EXPOSE_REP2",
+                justification = "Spring Boot configuration binding stores nested mutable property objects.")
+        public void setBudget(Budget budget) {
+            this.budget = budget;
+        }
+    }
+
+    public static class Budget {
+
+        private int systemPromptTokens = 2000;
+
+        private int historyTokens = 4000;
+
+        private int ragContextTokens = 8000;
+
+        private int toolCatalogTokens = 2000;
+
+        private int maxOutputTokens = 1000;
+
+        private int totalInputTokens = 16000;
+
+        public int getSystemPromptTokens() {
+            return systemPromptTokens;
+        }
+
+        public void setSystemPromptTokens(int systemPromptTokens) {
+            this.systemPromptTokens = systemPromptTokens;
+        }
+
+        public int getHistoryTokens() {
+            return historyTokens;
+        }
+
+        public void setHistoryTokens(int historyTokens) {
+            this.historyTokens = historyTokens;
+        }
+
+        public int getRagContextTokens() {
+            return ragContextTokens;
+        }
+
+        public void setRagContextTokens(int ragContextTokens) {
+            this.ragContextTokens = ragContextTokens;
+        }
+
+        public int getToolCatalogTokens() {
+            return toolCatalogTokens;
+        }
+
+        public void setToolCatalogTokens(int toolCatalogTokens) {
+            this.toolCatalogTokens = toolCatalogTokens;
+        }
+
+        public int getMaxOutputTokens() {
+            return maxOutputTokens;
+        }
+
+        public void setMaxOutputTokens(int maxOutputTokens) {
+            this.maxOutputTokens = maxOutputTokens;
+        }
+
+        public int getTotalInputTokens() {
+            return totalInputTokens;
+        }
+
+        public void setTotalInputTokens(int totalInputTokens) {
+            this.totalInputTokens = totalInputTokens;
         }
     }
 }

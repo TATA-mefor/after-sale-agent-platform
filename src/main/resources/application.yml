@@ -24,3 +24,10 @@ agent:
       api-key: ${OPENAI_API_KEY:}
       endpoint: ${OPENAI_RESPONSES_ENDPOINT:https://api.openai.com/v1/responses}
       timeout-seconds: 30
+      budget:
+        system-prompt-tokens: 2000
+        history-tokens: 4000
+        rag-context-tokens: 8000
+        tool-catalog-tokens: 2000
+        max-output-tokens: 1000
+        total-input-tokens: 16000

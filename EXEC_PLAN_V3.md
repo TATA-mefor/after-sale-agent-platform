@@ -681,7 +681,169 @@ V3.7 未做：
 - 不新增真实退款、真实换货、真实库存、真实支付、真实物流或外部订单中心集成；
 - 不把 item recommendation 写成最终业务执行结果。
 
-## 10. V3 当前状态
+## 10. V3.8 Context Budget & Token Observability
+
+Status: completed for deterministic prompt sectioning, budget enforcement, compact tool catalog, and token telemetry.
+
+### 10.1 目标
+
+在真实 LLM AgentRun 扩展前，先控制 LLM Planner 的输入上下文成本。V3.8 将 planner prompt 拆成明确 section，
+对 critical section 做硬保护，对 optional section 做确定性裁剪，并在调用 LLM 前记录 token 估算 telemetry。
+
+### 10.2 范围
+
+V3.8 覆盖：
+
+- `PromptSection` / `PromptSectionType` 表达 prompt 分层；
+- `PromptBudget` 表达 system、history、rag、tool catalog、output 和 total input budget；
+- `PromptBudgetPolicy` 表达 optional section 的处理顺序；
+- `PromptBudgetApplier` 负责预算计算、optional section 裁剪和超限错误；
+- `PromptUsageTelemetry` 记录 section token 估算、丢弃 token、总 input token、output budget 和 budget action；
+- `CompactToolCatalogBuilder` 只输出工具名、风险等级、必要输入字段和简短用途；
+- `AgentPlannerPromptFactory` 只负责组织 section 和拼装最终 prompt；
+- `LlmAgentPlanner` 记录 token telemetry，但不记录完整 prompt；
+- 默认配置增加 LLM budget 参数；
+- 测试覆盖 token 估算、critical 保护、optional 裁剪、超限错误、compact catalog 和 sentinel phrase。
+
+### 10.3 不做
+
+V3.8 不做：
+
+- 不调用真实 LLM；
+- 不让默认测试依赖真实 LLM、MySQL、Docker、API Key、外部网络或 raw datasets；
+- 不引入复杂 tokenizer 依赖；
+- 不引入 Prometheus/Grafana、ELK、OpenTelemetry 或外部日志平台；
+- 不改变 ToolRegistry、Approval、Trace、Workspace、Agent 执行语义；
+- 不把完整 `TOOL_CONTRACTS.md`、完整 prompt、API Key、数据库密码或敏感凭证写入日志。
+
+### 10.4 验收标准
+
+V3.8 完成时必须满足：
+
+1. Prompt section token 估算使用 `max(1, chars / 4)`；
+2. Prompt budget 能计算 `totalInputTokens`；
+3. Critical section 不会被静默丢弃或截断；
+4. Optional section 按策略顺序裁剪或丢弃；
+5. 超预算后仍无法满足时返回清晰错误；
+6. Tool catalog 是压缩版本，只包含工具名、风险等级、必要输入字段和简短说明；
+7. 长 optional document 的 sentinel phrase 不会完整进入最终 prompt；
+8. `LlmAgentPlanner` 在请求前记录 token telemetry；
+9. 默认 `mvn test` 不调用真实 LLM；
+10. ArchitectureTest、Checkstyle、SpotBugs 和默认测试继续通过。
+
+### 10.5 验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+### 10.6 完成记录
+
+V3.8 已完成：
+
+- 新增 prompt section、budget、policy、applier、telemetry、compact tool catalog 等独立协作者；
+- `AgentPlannerPromptFactory` 输出 layered prompt，并保留旧 `systemPrompt()` / `userPrompt()` 兼容入口；
+- `LlmAgentPlanner` 改为使用 budgeted prompt，并记录估算 token telemetry；
+- `application.yml` 增加默认 LLM budget 配置；
+- 测试覆盖预算计算、critical protection、optional reduction order、clear overflow error、compact catalog、
+  sentinel phrase 和 prompt factory 职责拆分；
+- 保持默认测试离线，不调用真实 LLM。
+
+V3.8 未做：
+
+- 不提供精确 provider tokenizer 计数；
+- OpenAI provider usage 如果后续需要读取，应在 provider response 结构稳定后补充；
+- 不实现真实 LLM + MySQL end-to-end AgentRun live validation。
+
+## 11. V3.9 Real LLM + MySQL Seed Data Opt-In Validation
+
+### 11.1 状态
+
+completed
+
+### 11.2 目标
+
+新增一条显式 opt-in 的真实验证路径，用真实 LLM Planner 和 MySQL seed data 通过 HTTP API 跑完整 AgentRun
+链路。默认 `mvn test` 不得调用真实 LLM、MySQL、Docker 或外部网络。
+
+### 11.3 范围
+
+V3.9 覆盖：
+
+1. 新增 `RealAgentValidationLiveTest`；
+2. 只有同时设置 `-Dlive.llm=true` 和 `-Dlive.mysql=true` 时才允许执行；
+3. 缺少 `OPENAI_API_KEY`、`AFTERSALE_MYSQL_URL`、`AFTERSALE_MYSQL_USERNAME` 或
+   `AFTERSALE_MYSQL_PASSWORD` 时跳过；
+4. 使用 `mysql` profile 和 `agent.planner.mode=llm` 启动测试应用上下文；
+5. 通过 HTTP `POST /api/tickets` 创建 Ticket；
+6. 通过 HTTP `POST /api/tickets/{ticketId}/agent-runs` 触发 AgentRun；
+7. 通过 HTTP `GET /api/agent-runs/{runId}/execution-tree` 查询执行树；
+8. 通过 HTTP `GET /api/agent-runs/{runId}/traces` 验证 ToolCallTrace；
+9. 验证 `get_order_by_id`、`search_aftersale_policy`、`add_ticket_note` 都通过 trace/tool call 出现；
+10. 验证 `get_order_by_id` 输出包含 `orderItems`；
+11. 验证 execution tree 或 final summary 包含商品明细级建议；
+12. 增加 provider 403 / insufficient-balance 的清晰 live-run 错误提示；
+13. 增加真实验证手册和完成记录。
+
+### 11.4 不做什么
+
+V3.9 不做：
+
+- 不把真实 LLM / MySQL 验证加入默认测试路径；
+- 不提交 API Key、数据库密码或个人路径；
+- 不让 LLM 直接执行工具；
+- 不绕过 ToolRegistry、AgentPlanValidator、Trace、Approval 或 Workspace 边界；
+- 不实现真实退款、换货、支付、物流或库存动作；
+- 不新增复杂外部评测框架；
+- 不改变默认 rule-based / in-memory 离线测试路径。
+
+### 11.5 验收标准
+
+V3.9 完成时必须满足：
+
+1. 默认 `mvn test` 中 `RealAgentValidationLiveTest` 被 skipped；
+2. 缺少 `live.llm=true` 或 `live.mysql=true` 时 skipped；
+3. 缺少必需环境变量时 skipped；
+4. 手动命令文档完整；
+5. HTTP 链路覆盖 Ticket、AgentRun、Execution Tree 和 Trace API；
+6. 真实 LLM 只生成 AgentPlan，后端仍由 ToolRegistry 执行工具；
+7. MySQL seed order 默认使用 `O202605130001`，并支持 `AFTERSALE_LIVE_ORDER_ID` 覆盖；
+8. 默认测试不依赖 MySQL、Docker、真实 LLM、API Key 或外部网络；
+9. ArchitectureTest、Checkstyle、SpotBugs 和默认测试继续通过。
+
+### 11.6 验证命令
+
+默认验证：
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+可选 live 验证：
+
+```bash
+mvn test -Dtest=RealAgentValidationLiveTest -Dlive.llm=true -Dlive.mysql=true
+```
+
+### 11.7 完成记录
+
+V3.9 已完成：
+
+- 新增 HTTP API 驱动的 opt-in live validation；
+- 将 live test 限制在显式系统属性和必需环境变量之后；
+- 验证真实 LLM AgentPlan、AgentPlanValidator、Specialist Handler、ToolRegistry、ToolCallTrace 和 Execution
+  Tree 链路；
+- 补齐 OpenAI strict JSON schema 的 `subtasks` 字段，使真实 LLM 输出契约与已有 parser / specialist handler
+  能力一致；
+- 增加 `docs/demo/REAL_AGENT_VALIDATION.md` 和 V3.9 完成记录。
+
+## 12. V3 当前状态
 
 ```text
 V3.1 MySQL Persistence: completed
@@ -691,6 +853,8 @@ V3.4 Final System Review: completed
 V3.5 Demo Dataset Enrichment: completed
 V3.6 Order Items Tool Enrichment: completed
 V3.7 Item-Specific Recommendation: completed
+V3.8 Context Budget & Token Observability: completed
+V3.9 Real LLM + MySQL Seed Data Opt-In Validation: completed
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
@@ -698,4 +862,6 @@ V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始
 V3.4 已完成最终系统复盘和文档收口。V3.5 已完成可选 demo dataset enrichment、products/order_items schema
 与 seed 生成路径。V3.6 已完成 order-item-aware order tool output，使 demo 商品明细能进入 Agent 工具结果和
 trace。V3.7 已完成 Return / Exchange handler 的商品明细级建议，使工具结果能进入最终建议和 Ticket note。
+V3.8 已完成 LLM Planner context budget、compact tool catalog 和 token telemetry，为后续真实 LLM 演练提供
+输入成本边界。V3.9 已完成真实 LLM + MySQL seed data 的显式 opt-in HTTP 验证路径，默认测试仍保持离线确定性。
 V3 基础设施收口阶段完成。

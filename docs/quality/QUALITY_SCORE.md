@@ -698,6 +698,66 @@ V3.7 non-regression targets:
 - Unsupported support flags and special-item flags must prevent direct return/exchange recommendation language.
 - Fallback item selection must stay explicit in the recommendation reason.
 
+### V3.8 Context Budget / Token Observability Quality Summary
+
+Status: completed for deterministic LLM planner prompt budget controls.
+
+Current context-budget status:
+
+- LLM planner prompt input is split into typed sections rather than one uncontrolled concatenated string.
+- Critical sections include `systemInstructions`, `outputSchema`, `plannerContractSummary`, `toolCatalogCompact`,
+  `riskPolicySummary`, and `ticketContext`.
+- Critical sections are not silently dropped or truncated to satisfy budget.
+- Optional sections include `conversationHistory`, `ragContext`, `examples`, `debugHints`, `extendedPolicyText`, and
+  `nonEssentialDocs`.
+- Optional budget reduction follows the documented order: drop debug hints, reduce non-essential docs, truncate
+  examples, truncate conversation history, compress RAG context, compress extended policy text, then compress
+  non-critical ticket context fields.
+- Tool catalog prompt content is compact and includes only tool name, risk level, required input fields, and short
+  purpose.
+- Token estimates use `max(1, chars / 4)` and avoid adding a tokenizer dependency.
+- `LlmAgentPlanner` logs section token estimates, optional token drops, total input tokens, output budget, budget
+  status, and budget action.
+- Logs do not include full prompts, API keys, database passwords, sensitive credentials, or long raw documents.
+- Sentinel phrase coverage verifies a long optional document is not fully inserted into the final prompt.
+- Default tests remain independent from MySQL, Docker, raw datasets, real LLMs, API keys, and external network.
+
+V3.8 non-regression targets:
+
+- PromptFactory must keep budget application, telemetry calculation, and compact catalog construction in collaborators.
+- `outputSchema`, `toolCatalogCompact`, and `riskPolicySummary` must not be removed to fit budget.
+- Prompt budget errors must remain explicit and diagnosable.
+- Provider output/cache token usage must not be fabricated when unavailable.
+- Context-budget telemetry must remain diagnostic only and must not alter ToolRegistry, Approval, Trace, Workspace, or
+  Agent execution semantics.
+
+### V3.9 Real LLM + MySQL Seed Data Opt-In Validation Quality Summary
+
+Status: completed for explicit live-only HTTP validation harness.
+
+Current live-validation status:
+
+- `RealAgentValidationLiveTest` is tagged `live` and disabled unless both `-Dlive.llm=true` and `-Dlive.mysql=true`
+  are present.
+- The live test is also disabled unless `OPENAI_API_KEY`, `AFTERSALE_MYSQL_URL`, `AFTERSALE_MYSQL_USERNAME`, and
+  `AFTERSALE_MYSQL_PASSWORD` are present.
+- The test uses the `mysql` profile and `agent.planner.mode=llm` only for the focused live class.
+- The test drives the existing HTTP APIs: Ticket creation, AgentRun creation, Execution Tree lookup, and Trace lookup.
+- Assertions focus on structure and boundaries rather than fixed LLM prose: run id, successful status, trace count,
+  required tool names, `orderItems`, and item-level recommendation evidence.
+- The test treats provider 403 / insufficient-balance responses as explicit live-provider setup failures.
+- The OpenAI strict JSON schema now includes `subtasks`, matching the existing parser, validator, and specialist handler
+  contract for multi-intent planning.
+- Default tests remain independent from MySQL, Docker, raw datasets, real LLMs, API keys, and external network.
+
+V3.9 non-regression targets:
+
+- Default Maven validation must never load the MySQL/LLM live validation context.
+- Live validation must continue using HTTP APIs rather than direct ApplicationService-only execution.
+- Real LLM output may vary, so assertions should remain boundary-oriented and avoid long text equality.
+- Live errors must not print API keys, database passwords, full prompt text, or personal paths.
+- Tool execution must remain visible through ToolCallTrace and Execution Tree; the LLM must not execute tools directly.
+
 ### V3 不接受的退化
 
 - 删除 in-memory/test profile；

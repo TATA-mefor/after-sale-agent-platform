@@ -81,7 +81,8 @@ public class OpenAiLlmClient implements LlmClient {
                         "noteToAdd",
                         "finalSuggestion",
                         "evidenceHints",
-                        "plannedTools"),
+                        "plannedTools",
+                        "subtasks"),
                 "properties", Map.of(
                         "intent", Map.of("type", "string"),
                         "riskLevel", Map.of("type", "string"),
@@ -89,15 +90,52 @@ public class OpenAiLlmClient implements LlmClient {
                         "noteToAdd", Map.of("type", "string"),
                         "finalSuggestion", Map.of("type", "string"),
                         "evidenceHints", Map.of("type", "array", "items", Map.of("type", "string")),
-                        "plannedTools", Map.of(
+                        "plannedTools", plannedToolArraySchema(),
+                        "subtasks", Map.of(
                                 "type", "array",
-                                "items", Map.of(
-                                        "type", "object",
-                                        "additionalProperties", false,
-                                        "required", List.of("toolName", "reason"),
-                                        "properties", Map.of(
-                                                "toolName", Map.of("type", "string"),
-                                                "reason", Map.of("type", "string"))))));
+                                "items", subtaskSchema())));
+    }
+
+    private static Map<String, Object> plannedToolArraySchema() {
+        return Map.of(
+                "type", "array",
+                "items", plannedToolSchema());
+    }
+
+    private static Map<String, Object> plannedToolSchema() {
+        return Map.of(
+                "type", "object",
+                "additionalProperties", false,
+                "required", List.of("toolName", "reason"),
+                "properties", Map.of(
+                        "toolName", Map.of("type", "string"),
+                        "reason", Map.of("type", "string")));
+    }
+
+    private static Map<String, Object> subtaskSchema() {
+        return Map.of(
+                "type", "object",
+                "additionalProperties", false,
+                "required", List.of(
+                        "subtaskId",
+                        "type",
+                        "target",
+                        "userMessageFragment",
+                        "priority",
+                        "riskLevel",
+                        "policyQuery",
+                        "plannedTools",
+                        "dependencies"),
+                "properties", Map.of(
+                        "subtaskId", Map.of("type", "string"),
+                        "type", Map.of("type", "string"),
+                        "target", Map.of("type", "string"),
+                        "userMessageFragment", Map.of("type", "string"),
+                        "priority", Map.of("type", "integer"),
+                        "riskLevel", Map.of("type", "string"),
+                        "policyQuery", Map.of("type", "string"),
+                        "plannedTools", plannedToolArraySchema(),
+                        "dependencies", Map.of("type", "array", "items", Map.of("type", "string"))));
     }
 
     private String extractText(String responseBody) {

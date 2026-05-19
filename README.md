@@ -605,6 +605,13 @@ agent:
       api-key: ${OPENAI_API_KEY:}
       endpoint: ${OPENAI_RESPONSES_ENDPOINT:https://api.openai.com/v1/responses}
       timeout-seconds: 30
+      budget:
+        system-prompt-tokens: 2000
+        history-tokens: 4000
+        rag-context-tokens: 8000
+        tool-catalog-tokens: 2000
+        max-output-tokens: 1000
+        total-input-tokens: 16000
 ```
 
 If `agent.planner.mode=llm` is selected without `agent.planner.llm.api-key` / `OPENAI_API_KEY`, startup fails with a
@@ -615,6 +622,58 @@ Current V2.1.1 status: the LLM adapter can call an OpenAI-compatible Responses e
 enabled and configuration is complete. The LLM must return structured JSON, which the Java backend parses, validates,
 and then executes only through `ToolRegistry`. Tests still use `rule`, `fake`, or a fake `LlmClient`; they never require
 a real LLM, API Key, or external network.
+
+### Context Budget / Token Observability
+
+V3.8 adds a deterministic prompt budget layer before `LlmAgentPlanner` calls an LLM provider. The planner prompt is
+assembled from typed sections instead of one uncontrolled string.
+
+Critical sections are never silently dropped:
+
+- `systemInstructions`
+- `outputSchema`
+- `plannerContractSummary`
+- `toolCatalogCompact`
+- `riskPolicySummary`
+- `ticketContext`
+
+Optional sections can be reduced by budget policy:
+
+- `conversationHistory`
+- `ragContext`
+- `examples`
+- `debugHints`
+- `extendedPolicyText`
+- `nonEssentialDocs`
+
+Overflow handling drops or compresses optional content first: debug hints, examples, conversation history, RAG context,
+extended policy text, then non-critical ticket context fields. If the prompt still exceeds the configured input budget,
+the planner returns a clear prompt-budget error instead of truncating the output schema, compact tool catalog, or risk
+policy summary.
+
+The tool catalog sent to the LLM is compact and planner-safe. It includes only tool name, risk level, required input
+fields, and short purpose. Full tool contracts are not copied into the prompt.
+
+Before each LLM request, the planner logs only estimated token telemetry and budget actions:
+
+```text
+systemPromptTokens
+plannerContractTokens
+toolCatalogTokens
+ticketContextTokens
+orderContextTokens
+historyTokens
+ragContextTokens
+optionalTokensDropped
+totalInputTokens
+maxOutputTokens
+budgetExceeded
+budgetAction
+```
+
+The estimate is intentionally simple: `max(1, chars / 4)`. Logs do not contain full prompt text, API keys, database
+passwords, credentials, or long raw documents. Provider output token usage is recorded as `unknown` unless the provider
+client exposes a safe usage field.
 
 ### LLM Planner Live Smoke Test
 
@@ -642,6 +701,52 @@ OPENAI_RESPONSES_ENDPOINT
 If `-Dlive.llm=true` is omitted, the test is disabled. If `OPENAI_API_KEY` is missing, the live test is skipped with a
 clear message. The smoke test calls only `LlmAgentPlanner` and validates the returned `AgentPlan`; it does not execute
 business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
+
+### Real LLM + MySQL Seed Data Opt-In Validation
+
+V3.9 adds a separate live validation path for the full HTTP AgentRun chain. It is disabled by default and runs only when
+both live flags and all required environment variables are present.
+
+Run command:
+
+```bash
+mvn test -Dtest=RealAgentValidationLiveTest -Dlive.llm=true -Dlive.mysql=true
+```
+
+Required environment:
+
+```text
+OPENAI_API_KEY
+AFTERSALE_MYSQL_URL
+AFTERSALE_MYSQL_USERNAME
+AFTERSALE_MYSQL_PASSWORD
+```
+
+Optional environment:
+
+```text
+OPENAI_RESPONSES_ENDPOINT
+AFTERSALE_LLM_MODEL
+AFTERSALE_LIVE_ORDER_ID
+```
+
+If `AFTERSALE_LIVE_ORDER_ID` is not set, the test uses the documented seed order `O202605130001`. The test starts the
+Spring application with the `mysql` profile and `agent.planner.mode=llm`, then drives the same HTTP APIs used by a
+manual demo:
+
+```text
+POST /api/tickets
+POST /api/tickets/{ticketId}/agent-runs
+GET /api/agent-runs/{runId}/execution-tree
+GET /api/agent-runs/{runId}/traces
+```
+
+The live validation checks that the real LLM planner produces a valid `AgentPlan`, the backend validates it, tools still
+execute through `ToolRegistry`, MySQL seed order facts include `orderItems`, `ToolCallTrace` rows are written, and the
+execution tree exposes item-level recommendation evidence. Missing flags or environment variables skip the test before
+loading the MySQL/LLM application context. Provider 403, `INSUFFICIENT_BALANCE`, or insufficient-balance responses are
+reported as provider/account-balance setup errors for the explicit live run. See
+[docs/demo/REAL_AGENT_VALIDATION.md](docs/demo/REAL_AGENT_VALIDATION.md) for the full setup checklist.
 
 ### V2 后续方向
 
@@ -889,8 +994,9 @@ local infrastructure profiles. V3.3 Structured Logging / Observability is implem
 structured diagnostic fields. V3.4 Final Review is completed as the infrastructure closure review. V3.5 Demo Dataset
 Enrichment is implemented for optional local seed generation. V3.6 Order Items Tool Enrichment is implemented so
 existing order tools can expose product-level order detail. V3.7 Item-Specific Recommendation is implemented so Return
-and Exchange specialist handlers can produce item-level suggestions from those tool results. V3 does not change the
-Agent business capability boundary.
+and Exchange specialist handlers can produce item-level suggestions from those tool results. V3.8 Context Budget /
+Token Observability is implemented so real LLM planning can be introduced behind explicit budget and telemetry
+controls. V3 does not change the Agent business capability boundary.
 
 ### V3.1 MySQL Persistence
 
@@ -970,6 +1076,30 @@ Implemented focus:
 - Respect Java-derived `supportReturn`, `supportExchange`, and `isSpecialItem` flags.
 - Keep Handler access to order data behind ToolRegistry and avoid real refund/exchange/inventory actions.
 
+### V3.8 Context Budget / Token Observability
+
+Implemented focus:
+
+- Split LLM planner prompts into typed critical and optional sections.
+- Apply a deterministic input-token budget using a simple `max(1, chars / 4)` estimate.
+- Keep critical schema, compact tool catalog, risk policy summary, and ticket context from being silently dropped.
+- Reduce optional context in a fixed order before returning a clear budget error.
+- Send only a compact tool catalog to the planner prompt.
+- Log estimated token telemetry and budget actions without logging full prompt text or secrets.
+- Keep default tests independent from real LLMs, MySQL, Docker, API keys, and external network.
+
+### V3.9 Real LLM + MySQL Seed Data Opt-In Validation
+
+Implemented focus:
+
+- Add `RealAgentValidationLiveTest` as an explicit live-only HTTP validation path.
+- Require both `-Dlive.llm=true` and `-Dlive.mysql=true` before the test can run.
+- Require LLM and MySQL environment variables before the Spring `mysql` profile context is loaded.
+- Exercise Ticket creation, AgentRun creation, LLM planning, ToolRegistry execution, traces, and execution-tree query
+  through HTTP APIs.
+- Use the MySQL seed order `O202605130001` by default, with `AFTERSALE_LIVE_ORDER_ID` as a local override.
+- Keep default tests independent from real LLMs, MySQL, Docker, API keys, and external network.
+
 ## Known Limitations
 
 - The default runtime uses in-memory repositories, so default local data is reset on restart.
@@ -987,6 +1117,10 @@ Implemented focus:
   output, but it remains demo data and does not connect to a production order center.
 - V3.7 item-level recommendations are deterministic demo guidance. Support flags are derived in Java from existing
   product/category fields, not read from dedicated MySQL columns.
+- V3.8 token counts are estimates, not provider tokenizer counts. Provider output/cache usage remains `unknown` unless
+  a future provider client safely exposes usage metadata.
+- V3.9 live validation is opt-in and may fail for local setup reasons such as provider balance, MySQL availability, seed
+  import state, or non-deterministic provider output. It is intentionally outside default validation.
 - Docker, MySQL, Redis, real LLMs, API keys, and external network access are intentionally outside the default
   `mvn test` path.
 

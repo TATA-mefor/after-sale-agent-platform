@@ -4,6 +4,9 @@ import com.example.aftersale.agent.application.planner.AgentPlanner;
 import com.example.aftersale.agent.application.planner.FakeAgentPlanner;
 import com.example.aftersale.agent.application.planner.RuleBasedAgentPlanner;
 import com.example.aftersale.agent.prompt.AgentPlannerPromptFactory;
+import com.example.aftersale.agent.prompt.CompactToolCatalogBuilder;
+import com.example.aftersale.agent.prompt.PromptBudget;
+import com.example.aftersale.agent.prompt.PromptBudgetApplier;
 import com.example.aftersale.agent.infrastructure.llm.AgentPlannerProperties.Llm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,9 +28,23 @@ public class AgentPlannerConfiguration {
                         properties.getLlm(),
                         new OpenAiLlmClient(properties.getLlm(), objectMapper),
                         new AgentPlanParser(objectMapper),
-                        new AgentPlannerPromptFactory(objectMapper));
+                        new AgentPlannerPromptFactory(
+                                objectMapper,
+                                new PromptBudgetApplier(),
+                                promptBudget(properties.getLlm().getBudget()),
+                                new CompactToolCatalogBuilder(objectMapper)));
             }
         };
+    }
+
+    private static PromptBudget promptBudget(AgentPlannerProperties.Budget budget) {
+        return new PromptBudget(
+                budget.getSystemPromptTokens(),
+                budget.getHistoryTokens(),
+                budget.getRagContextTokens(),
+                budget.getToolCatalogTokens(),
+                budget.getMaxOutputTokens(),
+                budget.getTotalInputTokens());
     }
 
     private static void validateLlmConfiguration(Llm llm) {
