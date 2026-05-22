@@ -118,11 +118,16 @@ V4.0 只完成 pre-flight fixes，不包含 Spring AI、RAG、PGvector、VectorS
 - V4.0 不改变 ToolRegistry、Approval、Trace、Workspace、Planner、Specialist Handler 的核心语义；
 - 默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。
 
-## 5. V4.1 Tool / Skill Contract Documentation
+## 5. V4.1 Tool / Skill Layer Foundation
+
+Status: completed.
 
 ### 5.1 目标
 
-将 Tool 与 Skill 的概念从隐含实现升级为 Harness 约束。
+将 Tool 与 Skill 的概念从隐含实现升级为 Harness 约束和 Java 后端基础模型。
+
+V4.1 完成 Skill foundation，不包含 Spring AI、RAG、PGvector、VectorStore、Policy Ingestion 或完整
+Skill-based runtime migration。
 
 ### 5.2 必须新增或更新
 
@@ -194,10 +199,26 @@ Planner
 
 - Skill Contract 文档完成；
 - Tool Contract 明确 Tool vs Skill；
-- LLM Planner Contract 支持 `plannedSkills`，但 LLM 仍不得执行 Skill；
+- SkillRegistry 能按 skillName 和 SubtaskType 发现已注册 Skill；
+- 现有 SpecialistAgentHandler 可通过轻量 adapter 暴露为 AgentSkill；
+- Skill riskLevel 不得低于 requiredTools 的最高工具风险；
+- LLM Planner Contract 记录 `plannedSkills` 未来扩展边界，但 V4.1 代码暂不启用 plannedSkills；
 - Risk Policy 定义 Skill risk aggregation；
 - ARCHITECTURE 定义 SkillRegistry / AgentSkill 依赖边界；
 - AGENTS 定义 Codex 在 V4 Tool / Skill / RAG 任务前必须阅读的文档清单。
+
+### 5.7 完成记录
+
+- 新增 `AgentSkill`、`SkillDefinition`、`SkillRegistry`、`SkillExecutionContext`、
+  `SkillExecutionResult`、`SkillExecutionStatus` 和 `SkillExecutionException`；
+- 新增 `SpecialistHandlerSkillAdapter`，将现有 Specialist Handler 以 Skill 形式暴露，同时保持原有
+  ToolRegistry、ToolCallTrace、Workspace 和 Approval 行为；
+- 注册 `ReturnEligibilityAssessmentSkill`、`ExchangeRecommendationSkill`、`CouponConsultationSkill`、
+  `LogisticsIssueAnalysisSkill`、`GeneralAfterSaleConsultationSkill` 和 `HumanApprovalRoutingSkill`；
+- 新增 `SkillRiskEvaluator`，启动时校验 Skill 风险不得低于 requiredTools 的最高风险；
+- `AgentApplicationService` 当前仍使用 Specialist Handler 主执行路径，V4.1 不强制切换到 SkillRegistry；
+- `plannedSkills` 未接入 AgentPlan 解析和运行时执行，保留为后续兼容扩展；
+- 默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。
 
 ## 6. V4.2 Spring AI Adapter
 

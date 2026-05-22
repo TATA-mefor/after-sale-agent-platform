@@ -14,6 +14,15 @@ Skill = 可复用复合任务能力
 
 Skill 不是 LLM prompt，Skill 不是微服务，Skill 不是外部工具直接调用。Skill 是 Java 后端中的可测试、可审计、可约束的任务策略。
 
+V4.1 实现状态：
+
+- 已新增 `AgentSkill`、`SkillDefinition`、`SkillRegistry`、`SkillExecutionContext` 和
+  `SkillExecutionResult`；
+- 已通过 `SpecialistHandlerSkillAdapter` 将现有 Specialist Handler 暴露为 Skill-compatible 能力；
+- 已注册 Return / Exchange / Coupon / Logistics / General / Human Escalation Skill definitions；
+- 当前 AgentRun 主执行路径仍使用 `SpecialistAgentHandlerRegistry`，尚未迁移为 SkillRegistry 调度；
+- `plannedSkills` 当前是后续兼容扩展，V4.1 不要求 Planner 默认生成，也不在运行时执行。
+
 ## 2. Tool 与 Skill 的区别
 
 ### 2.1 Tool
@@ -245,6 +254,9 @@ SkillRegistry 必须：
 - 暴露只读 SkillDefinition 列表给 Planner；
 - 不暴露 Spring bean internals 给 LLM。
 
+V4.1 的 `SkillRegistry` 允许同一 `SubtaskType` 返回多个候选 Skill 列表；当前内置 Specialist Skill 每个
+SubtaskType 只有一个默认候选。后续如果需要 primary skill 选择策略，必须在 SkillRegistry 或规划校验层显式表达，不得隐式随机选择。
+
 ## 11. Planner 与 Skill
 
 Planner 可以输出：
@@ -263,6 +275,10 @@ Java 后端必须校验：
 - plannedSkills 与 SubtaskType 兼容；
 - HIGH-risk skill 进入 Approval 边界；
 - Skill 和 Tool 不产生非法依赖或循环执行。
+
+V4.1 边界：`plannedSkills` 尚未接入 `AgentPlanParser` / `AgentPlanValidator` / `AgentApplicationService`。当前
+LLM 和 RuleBased planner 仍以 `plannedTools` 和 `subtasks` 为运行时契约。启用 `plannedSkills` 需要后续阶段以
+backward-compatible 方式补充解析、校验和运行时策略。
 
 ## 12. Execution Tree 展示
 

@@ -113,6 +113,11 @@ Skill risk is calculated as:
 max(subtask riskLevel, requiredTools riskLevel, intended business outcome riskLevel)
 ```
 
+In V4.1, `SkillRiskEvaluator` enforces the required-tools portion of this rule at SkillRegistry construction time:
+a Skill cannot declare a risk level lower than the highest risk level among its `requiredTools`. Subtask risk and
+intended business outcome risk remain enforced by the existing Specialist Handler, RiskPolicy, and Approval boundaries
+until the later Skill runtime migration.
+
 ### LOW Skill
 
 Allowed to execute directly when it only performs read-only or low-risk actions.
@@ -143,3 +148,6 @@ Examples:
 - dispute closure.
 
 V4 RAG evidence does not lower risk. If a policy snippet says a user may be eligible for refund, the system may recommend human review or approval flow, but must not execute a real refund.
+
+V4.1 does not add real refund, exchange, payment, logistics, inventory, or coupon compensation actions. The high-risk
+human-routing Skill is a boundary signal only and must not execute external business mutations.

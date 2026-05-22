@@ -151,7 +151,8 @@ V2.6 Agent Workspace / Structured Memory does not change the tool contract.
 
 ## V4 Tool vs Skill Contract
 
-V4 introduces Skill as a first-class concept above Tool.
+V4 introduces Skill as a first-class concept above Tool. V4.1 implements the Skill foundation and registry while keeping
+the existing AgentRun runtime path on Specialist Handlers.
 
 ```text
 Tool = atomic executable capability
@@ -175,6 +176,10 @@ Tool remains the only actual executable unit recorded by ToolCallTrace. Skill ca
 - Skill execution produces SkillExecutionResult.
 - Skill result may be shown in Execution Tree.
 - ToolCallTrace remains the audit record for actual Tool execution.
+
+V4.1 registered Skill definitions wrap existing Specialist Handlers through a compatibility adapter. This adapter does
+not make tools executable outside ToolRegistry and does not bypass ToolCallTrace, Workspace, or Approval boundaries.
+Execution Tree Skill nodes are a later V4 goal.
 
 ## V4 search_aftersale_policy Contract
 

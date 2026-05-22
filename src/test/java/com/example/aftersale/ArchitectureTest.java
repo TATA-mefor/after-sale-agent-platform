@@ -201,4 +201,47 @@ class ArchitectureTest {
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
+
+    @Test
+    void skillLayerMustKeepToolAndInfrastructureBoundaries() {
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.skill..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("skills must coordinate through handlers and ToolRegistry, not repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.skill..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("org.springframework.web..", "..agent.infrastructure.llm..")
+                .because("skills must not depend on HTTP or LLM infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.skill..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("org.springframework.ai..", "..vector..", "..rag..")
+                .because("V4.1 skills must not access Spring AI, vector stores, or RAG infrastructure directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.skill..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("ToolExecutor")
+                .because("skills must not call concrete tool executors directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
 }

@@ -32,6 +32,8 @@ checks, and executable tests as the guardrails.
 - Enrich local MySQL demo data with optional product and order-item seed generated from public datasets.
 - Return structured `orderItems` from the `get_order_by_id` order tool for product-level after-sale context.
 - Generate item-level return and exchange recommendations from `orderItems` in specialist handlers.
+- Discover V4 Skill definitions for return, exchange, coupon, logistics, general consultation, and human escalation
+  without changing the existing AgentRun runtime path.
 
 ## Tech Stack
 
@@ -1194,6 +1196,10 @@ V4 focuses on interview-critical AI engineering capabilities:
 - Execution Tree evidence visualization;
 - Spring Boot completeness improvements.
 
+V4.0 pre-flight fixes are completed. V4.1 Tool / Skill Layer Foundation is completed as a conservative foundation:
+Skill is now a first-class Java contract and registry concept, while the current AgentRun execution path still uses the
+existing Specialist Handler dispatch.
+
 V4 preserves the existing Agent safety model:
 
 ```text
@@ -1230,6 +1236,22 @@ Policy document ingestion
 → Execution Tree evidence node
 → final suggestion with policy evidence
 ```
+
+### V4.1 Tool / Skill Foundation
+
+Implemented V4.1 foundation:
+
+- `AgentSkill`, `SkillDefinition`, `SkillRegistry`, `SkillExecutionContext`, and `SkillExecutionResult`;
+- `SpecialistHandlerSkillAdapter` for wrapping existing Specialist Handlers without changing their ToolRegistry path;
+- Skill definitions for return eligibility, exchange recommendation, coupon consultation, logistics analysis, general
+  consultation, and human approval routing;
+- Skill risk validation so a Skill cannot claim a lower risk than its required tools;
+- Architecture checks that prevent Skill code from depending directly on repositories, Spring Web, LLM infrastructure,
+  Spring AI, vector/RAG infrastructure, or concrete tool executors.
+
+V4.1 does not implement Spring AI, RAG, PGvector, policy ingestion, Execution Tree skill nodes, or full runtime migration
+from `SpecialistAgentHandlerRegistry` to `SkillRegistry`. `plannedSkills` remains a documented future extension and is
+not generated, parsed, or executed by default.
 
 ### V4 Default Test Boundary
 
