@@ -25,16 +25,16 @@ Default offline mode:
 mvn spring-boot:run
 ```
 
-RAG local profile, once implemented:
+RAG local profile, once JDBC repository wiring is implemented:
 
 ```bash
-SPRING_PROFILES_ACTIVE=rag-postgres AFTERSALE_RAG_POSTGRES_URL='jdbc:postgresql://localhost:5432/after_sale_agent_rag' AFTERSALE_RAG_POSTGRES_USERNAME=aftersale AFTERSALE_RAG_POSTGRES_PASSWORD='<local-password>' mvn spring-boot:run
+SPRING_PROFILES_ACTIVE=rag-postgres AFTERSALE_PGVECTOR_URL='jdbc:postgresql://localhost:5433/after_sale_agent_rag' AFTERSALE_PGVECTOR_USERNAME=aftersale_rag AFTERSALE_PGVECTOR_PASSWORD=aftersale_rag mvn spring-boot:run
 ```
 
-Optional Docker Compose RAG profile, once implemented:
+Optional PGvector local development compose, available in V4.3.4:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose-rag.yml up --build
+docker compose -f docker-compose-rag.yml up -d
 ```
 
 ## 3. Policy Ingestion

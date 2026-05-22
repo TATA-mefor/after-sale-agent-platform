@@ -1196,9 +1196,11 @@ V4 focuses on interview-critical AI engineering capabilities:
 - Execution Tree evidence visualization;
 - Spring Boot completeness improvements.
 
-V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, and V4.2 Spring AI Adapter are completed. Skill is now a
-first-class Java contract and registry concept, while the current AgentRun execution path still uses the existing
-Specialist Handler dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
+V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3.1 PostgreSQL / PGvector
+profile boundary, V4.3.2 vector schema / repository contract, V4.3.3 fake vector store / default offline vector
+tests, and V4.3.4 Docker Compose / opt-in PGvector integration docs are completed. Skill is now a first-class Java
+contract and registry concept, while the current AgentRun execution path still uses the existing Specialist Handler
+dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
 
 V4 preserves the existing Agent safety model:
 
@@ -1294,6 +1296,127 @@ mvn test "-Dtest=SpringAiEmbeddingClientLiveSmokeTest" "-Dlive.spring-ai=true" "
 
 Spring AI provider only supplies planner text or embedding vectors through project-owned adapters. Project tools are
 still executed only by Java through `ToolRegistry`; do not register `ToolRegistry` tools as Spring AI tool callbacks.
+
+### V4.3.1 PostgreSQL / PGvector Profile Boundary
+
+Implemented V4.3.1 dependency and profile boundary:
+
+- PostgreSQL JDBC driver is available for later opt-in PGvector work;
+- `agent.rag.vector-store.pgvector.*` properties are default-off in `application.yml`;
+- `application-rag-postgres.yml` defines the explicit `rag-postgres` profile;
+- `PgVectorProperties` and `PgVectorProfileGuard` validate opt-in configuration without creating a PostgreSQL
+  `DataSource`, `JdbcTemplate`, Spring AI `VectorStore`, schema, repository, or database connection;
+- MySQL profile remains separate and is not polluted by PGvector properties;
+- architecture checks prevent Agent, Handler, and Skill layers from depending directly on PGvector, VectorStore,
+  `DataSource`, or `JdbcTemplate`.
+
+Opt-in `rag-postgres` configuration shape:
+
+```powershell
+$env:AFTERSALE_RAG_ENABLED="true"
+$env:AFTERSALE_VECTOR_STORE_PROVIDER="pgvector"
+$env:AFTERSALE_PGVECTOR_ENABLED="true"
+$env:AFTERSALE_PGVECTOR_URL="jdbc:postgresql://localhost:5433/after_sale_agent_rag"
+$env:AFTERSALE_PGVECTOR_USERNAME="aftersale_rag"
+$env:AFTERSALE_PGVECTOR_PASSWORD="你的本地 PostgreSQL 密码"
+$env:AFTERSALE_PGVECTOR_SCHEMA="public"
+$env:AFTERSALE_EMBEDDING_DIMENSION="1536"
+```
+
+V4.3.1 does not implement policy schema, VectorStore repository, similarity search, policy ingestion, hybrid RAG,
+or PostgreSQL Docker Compose service.
+
+### V4.3.2 Vector Schema / Repository Contract
+
+Implemented V4.3.2 schema and contract boundary:
+
+- `schema-rag-postgres.sql` defines `policy_documents`, `policy_chunks`, and `policy_embeddings` for the future
+  opt-in `rag-postgres` path;
+- schema includes PGvector extension setup, primary keys, foreign keys, uniqueness constraints, retrieval indexes, and
+  a default `vector(1536)` column aligned with the configurable embedding dimension boundary;
+- `PolicyDocument`, `PolicyChunk`, `PolicyEmbedding`, `VectorSearchQuery`, `VectorSearchResult`, and
+  `VectorSearchMatch` are pure domain models with no Spring, JDBC, PGvector, or Spring AI dependency;
+- `PolicyVectorRepository` is an interface-only contract for later fake and JDBC implementations;
+- schema harness, domain model, repository contract, and architecture tests run without PostgreSQL, PGvector, Docker,
+  MySQL, Redis, real LLMs, API keys, or external network.
+
+V4.3.2 does not implement JDBC repository, Spring AI `VectorStore` search, EmbeddingClient calls, Policy Ingestion,
+RAG / HYBRID retrieval, fake vector store, PostgreSQL Docker Compose service, or `search_aftersale_policy` behavior
+changes. V4.3.3 remains the fake vector store / default offline vector test phase; V4.3.4 remains Docker Compose /
+opt-in integration docs; V4.4 remains Policy Ingestion; V4.5 remains HYBRID RAG tool integration.
+
+### V4.3.3 Fake Vector Store / Default Offline Vector Tests
+
+Implemented V4.3.3 fake vector repository boundary:
+
+- `CosineSimilarityCalculator` provides deterministic cosine similarity for evidence scores;
+- `InMemoryPolicyVectorRepository` implements `PolicyVectorRepository` for save / find / search contract tests;
+- repository search supports `topK`, `minScore`, category, productType, effectiveAt, and embeddingModel filters;
+- duplicate document / chunk / embedding writes are rejected clearly;
+- fake provider wiring is opt-in with `agent.rag.vector-store.provider=fake`;
+- default tests do not create PostgreSQL `DataSource`, `JdbcTemplate`, Spring AI `VectorStore`, real embedding
+  provider, or real LLM beans.
+
+V4.3.3 does not implement JDBC repository, PGvector live search, Spring AI `VectorStore` search, EmbeddingClient calls,
+Policy Ingestion, RAG / HYBRID retrieval, PostgreSQL Docker Compose service, or `search_aftersale_policy` behavior
+changes. V4.3.4 remains Docker Compose / opt-in integration docs; V4.4 remains Policy Ingestion; V4.5 remains HYBRID
+RAG tool integration.
+
+### V4.3.4 PGvector Local Development Compose
+
+Implemented V4.3.4 opt-in local development boundary:
+
+- `docker-compose-rag.yml` starts a local development only PGvector-capable PostgreSQL service named `pgvector`;
+- `.env.rag.example` documents placeholder local settings for the `rag-postgres` profile and compose service;
+- `docs/demo/V4_PGVECTOR_LOCAL_SETUP.md` documents start, stop, cleanup, health check, schema initialization, and FAQ
+  steps;
+- `schema-rag-postgres.sql` is mounted into `/docker-entrypoint-initdb.d/01-schema-rag-postgres.sql` for new local
+  PGvector volumes;
+- default `docker-compose.yml` app + MySQL path does not depend on PGvector;
+- compose/docs harness tests verify the opt-in boundary, secret safety, default compose non-regression, and docs
+  non-goals.
+
+Start local PGvector:
+
+```bash
+docker compose -f docker-compose-rag.yml up -d
+```
+
+Stop or clean the local PGvector volume:
+
+```bash
+docker compose -f docker-compose-rag.yml down
+docker compose -f docker-compose-rag.yml down -v
+```
+
+Health and schema checks:
+
+```bash
+docker compose -f docker-compose-rag.yml ps
+docker compose -f docker-compose-rag.yml exec pgvector pg_isready -U aftersale_rag -d after_sale_agent_rag
+docker compose -f docker-compose-rag.yml exec pgvector psql -U aftersale_rag -d after_sale_agent_rag -c "\\dt"
+```
+
+RAG profile environment variables:
+
+```text
+AFTERSALE_RAG_ENABLED=true
+AFTERSALE_VECTOR_STORE_PROVIDER=pgvector
+AFTERSALE_PGVECTOR_ENABLED=true
+AFTERSALE_PGVECTOR_URL=jdbc:postgresql://localhost:5433/after_sale_agent_rag
+AFTERSALE_PGVECTOR_USERNAME=aftersale_rag
+AFTERSALE_PGVECTOR_PASSWORD=aftersale_rag
+AFTERSALE_PGVECTOR_SCHEMA=public
+AFTERSALE_EMBEDDING_DIMENSION=1536
+```
+
+For an app running inside the same Docker Compose network, use
+`jdbc:postgresql://pgvector:5432/after_sale_agent_rag`. Local `.env` files must not be committed.
+
+V4.3.4 does not add a `JdbcPolicyVectorRepository`, Policy Ingestion, HYBRID retrieval, RAG runtime, Spring AI
+`VectorStore` usage, EmbeddingClient calls, or `search_aftersale_policy` vector wiring. Default validation does not
+start Docker and does not require PostgreSQL, PGvector, MySQL, Redis, real LLMs, API keys, embedding providers, or
+external network.
 
 ### V4 Default Test Boundary
 

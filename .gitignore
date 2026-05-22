@@ -8,6 +8,10 @@ target/
 .DS_Store
 Thumbs.db
 
+.env
+.env.*
+!.env.rag.example
+
 # Public raw datasets are kept locally only. Commit mapping docs and generated
 # small demo seeds, not downloaded source files.
 data/raw/**/*.csv

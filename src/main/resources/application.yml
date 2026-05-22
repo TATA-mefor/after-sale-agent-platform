@@ -25,6 +25,18 @@ logging:
     level: "%5p requestId=%X{requestId:-} ticketId=%X{ticketId:-} agentRunId=%X{agentRunId:-} subtaskId=%X{subtaskId:-} toolName=%X{toolName:-} approvalRequestId=%X{approvalRequestId:-}"
 
 agent:
+  rag:
+    enabled: ${AFTERSALE_RAG_ENABLED:false}
+    vector-store:
+      provider: ${AFTERSALE_VECTOR_STORE_PROVIDER:none}
+      pgvector:
+        enabled: ${AFTERSALE_PGVECTOR_ENABLED:false}
+        jdbc-url: ${AFTERSALE_PGVECTOR_URL:}
+        username: ${AFTERSALE_PGVECTOR_USERNAME:}
+        password: ${AFTERSALE_PGVECTOR_PASSWORD:}
+        schema: ${AFTERSALE_PGVECTOR_SCHEMA:public}
+        initialize-schema: false
+        dimensions: ${AFTERSALE_EMBEDDING_DIMENSION:1536}
   spring-ai:
     enabled: ${SPRING_AI_ENABLED:false}
     chat-enabled: ${SPRING_AI_CHAT_ENABLED:false}

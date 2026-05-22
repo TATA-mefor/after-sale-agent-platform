@@ -34,6 +34,16 @@ class MySqlPersistenceHarnessTest {
     }
 
     @Test
+    void mysqlProfileConfigurationIsNotPollutedByPgVectorSettings() throws IOException {
+        String config = classpathText("application-mysql.yml");
+
+        assertThat(config).doesNotContain("AFTERSALE_PGVECTOR");
+        assertThat(config).doesNotContain("rag-postgres");
+        assertThat(config).doesNotContain("pgvector");
+        assertThat(config).doesNotContain("jdbc:postgresql:");
+    }
+
+    @Test
     void schemaCoversCoreTablesAndFields() throws IOException {
         String schema = classpathText("schema-mysql.sql");
 

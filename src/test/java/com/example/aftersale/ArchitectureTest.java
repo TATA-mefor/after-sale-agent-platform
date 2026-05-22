@@ -259,6 +259,78 @@ class ArchitectureTest {
     }
 
     @Test
+    void agentHandlerAndSkillMustNotDependOnPgVectorOrJdbcClients() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure.pgvector..",
+                        "..policy.rag.infrastructure.memory..")
+                .because("Agent application, handler, and skill code must not access vector infrastructure directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void ragVectorDomainMustStayPureDomainContract() {
+        noClasses()
+                .that()
+                .resideInAPackage("..policy.rag.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "..policy.rag.infrastructure..")
+                .because("RAG vector domain contracts must not depend on Spring, JDBC, Spring AI, or infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void agentHandlerAndSkillMustNotDependOnPolicyVectorRepositoryContract() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("PolicyVectorRepository")
+                .because("Agent code must reach RAG evidence through tools, not vector repository contracts directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("InMemoryPolicyVectorRepository")
+                .because("Agent code must not depend on fake vector repository implementations directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void policyVectorRepositoryContractMustNotDependOnInfrastructure() {
+        noClasses()
+                .that()
+                .haveSimpleName("PolicyVectorRepository")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("..infrastructure..")
+                .because("repository contracts must stay independent from infrastructure implementations.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void springAiAdaptersMustStayInfrastructureAndNotAccessRepositories() {
         noClasses()
                 .that()
@@ -267,6 +339,58 @@ class ArchitectureTest {
                 .dependOnClassesThat()
                 .haveSimpleNameEndingWith("Repository")
                 .because("Spring AI adapters are provider adapters and must not access persistence.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void pgVectorInfrastructureMustStayInRagBoundaryAndNotAccessRepositories() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.infrastructure.pgvector..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("PGvector profile boundary must not access business repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.infrastructure.pgvector..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("..tool..", "..agent.application.handler..", "..agent.application.skill..")
+                .because("PGvector infrastructure must not bypass ToolRegistry or Agent execution boundaries.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void fakeVectorInfrastructureMustStayOfflineAndNotAccessBusinessRepositories() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.infrastructure.memory..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "..order..infrastructure..repository..",
+                        "..ticket..infrastructure..repository..",
+                        "..policy..infrastructure..repository..")
+                .because("fake vector infrastructure must stay offline and must not access business repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.infrastructure.memory..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("..tool..", "..agent.application.handler..", "..agent.application.skill..")
+                .because("fake vector infrastructure must not bypass ToolRegistry or Agent execution boundaries.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }

@@ -10,6 +10,7 @@ import com.example.aftersale.order.domain.OrderRepository;
 import com.example.aftersale.order.infrastructure.repository.InMemoryOrderRepository;
 import com.example.aftersale.policy.domain.PolicyRepository;
 import com.example.aftersale.policy.infrastructure.repository.InMemoryPolicyRepository;
+import com.example.aftersale.policy.rag.infrastructure.pgvector.PgVectorProfileGuard;
 import com.example.aftersale.ticket.domain.TicketRepository;
 import com.example.aftersale.ticket.infrastructure.repository.InMemoryTicketRepository;
 import com.example.aftersale.trace.domain.ToolCallTraceRepository;
@@ -54,6 +55,7 @@ class PersistenceProfileTest {
         assertThat(orderRepository).isInstanceOf(InMemoryOrderRepository.class);
         assertThat(policyRepository).isInstanceOf(InMemoryPolicyRepository.class);
         assertThat(applicationContext.getBeansOfType(DataSource.class)).isEmpty();
+        assertThat(applicationContext.getBeansOfType(PgVectorProfileGuard.class)).isEmpty();
     }
 
     @Test
@@ -63,11 +65,23 @@ class PersistenceProfileTest {
         assertThatThrownByDataSourceLookup();
     }
 
+    @Test
+    void pgVectorInfrastructureIsNotActiveByDefault() {
+        assertThat(applicationContext.getBeansOfType(PgVectorProfileGuard.class)).isEmpty();
+        assertThat(beanNamesContaining("VectorStore")).isEmpty();
+    }
+
     private void assertThatThrownByDataSourceLookup() {
         try {
             applicationContext.getBean(DataSource.class);
         } catch (NoSuchBeanDefinitionException exception) {
             assertThat(exception).hasMessageContaining("javax.sql.DataSource");
         }
+    }
+
+    private String[] beanNamesContaining(String text) {
+        return java.util.Arrays.stream(applicationContext.getBeanDefinitionNames())
+                .filter(beanName -> beanName.contains(text))
+                .toArray(String[]::new);
     }
 }

@@ -275,6 +275,10 @@ agent:
 
 ## 7. V4.3 Vector Store / PGvector
 
+Status: active. V4.3.1 PostgreSQL / PGvector dependency and profile boundary, V4.3.2 vector schema /
+repository contract, V4.3.3 fake vector store / default offline vector tests, and V4.3.4 Docker Compose /
+opt-in integration docs are completed. Policy Ingestion and Hybrid RAG runtime remain planned.
+
 ### 7.1 目标
 
 引入显式 opt-in 的 PostgreSQL + PGvector profile，用于持久化政策 chunk embedding，并支持向量相似度检索。
@@ -288,13 +292,91 @@ rag-postgres     -> PostgreSQL + PGvector for policy RAG
 spring-ai-live   -> real Spring AI provider, explicit opt-in
 ```
 
-### 7.3 预期 schema
+### 7.3 V4.3.1 已完成边界
+
+V4.3.1 只完成 PostgreSQL / PGvector dependency and profile boundary:
+
+- 新增 PostgreSQL JDBC runtime dependency，保留 MySQL profile 依赖和语义；
+- 默认 `application.yml` 增加 `agent.rag.vector-store.pgvector.*` 配置，默认 disabled；
+- 新增 `rag-postgres` profile 配置，显式 opt-in 才开启 PGvector boundary；
+- 新增 PGvector properties / profile guard，用于校验 URL、username、password、schema、dimension；
+- 配置错误只输出缺失项和 provider boundary，不输出数据库密码；
+- profile guard 不创建 PostgreSQL `DataSource`、`JdbcTemplate`、Spring AI `VectorStore`、schema、repository 或连接；
+- 默认测试和 MySQL profile 均不依赖 PostgreSQL、PGvector、Docker、MySQL live service、Redis、真实 LLM 或外部网络；
+- ArchitectureTest 增加 Agent / Handler / Skill 不直接依赖 PGvector、VectorStore、`DataSource` 或 `JdbcTemplate` 的边界。
+
+V4.3.1 不包含 schema、repository、VectorStore search、Policy Ingestion、RAG、Docker Compose PGvector service 或
+`search_aftersale_policy` 行为变更。
+
+### 7.4 V4.3.2 已完成边界
+
+V4.3.2 只完成 vector schema and repository contract:
+
+- 新增 `schema-rag-postgres.sql`，定义 `policy_documents`、`policy_chunks`、`policy_embeddings` 和 PGvector
+  extension / constraints / indexes；
+- schema 文件只用于后续 `rag-postgres` opt-in 路径，默认 profile 不自动加载；
+- 新增纯 domain 模型 `PolicyDocument`、`PolicyChunk`、`PolicyEmbedding`、`VectorSearchQuery`、
+  `VectorSearchResult`、`VectorSearchMatch` 和 `PolicyDocumentSourceType`；
+- 新增 `PolicyVectorRepository` contract，只表达 save / find / search 边界，不提供 JDBC implementation；
+- schema harness、domain model、repository contract tests 均不连接 PostgreSQL、PGvector、Docker 或外部网络；
+- ArchitectureTest 增加 `policy.rag.domain` 纯 domain 规则，以及 Agent / Handler / Skill 不直接依赖
+  `PolicyVectorRepository` 的边界。
+
+V4.3.2 不包含 JDBC repository、Spring AI `VectorStore` search、EmbeddingClient 调用、Policy Ingestion、RAG /
+HYBRID retrieval、Docker Compose PGvector service 或 `search_aftersale_policy` 行为变更。
+
+### 7.5 V4.3.3 已完成边界
+
+V4.3.3 只完成 fake vector store / default offline vector tests:
+
+- 新增 `CosineSimilarityCalculator`，用于 deterministic cosine similarity evidence score；
+- 新增 `InMemoryPolicyVectorRepository`，实现 `PolicyVectorRepository` 的 save / find / search contract；
+- fake repository 支持 `topK`、`minScore`、category、productType、effectiveAt 和 embeddingModel filter；
+- fake repository 拒绝重复 document / chunk / embedding，并要求 chunk / embedding 的父对象先保存；
+- fake provider 可通过 `agent.rag.vector-store.provider=fake` 显式启用，不创建 PostgreSQL `DataSource`、
+  `JdbcTemplate`、Spring AI `VectorStore` 或真实 embedding provider；
+- 默认离线测试覆盖 similarity、repository contract、search ranking、filters、empty result、duplicate behavior
+  和 fake provider bean boundary；
+- ArchitectureTest 增加 fake vector infrastructure 不依赖 JDBC、Spring AI、业务 Repository、Tool、Handler 或
+  Skill 的边界。
+
+V4.3.3 不包含 JDBC repository、PGvector live search、Spring AI `VectorStore` search、EmbeddingClient 调用、
+Policy Ingestion、RAG / HYBRID retrieval、Docker Compose PGvector service 或 `search_aftersale_policy` 行为变更。
+
+### 7.6 V4.3.4 已完成边界
+
+V4.3.4 只完成 Docker Compose / opt-in PGvector integration docs:
+
+- 新增独立 `docker-compose-rag.yml`，只启动 local development PGvector PostgreSQL 服务，不让默认
+  `docker-compose.yml` app + MySQL 路径依赖 PGvector；
+- 新增 `.env.rag.example`，使用 placeholder local development credentials，并记录 `rag-postgres` / PGvector
+  profile 环境变量；
+- 新增 `docs/demo/V4_PGVECTOR_LOCAL_SETUP.md`，说明启动、停止、清理 volume、health check、schema 初始化和
+  常见问题；
+- `schema-rag-postgres.sql` 仅通过 opt-in compose 挂载到 initdb 路径，新 volume 初始化时才执行；
+- 新增 compose/docs harness tests，验证 compose 存在、secret safety、默认 compose 未被 PGvector 污染、文档明确
+  no JDBC repository / no Policy Ingestion / no HYBRID retrieval / `search_aftersale_policy` not wired；
+- 默认测试仍不启动 Docker，不连接 PostgreSQL、PGvector、MySQL、Redis、真实 LLM、embedding provider 或外部网络。
+
+V4.3.4 不包含 `JdbcPolicyVectorRepository`、PGvector live search、Spring AI `VectorStore` search、
+EmbeddingClient 调用、Policy Ingestion、RAG / HYBRID retrieval、app 默认连接 PGvector 或
+`search_aftersale_policy` 行为变更。PGvector compose 是 local development only，不是 production deployment。
+
+### 7.7 后续拆分
+
+```text
+V4.3.3 -> fake vector store / default offline vector tests (completed)
+V4.3.4 -> Docker Compose / opt-in integration docs (completed)
+V4.4   -> Policy Ingestion
+V4.5   -> Hybrid RAG Policy Search Tool
+```
+
+### 7.8 Schema boundary
 
 ```text
 policy_documents
 policy_chunks
 policy_embeddings
-policy_ingestion_runs
 ```
 
 字段建议：
@@ -328,21 +410,13 @@ policy_embeddings:
 - embedding_dimension
 - embedding
 - created_at
-
-policy_ingestion_runs:
-- run_id
-- source_type
-- status
-- document_count
-- chunk_count
-- embedded_count
-- failed_count
-- error_message
-- started_at
-- finished_at
 ```
 
-### 7.4 验收标准
+`policy_ingestion_runs` 留给 V4.4 Policy Ingestion，不在 V4.3.2 schema 中实现。当前 schema 使用
+`vector(1536)` 作为默认 OpenAI-compatible embedding dimension，占位维度来自配置
+`AFTERSALE_EMBEDDING_DIMENSION`；Java contract 不硬编码单一维度。
+
+### 7.9 验收标准
 
 - PGvector profile 是显式 opt-in；
 - 默认 `mvn test` 不需要 PostgreSQL、PGvector、Docker 或外部网络；

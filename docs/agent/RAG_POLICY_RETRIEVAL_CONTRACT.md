@@ -20,6 +20,28 @@ V4.2 status: only the embedding provider adapter boundary exists. `EmbeddingClie
 `SpringAiEmbeddingClient` prepare for later vector retrieval, but V4.2 does not create VectorStore, PGvector schema,
 policy chunk ingestion, similarity search, or HYBRID retrieval runtime.
 
+V4.3.1 status: only the PostgreSQL / PGvector dependency and profile boundary exists. `rag-postgres` is explicit
+opt-in, PGvector settings are default-off, and the profile guard validates configuration without creating a
+PostgreSQL `DataSource`, `JdbcTemplate`, Spring AI `VectorStore`, policy schema, repository, or database connection.
+`search_aftersale_policy` behavior remains unchanged in V4.3.1.
+
+V4.3.2 status: only the vector schema and repository contract exist. `schema-rag-postgres.sql` defines
+`policy_documents`, `policy_chunks`, and `policy_embeddings` for the future opt-in PGvector path, and
+`PolicyVectorRepository` defines a pure domain contract for saving documents, chunks, embeddings, and searching vector
+matches. V4.3.2 does not add a JDBC repository, fake vector store, Spring AI `VectorStore`, embedding calls, ingestion,
+RAG runtime, HYBRID retrieval, or any `search_aftersale_policy` behavior change.
+
+V4.3.3 status: only the fake vector store and default offline vector tests exist. `InMemoryPolicyVectorRepository`
+implements the `PolicyVectorRepository` contract with deterministic cosine similarity, repository filtering, ranking,
+empty-result behavior, and duplicate rejection. V4.3.3 does not add a JDBC repository, PGvector live search, Spring AI
+`VectorStore`, embedding calls, ingestion, RAG runtime, HYBRID retrieval, or any `search_aftersale_policy` behavior
+change.
+
+V4.3.4 status: only the Docker Compose / opt-in PGvector integration docs exist. `docker-compose-rag.yml`,
+`.env.rag.example`, and `docs/demo/V4_PGVECTOR_LOCAL_SETUP.md` provide a local development PGvector startup and schema
+initialization path. V4.3.4 does not add a JDBC repository, PGvector live search, Spring AI `VectorStore`, embedding
+calls, ingestion, RAG runtime, HYBRID retrieval, or any `search_aftersale_policy` behavior change.
+
 允许链路：
 
 ```text
@@ -123,6 +145,8 @@ subtaskId: optional trace attribution field
 - 使用 embedding 相似度搜索；
 - 仅在 vector store profile / fake vector repository 可用时启用；
 - 默认测试使用 fake embedding / fake vector repository；
+- V4.3.3 only tests `PolicyVectorRepository.search` directly and does not route `search_aftersale_policy` through the
+  fake repository yet;
 - live vector test 必须显式 opt-in。
 
 ### HYBRID
@@ -206,6 +230,8 @@ PolicyEvidenceNode
 ```
 
 ## 11. Ingestion Contract
+
+V4.3.2 does not implement ingestion tables or ingestion runtime. `policy_ingestion_runs` remains a V4.4 contract item.
 
 Policy ingestion 必须可追踪：
 
