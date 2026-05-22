@@ -7,6 +7,9 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
+/**
+ * 验证 MySQL profile 是显式启用的基础设施 harness，且默认配置不携带真实连接信息或密钥。
+ */
 class MySqlPersistenceHarnessTest {
 
     @Test

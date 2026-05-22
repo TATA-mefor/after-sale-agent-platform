@@ -1,5 +1,6 @@
 package com.example.aftersale.agent.application.evaluation;
 
+import com.example.aftersale.agent.application.AgentExecutableToolPolicy;
 import com.example.aftersale.agent.application.planner.AgentPlan;
 import com.example.aftersale.agent.application.planner.AgentPlanValidator;
 import com.example.aftersale.agent.application.planner.AgentPlanner;
@@ -39,13 +40,18 @@ public class EvaluationApplicationService {
 
     private final ToolRegistry toolRegistry;
     private final ObjectMapper objectMapper;
+    private final AgentExecutableToolPolicy executableToolPolicy;
 
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
             justification = "Spring constructor injection intentionally stores application collaborators.")
-    public EvaluationApplicationService(ToolRegistry toolRegistry, ObjectMapper objectMapper) {
+    public EvaluationApplicationService(
+            ToolRegistry toolRegistry,
+            ObjectMapper objectMapper,
+            AgentExecutableToolPolicy executableToolPolicy) {
         this.toolRegistry = toolRegistry;
         this.objectMapper = objectMapper;
+        this.executableToolPolicy = executableToolPolicy;
     }
 
     public List<EvaluationCase> loadCases(Path datasetPath) {
@@ -219,9 +225,7 @@ public class EvaluationApplicationService {
     }
 
     private List<String> availableToolNames() {
-        return toolRegistry.listDefinitions().stream()
-                .map(definition -> definition.toolName())
-                .toList();
+        return executableToolPolicy.allowedToolNames();
     }
 
     private List<String> plannedToolNames(AgentPlan plan) {

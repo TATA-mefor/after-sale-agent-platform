@@ -28,7 +28,6 @@ import com.example.aftersale.ticket.domain.TicketStatus;
 import com.example.aftersale.tool.application.ToolRegistry;
 import com.example.aftersale.tool.application.ToolTraceContext;
 import com.example.aftersale.tool.domain.ToolExecutionStatus;
-import com.example.aftersale.tool.domain.ToolDefinition;
 import com.example.aftersale.tool.domain.ToolInput;
 import com.example.aftersale.tool.domain.ToolOutput;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -43,14 +42,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+/**
+ * 编排一次 AgentRun，从规划、Handler 或工具执行推进到最终摘要。
+ *
+ * <p>边界：本服务可以编排 Planner、专业 Handler、ToolRegistry、Workspace、Trace 上下文和审批创建，
+ * 但不能让 Planner 输出直接执行工具，也不能在未审批时执行高风险业务动作。
+ */
 @Service
 public class AgentApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentApplicationService.class);
 
-    private static final String SEARCH_POLICY_TOOL = "search_aftersale_policy";
-    private static final String GET_ORDER_BY_ID_TOOL = "get_order_by_id";
-    private static final String ADD_TICKET_NOTE_TOOL = "add_ticket_note";
+    private static final String SEARCH_POLICY_TOOL = AgentExecutableToolPolicy.SEARCH_POLICY_TOOL;
+    private static final String GET_ORDER_BY_ID_TOOL = AgentExecutableToolPolicy.GET_ORDER_BY_ID_TOOL;
+    private static final String ADD_TICKET_NOTE_TOOL = AgentExecutableToolPolicy.ADD_TICKET_NOTE_TOOL;
     private static final String RISK_POLICY_SUMMARY =
             "LOW tools may execute directly. HIGH actions such as refund, compensation, payment mutation, "
                     + "or dispute closure require human approval.";
@@ -62,6 +67,7 @@ public class AgentApplicationService {
     private final AgentPlanner agentPlanner;
     private final ObjectMapper objectMapper;
     private final ApprovalApplicationService approvalApplicationService;
+    private final AgentExecutableToolPolicy executableToolPolicy;
 
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
@@ -73,7 +79,8 @@ public class AgentApplicationService {
             SpecialistAgentHandlerRegistry specialistAgentHandlerRegistry,
             AgentPlanner agentPlanner,
             ObjectMapper objectMapper,
-            ApprovalApplicationService approvalApplicationService) {
+            ApprovalApplicationService approvalApplicationService,
+            AgentExecutableToolPolicy executableToolPolicy) {
         this.agentRunRepository = agentRunRepository;
         this.ticketApplicationService = ticketApplicationService;
         this.toolRegistry = toolRegistry;
@@ -81,8 +88,15 @@ public class AgentApplicationService {
         this.agentPlanner = agentPlanner;
         this.objectMapper = objectMapper;
         this.approvalApplicationService = approvalApplicationService;
+        this.executableToolPolicy = executableToolPolicy;
     }
 
+    /**
+     * 为一个工单运行一次 Agent 工作流，并持久化 AgentRun 结果。
+     *
+     * <p>Planner 只返回 AgentPlan。Java 校验和 ToolRegistry 仍是执行边界，高风险子任务只创建审批请求，
+     * 不直接退款、补偿或关闭争议。
+     */
     public AgentRunResult runForTicket(String ticketId) {
         Ticket ticket = ticketApplicationService.getTicket(ticketId);
         AgentRun agentRun = AgentRun.start("RUN-" + UUID.randomUUID(), ticket.getTicketId(), Instant.now());
@@ -109,7 +123,6 @@ public class AgentApplicationService {
                         plan.riskLevel(),
                         plan.subtasks().size(),
                         plan.plannedTools().size());
-
                 ticketApplicationService.classifyTicketIntent(ticket.getTicketId(), intent);
                 ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.AGENT_RUNNING, null);
 
@@ -149,6 +162,7 @@ public class AgentApplicationService {
                 String failureMessage = failureMessage(exception);
                 agentRun.fail(failureMessage, Instant.now());
                 agentRunRepository.save(agentRun);
+                markTicketFailedIfAgentCanOwnFailure(ticket.getTicketId(), failureMessage);
                 LOGGER.warn("agent_run.failed intent={} toolCallCount={} errorType={}",
                         intent,
                         toolCalls.size(),
@@ -159,6 +173,9 @@ public class AgentApplicationService {
         }
     }
 
+    /**
+     * 加载已持久化的 AgentRun，供 Trace 和执行树等读侧接口使用。
+     */
     public AgentRun getAgentRun(String runId) {
         return agentRunRepository.findById(runId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -179,9 +196,7 @@ public class AgentApplicationService {
     }
 
     private List<String> availableToolNames() {
-        return toolRegistry.listDefinitions().stream()
-                .map(ToolDefinition::toolName)
-                .toList();
+        return executableToolPolicy.allowedToolNames();
     }
 
     private void executePlannedTool(
@@ -210,7 +225,7 @@ public class AgentApplicationService {
             case ADD_TICKET_NOTE_TOOL -> executeTicketNote(runId, ticket, plan, subtask, workspace, evidence,
                     toolCalls);
             default -> throw new IllegalArgumentException(
-                    "AgentRun does not support executing planned tool: " + plannedTool.toolName());
+                    "Tool is not allowed for current AgentRun: " + plannedTool.toolName());
         }
     }
 
@@ -337,8 +352,17 @@ public class AgentApplicationService {
 
     private ToolOutput executeTool(String runId, String toolName, ToolInput input) {
         List<ToolOutput> outputs = new ArrayList<>();
+        // ToolRegistry 是唯一工具执行入口；Trace 上下文负责把调用绑定到本次运行。
         ToolTraceContext.runWith(runId, () -> outputs.add(toolRegistry.execute(toolName, input)));
         return outputs.get(0);
+    }
+
+    private void markTicketFailedIfAgentCanOwnFailure(String ticketId, String failureMessage) {
+        Ticket latestTicket = ticketApplicationService.getTicket(ticketId);
+        if (latestTicket.getStatus() == TicketStatus.CREATED
+                || latestTicket.getStatus() == TicketStatus.AGENT_RUNNING) {
+            ticketApplicationService.updateTicketStatus(ticketId, TicketStatus.FAILED, failureMessage);
+        }
     }
 
     private static void ensureToolSucceeded(ToolOutput output) {
@@ -452,6 +476,7 @@ public class AgentApplicationService {
                 .toList());
         value.put("evidence", evidence);
         value.put("toolCalls", toolCalls);
+        // Workspace 只作为本次运行的结构化工作记忆嵌入，审计来源仍是 ToolCallTrace。
         value.put("workspace", workspace.toSnapshot());
         return toJson(value);
     }

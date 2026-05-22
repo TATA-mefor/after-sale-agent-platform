@@ -351,3 +351,66 @@ V3 任务必须遵守：
 8. 不得让 persistence 绕过 ApplicationService 执行业务状态流转；
 9. 数据库变更必须有 schema 初始化或 migration 策略；
 10. Docker Compose 变更必须同步更新 README。
+
+## V4 RAG / Spring AI / Tool / Skill 任务规则
+
+V4 任务聚焦 RAG、Spring AI、PGvector / VectorStore、Tool / Skill 能力层和 Spring Boot 完整性。任何涉及以下关键词的任务，都必须先阅读本节列出的文档：
+
+```text
+Spring AI
+RAG
+VectorStore
+PGvector
+Embedding
+Policy Ingestion
+ToolRegistry
+SkillRegistry
+AgentSkill
+plannedSkills
+search_aftersale_policy
+Hybrid Retrieval
+```
+
+### V4 必读文档
+
+```text
+EXEC_PLAN_V4.md
+docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md
+docs/decisions/DECISION_V4_TOOL_SKILL_LAYER.md
+docs/decisions/DECISION_V4_SPRING_AI_ADAPTER.md
+docs/decisions/DECISION_V4_RAG_VECTOR_STORE.md
+docs/decisions/DECISION_V4_SPRING_BOOT_COMPLETENESS.md
+docs/agent/TOOL_CONTRACTS.md
+docs/agent/SKILL_CONTRACTS.md
+docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md
+docs/agent/RISK_POLICY.md
+docs/agent/LLM_PLANNER_CONTRACT.md
+docs/quality/RAG_EVALUATION.md
+```
+
+### V4 不得违反的边界
+
+1. Tool 是原子执行能力，必须通过 ToolRegistry 调用；
+2. Skill 是复合任务能力，必须通过 SkillRegistry 调度；
+3. Planner 可以规划 Tool / Skill，但不得执行 Tool / Skill；
+4. Skill 可以组合多个 Tool，但不得绕过 ToolRegistry；
+5. Skill 不得直接访问 Repository、VectorStore、JdbcTemplate、Spring AI ChatClient 或 EmbeddingModel；
+6. RAG 检索只能作为政策证据，不能作为最终业务动作；
+7. `search_aftersale_policy` 仍然是 LOW-risk read-only tool；
+8. 每个实际 Tool 调用必须产生 ToolCallTrace；
+9. Skill 执行结果必须写入 AgentWorkspace、SubtaskExecutionResult 或 Execution Tree 可读结构；
+10. 默认测试不得依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络；
+11. live RAG / embedding / provider tests 必须显式 opt-in；
+12. 不得执行真实退款、换货、补偿、支付、物流、库存或争议关闭。
+
+### V4 Codex 执行顺序
+
+```text
+Read V4 Harness Context
+→ Update / confirm execution plan
+→ Implement smallest boundary-safe change
+→ Add deterministic tests
+→ Run default verification commands
+→ Update docs and Review Packet
+→ TASK_COMPLETE
+```

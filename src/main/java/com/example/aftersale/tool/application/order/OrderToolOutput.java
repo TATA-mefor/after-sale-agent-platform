@@ -7,6 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 将订单领域对象转换为工具输出契约中的结构化事实。
+ *
+ * <p>边界：supportReturn、supportExchange 和 isSpecialItem 是 Java 领域派生字段，
+ * 不要求数据库持久化为独立列。
+ */
 final class OrderToolOutput {
 
     private OrderToolOutput() {

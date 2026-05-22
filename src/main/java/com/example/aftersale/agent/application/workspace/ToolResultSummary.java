@@ -5,6 +5,11 @@ import com.example.aftersale.tool.domain.ToolOutput;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * 保存工具输出的短摘要，供 workspace 汇总使用。
+ *
+ * <p>边界：这是运行期工作记忆的轻量索引；完整工具入参与输出审计必须继续以 ToolCallTrace 为准。
+ */
 public record ToolResultSummary(
         String subtaskId,
         String toolName,

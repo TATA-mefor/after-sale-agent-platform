@@ -19,6 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+/**
+ * 管理高风险 Agent 或工具动作产生的人工审批请求。
+ *
+ * <p>边界：审批记录只表达人工决策，并通过 Ticket 备注和状态提供可见性；approve 或 reject
+ * 都不会执行真实退款、换货、补偿、支付变更、物流变更或争议关闭。
+ */
 @Service
 public class ApprovalApplicationService {
 
@@ -39,6 +45,11 @@ public class ApprovalApplicationService {
         this.ticketApplicationService = ticketApplicationService;
     }
 
+    /**
+     * 为越过高风险边界的专业子任务创建待审批请求。
+     *
+     * <p>副作用限制为持久化审批请求、写入 Ticket 备注，并把 Ticket 移动到等待人工审批状态。
+     */
     public ApprovalRequest createForHighRiskSubtask(
             String ticketId,
             String runId,
@@ -98,6 +109,11 @@ public class ApprovalApplicationService {
                         "ApprovalRequest not found: " + approvalRequestId));
     }
 
+    /**
+     * 为已有审批请求记录通过决策。
+     *
+     * <p>该方法不执行被申请的业务动作；它只记录决策，并把 Ticket 移回处理中，供后续独立审计流程继续。
+     */
     public ApprovalRequest approve(String approvalRequestId, String reviewerId, String reason) {
         ApprovalRequest request = getById(approvalRequestId);
         request.approve(reviewerId, reason, Instant.now());
@@ -109,6 +125,9 @@ public class ApprovalApplicationService {
         return saved;
     }
 
+    /**
+     * 记录拒绝决策，并把拒绝结果写到 Ticket 可见状态中。
+     */
     public ApprovalRequest reject(String approvalRequestId, String reviewerId, String reason) {
         ApprovalRequest request = getById(approvalRequestId);
         request.reject(reviewerId, reason, Instant.now());

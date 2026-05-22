@@ -11,6 +11,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Instant;
 import org.springframework.stereotype.Component;
 
+/**
+ * 提供低风险订单事实查询工具，供 Agent 规划和 Handler 获取售后判断依据。
+ *
+ * <p>边界：工具只通过 OrderApplicationService 读取订单事实，不修改订单，也不直接访问订单 Repository。
+ */
 @Component
 public class GetOrderByIdTool implements ToolExecutor {
 

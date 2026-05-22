@@ -12,6 +12,11 @@ import java.util.Locale;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 提供默认 profile 下的内存售后政策仓储和可控关键词检索。
+ *
+ * <p>边界：该实现用于离线演示和测试，检索结果是确定性的政策证据，不代表真实 RAG 或外部知识库。
+ */
 @Repository
 @Profile("!mysql")
 public class InMemoryPolicyRepository implements PolicyRepository {

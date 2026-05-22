@@ -15,6 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+/**
+ * 管理工单创建、意图分类、备注和状态流转。
+ *
+ * <p>边界：本服务是 Ticket 领域状态变更入口；Controller、Agent 和工具都应通过它修改工单，
+ * 而不是直接访问 TicketRepository 或在外层重写状态规则。
+ */
 @Service
 public class TicketApplicationService {
 
@@ -59,6 +65,9 @@ public class TicketApplicationService {
         return saved;
     }
 
+    /**
+     * 按领域规则推进 Ticket 状态，并在需要原因的终态上强制提供说明。
+     */
     public Ticket updateTicketStatus(String ticketId, TicketStatus targetStatus, String reason) {
         Ticket ticket = getTicket(ticketId);
         TicketStatus previousStatus = ticket.getStatus();

@@ -15,6 +15,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 提供默认 profile 下的内存订单仓储和演示种子数据。
+ *
+ * <p>边界：该实现服务于离线测试和轻量本地运行，默认 mvn test 不应依赖 MySQL、Docker 或外部网络。
+ */
 @Repository
 @Profile("!mysql")
 public class InMemoryOrderRepository implements OrderRepository {
@@ -39,6 +44,7 @@ public class InMemoryOrderRepository implements OrderRepository {
     }
 
     private static List<Order> seedOrders() {
+        // 种子订单覆盖售后窗口、物流异常、特殊商品等演示分支，避免测试依赖真实订单系统。
         return List.of(
                 order(
                         "O-PAID-NOT-SHIPPED",

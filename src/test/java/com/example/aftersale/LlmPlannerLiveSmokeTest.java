@@ -8,7 +8,8 @@ import com.example.aftersale.agent.application.planner.AgentPlanningContext;
 import com.example.aftersale.agent.infrastructure.llm.AgentPlanParser;
 import com.example.aftersale.agent.infrastructure.llm.AgentPlannerProperties;
 import com.example.aftersale.agent.infrastructure.llm.LlmAgentPlanner;
-import com.example.aftersale.agent.infrastructure.llm.OpenAiLlmClient;
+import com.example.aftersale.agent.infrastructure.llm.LlmClientFactory;
+import com.example.aftersale.agent.infrastructure.llm.LlmProvider;
 import com.example.aftersale.agent.prompt.AgentPlannerPromptFactory;
 import com.example.aftersale.ticket.domain.TicketStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+/**
+ * 验证 live LLM Planner 的 opt-in 冒烟路径，避免默认离线测试依赖真实 Provider 或 API Key。
+ */
 @Tag("live")
 @EnabledIfSystemProperty(named = "live.llm", matches = "true")
 class LlmPlannerLiveSmokeTest {
@@ -26,21 +30,17 @@ class LlmPlannerLiveSmokeTest {
 
     @Test
     void llmPlannerCanCallRealProviderAndReturnValidatedAgentPlan() {
-        String apiKey = System.getenv("OPENAI_API_KEY");
-        assumeTrue(apiKey != null && !apiKey.isBlank(),
-                "Set OPENAI_API_KEY and run with -Dlive.llm=true to execute the live LLM smoke test.");
-
         ObjectMapper objectMapper = new ObjectMapper();
-        AgentPlannerProperties.Llm properties = new AgentPlannerProperties.Llm();
-        properties.setApiKey(apiKey);
-        properties.setModel(envOrDefault("AFTERSALE_LLM_MODEL", "gpt-4o-mini"));
-        properties.setEndpoint(envOrDefault("OPENAI_RESPONSES_ENDPOINT",
-                "https://api.openai.com/v1/responses"));
+        AgentPlannerProperties.Llm properties = liveProperties();
+        LlmProvider provider = LlmProvider.from(properties.getProvider());
+        assumeTrue(liveProviderCredentialsPresent(provider, properties),
+                "Set provider API key and run with -Dlive.llm=true to execute the live LLM smoke test.");
         properties.setTimeoutSeconds(60);
+        LlmClientFactory clientFactory = new LlmClientFactory(objectMapper);
 
         LlmAgentPlanner planner = new LlmAgentPlanner(
                 properties,
-                new OpenAiLlmClient(properties, objectMapper),
+                clientFactory.create(properties),
                 new AgentPlanParser(objectMapper),
                 new AgentPlannerPromptFactory(objectMapper));
 
@@ -75,5 +75,31 @@ class LlmPlannerLiveSmokeTest {
             return defaultValue;
         }
         return value;
+    }
+
+    private static AgentPlannerProperties.Llm liveProperties() {
+        AgentPlannerProperties.Llm properties = new AgentPlannerProperties.Llm();
+        properties.setProvider(envOrDefault("AFTERSALE_LLM_PROVIDER", "openai-responses"));
+        properties.setModel(envOrDefault("AFTERSALE_LLM_MODEL", "gpt-4.1-mini"));
+        properties.setApiKey(envOrDefault("OPENAI_API_KEY", ""));
+        properties.setEndpoint(envOrDefault("OPENAI_RESPONSES_ENDPOINT",
+                "https://api.openai.com/v1/responses"));
+        properties.getDashscope().setApiKey(envOrDefault("DASHSCOPE_API_KEY", ""));
+        properties.getDashscope().setBaseUrl(envOrDefault("DASHSCOPE_BASE_URL",
+                "https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1"));
+        properties.getDashscope().setResponsesEndpoint(envOrDefault("DASHSCOPE_RESPONSES_ENDPOINT", ""));
+        properties.getDashscope().setChatCompletionsEndpoint(
+                envOrDefault("DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT", ""));
+        return properties;
+    }
+
+    private static boolean liveProviderCredentialsPresent(
+            LlmProvider provider,
+            AgentPlannerProperties.Llm properties) {
+        return switch (provider) {
+            case OPENAI_RESPONSES -> !properties.getApiKey().isBlank();
+            case DASHSCOPE_RESPONSES, DASHSCOPE_CHAT_COMPATIBLE ->
+                    !properties.getDashscope().getApiKey().isBlank();
+        };
     }
 }

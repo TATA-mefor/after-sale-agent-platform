@@ -7,6 +7,9 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证模块依赖边界，防止 API、Agent、Tool、Workspace 和 LLM adapter 绕过应用服务或工具注册表。
+ */
 class ArchitectureTest {
 
     private static final JavaClasses APPLICATION_CLASSES = new ClassFileImporter()

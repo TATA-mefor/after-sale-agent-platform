@@ -11,6 +11,14 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
+/**
+ * 按 SubtaskType 为 Agent 子任务选择唯一的专业 Handler。
+校验通过后，系统按子任务类型找 handler：
+return 类子任务 → ReturnAgentHandler
+exchange 类子任务 → ExchangeAgentHandler
+Registry 只负责“找谁处理”，不做业务执行本身。
+ * <p>边界：注册表只负责路由和 unsupported fallback，不执行业务工具，也不补偿缺失的风险策略。
+ */
 @Component
 public class SpecialistAgentHandlerRegistry {
 
@@ -27,6 +35,9 @@ public class SpecialistAgentHandlerRegistry {
         return Optional.ofNullable(handlers.get(type));
     }
 
+    /**
+     * 将子任务交给匹配的 Handler；没有匹配项时返回结构化失败并写入 Workspace。
+     */
     public SubtaskExecutionResult handle(SubtaskExecutionContext context) {
         return findHandler(context.subtask().type())
                 .map(handler -> handler.handle(context))

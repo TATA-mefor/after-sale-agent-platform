@@ -1086,3 +1086,111 @@ V3 structured logging 应包含 requestId、ticketId、agentRunId、subtaskId、
 
 日志不得替代 ToolCallTrace、Execution Tree 或持久化状态；日志也不得输出 API Key、数据库密码、完整长 prompt、
 LLM 原始长文本或敏感凭证。
+
+## V4 RAG / Tool / Skill 架构补充
+
+V4 在现有模块化单体基础上新增 Tool / Skill / RAG 分层，但不改变既有核心原则：LLM 只规划，Java 后端校验和执行，ToolRegistry 是唯一原子工具执行入口，Approval 拦截高风险动作，ToolCallTrace 保留审计记录。
+
+### V4 推荐包结构
+
+```text
+com.example.aftersale
+├── agent
+│   ├── application
+│   │   ├── planner
+│   │   ├── skill
+│   │   │   ├── AgentSkill
+│   │   │   ├── SkillRegistry
+│   │   │   ├── SkillDefinition
+│   │   │   ├── SkillExecutionContext
+│   │   │   └── SkillExecutionResult
+│   │   └── workspace
+│   └── infrastructure
+│       └── springai
+├── policy
+│   ├── rag
+│   │   ├── application
+│   │   ├── domain
+│   │   └── infrastructure
+│   │       ├── pgvector
+│   │       └── springai
+│   ├── application
+│   ├── domain
+│   └── infrastructure
+└── tool
+    ├── application
+    ├── domain
+    └── infrastructure
+```
+
+### V4 执行链路
+
+```text
+Planner
+→ AgentPlan / AgentSubtask
+→ SkillRegistry
+→ AgentSkill
+→ ToolRegistry
+→ ToolExecutor
+→ ToolCallTrace
+→ AgentWorkspace
+→ Execution Tree
+```
+
+### RAG 政策检索链路
+
+```text
+AgentSkill / Specialist Handler
+→ ToolRegistry
+→ search_aftersale_policy
+→ PolicyApplicationService
+→ PolicyHybridSearchService
+→ KeywordRepository + VectorRepository
+→ PolicySearchResult
+→ ToolCallTrace
+→ AgentWorkspace.PolicyEvidence
+→ Execution Tree
+```
+
+### 允许依赖
+
+```text
+AgentApplicationService → AgentPlanner
+AgentApplicationService → SkillRegistry
+AgentSkill → ToolRegistry
+AgentSkill → AgentWorkspace
+PolicyHybridSearchService → PolicyRepository
+PolicyHybridSearchService → PolicyVectorRepository
+PolicyEmbeddingService → EmbeddingClient
+SpringAiChatClientAdapter → Spring AI ChatClient
+SpringAiEmbeddingClientAdapter → Spring AI EmbeddingModel
+```
+
+### 禁止依赖
+
+```text
+Controller → Repository
+Controller → VectorStore
+AgentSkill → Repository
+AgentSkill → VectorStore
+AgentSkill → JdbcTemplate / DataSource
+AgentSkill → Spring AI ChatClient / EmbeddingModel
+SpecialistAgentHandler → Repository
+SpecialistAgentHandler → VectorStore
+LLM Planner → ToolRegistry execution
+LLM Planner → VectorStore
+ToolExecutor → direct real refund/payment/logistics APIs
+```
+
+### V4 架构测试目标
+
+ArchitectureTest 应新增或保持以下约束：
+
+1. AgentSkill 不得依赖 Repository；
+2. AgentSkill 不得依赖 VectorStore / pgvector infrastructure；
+3. AgentSkill 不得依赖 Spring AI clients；
+4. Specialist Handler 不得依赖 VectorStore；
+5. Controller 不得直接访问 PolicyVectorRepository；
+6. RAG infrastructure 不得依赖 Agent application；
+7. default profile 不创建真实 vector datasource；
+8. ToolRegistry 仍是 ToolExecutor 唯一入口。

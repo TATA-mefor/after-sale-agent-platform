@@ -3,6 +3,11 @@ package com.example.aftersale.agent.application.workspace;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 保存订单明细级事实，供退货、换货等子任务判断目标商品。
+ *
+ * <p>边界：supportReturn 和 supportExchange 是工具层输出的派生事实，不是订单数据库字段，也不能绕过政策校验。
+ */
 public record OrderItemFact(
         String orderItemId,
         String productId,

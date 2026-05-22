@@ -17,6 +17,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 在 mysql profile 下通过 JDBC 读取售后政策并执行确定性关键词检索。
+ *
+ * <p>边界：该仓储只负责 infrastructure 映射和本地检索，不引入外部向量库、网络检索或 LLM 判断。
+ */
 @Repository
 @Profile("mysql")
 public class JdbcPolicyRepository implements PolicyRepository {

@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 处理工单相关的 HTTP 请求。
+ *
+ * <p>这个类只负责接收请求和组装响应；真正创建工单、保存工单的逻辑在 TicketApplicationService 后面。
+ */
 @RestController
 @RequestMapping("/api/tickets")
 public class TicketController {

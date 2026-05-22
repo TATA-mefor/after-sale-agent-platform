@@ -11,6 +11,11 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * 为每个 HTTP 请求建立 requestId 响应头和 MDC 上下文。
+ *
+ * <p>边界：该过滤器只处理观测性关联标识，不改变认证、业务权限或 Agent 执行语义。
+ */
 @Component
 public class RequestIdFilter extends OncePerRequestFilter {
 

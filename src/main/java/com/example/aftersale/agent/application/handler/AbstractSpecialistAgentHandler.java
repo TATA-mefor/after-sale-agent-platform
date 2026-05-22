@@ -26,6 +26,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 为具体专业 Handler 提供共享的子任务执行规则。
+ *
+ * <p>边界：Handler 可以补充 Workspace，并通过 ToolRegistry 调用工具；但不能访问 Repository、
+ * 调用 LLM，或在审批边界之外执行高风险动作。
+ */
 abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpecialistAgentHandler.class);
@@ -43,6 +49,11 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
         this.toolRegistry = toolRegistry;
     }
 
+    /**
+     * 在 MDC 和风险策略保护下执行支持的子任务。
+     *
+     * <p>高风险子任务返回需要审批的结果，而不是继续执行业务工具。
+     */
     @Override
     public final SubtaskExecutionResult handle(SubtaskExecutionContext context) {
         try (MdcScope ignored = MdcScope.putAll(Map.of(
@@ -122,6 +133,7 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
 
     private static List<PlannedToolCall> orderPolicyBeforeActionTools(List<PlannedToolCall> plannedTools) {
         List<PlannedToolCall> orderedTools = new ArrayList<>();
+        // 先收集订单事实和政策证据，再由备注或动作类工具生成处理建议。
         appendToolIfPresent(plannedTools, orderedTools, GET_ORDER_BY_ID_TOOL);
         appendToolIfPresent(plannedTools, orderedTools, SEARCH_POLICY_TOOL);
         for (PlannedToolCall plannedTool : plannedTools) {
@@ -192,6 +204,10 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
             PlannedToolCall plannedTool,
             List<String> evidence,
             List<String> toolCalls) {
+        if (!context.availableTools().contains(plannedTool.toolName())) {
+            throw new IllegalArgumentException("Tool is not allowed for current AgentRun: "
+                    + plannedTool.toolName());
+        }
         switch (plannedTool.toolName()) {
             case GET_ORDER_BY_ID_TOOL -> executeOrderLookup(context, evidence, toolCalls);
             case SEARCH_POLICY_TOOL -> executePolicySearch(context, evidence, toolCalls);
@@ -258,6 +274,7 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
 
     private ToolOutput executeTool(String runId, String toolName, ToolInput input) {
         List<ToolOutput> outputs = new ArrayList<>();
+        // ToolRegistry 负责记录本次运行的 trace；Handler 不直接调用工具实现。
         ToolTraceContext.runWith(runId, () -> outputs.add(toolRegistry.execute(toolName, input)));
         return outputs.get(0);
     }

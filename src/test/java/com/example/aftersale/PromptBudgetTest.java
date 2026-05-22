@@ -19,6 +19,9 @@ import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 验证 prompt 预算策略，特别是 critical section 不可静默丢弃和长 optional 文档哨兵不进入最终 prompt。
+ */
 class PromptBudgetTest {
 
     private static final String SENTINEL = "DO_NOT_INCLUDE_FULL_LONG_DOCUMENT_SENTINEL";

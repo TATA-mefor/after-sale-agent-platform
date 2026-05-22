@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
+/**
+ * 验证真实 LLM 与 MySQL 的端到端演示链路；默认测试套件不会运行该 live 测试。
+ */
 @Tag("live")
 @ActiveProfiles("mysql")
 @SpringBootTest(
@@ -28,7 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
         properties = "agent.planner.mode=llm")
 @EnabledIfSystemProperty(named = "live.llm", matches = "true")
 @EnabledIfSystemProperty(named = "live.mysql", matches = "true")
-@EnabledIfEnvironmentVariable(named = "OPENAI_API_KEY", matches = ".+")
+@EnabledIf("llmProviderCredentialsAvailable")
 @EnabledIfEnvironmentVariable(named = "AFTERSALE_MYSQL_URL", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AFTERSALE_MYSQL_USERNAME", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AFTERSALE_MYSQL_PASSWORD", matches = ".+")
@@ -194,5 +198,15 @@ class RealAgentValidationLiveTest {
             return defaultValue;
         }
         return value;
+    }
+
+    static boolean llmProviderCredentialsAvailable() {
+        String provider = envOrDefault("AFTERSALE_LLM_PROVIDER", "openai-responses");
+        if ("dashscope-responses".equals(provider) || "dashscope-chat-compatible".equals(provider)) {
+            String apiKey = System.getenv("DASHSCOPE_API_KEY");
+            return apiKey != null && !apiKey.isBlank();
+        }
+        String apiKey = System.getenv("OPENAI_API_KEY");
+        return apiKey != null && !apiKey.isBlank();
     }
 }

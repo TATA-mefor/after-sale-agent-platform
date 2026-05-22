@@ -14,6 +14,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 将 Provider 文本解析为 Java 后端使用的严格 AgentPlan 结构。
+ *
+ * <p>边界：解析只接受 AgentPlan 所需 JSON 字段；它不执行工具、不修复不安全的 Provider 输出，
+ * 也不把未知子任务类型当作可执行工作。
+ */
 public class AgentPlanParser {
 
     private final ObjectMapper objectMapper;
@@ -25,6 +31,9 @@ public class AgentPlanParser {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 将 Provider 原始输出转换为 AgentPlan；失败时在编排开始前抛出异常。
+     */
     public AgentPlan parse(String rawContent) {
         JsonNode root = parseJson(rawContent);
         return new AgentPlan(
@@ -111,6 +120,7 @@ public class AgentPlanParser {
         try {
             return SubtaskType.valueOf(value);
         } catch (IllegalArgumentException exception) {
+            // 未知类型保留下来交给 AgentPlanValidator，以策略级错误拒绝。
             return SubtaskType.UNKNOWN;
         }
     }

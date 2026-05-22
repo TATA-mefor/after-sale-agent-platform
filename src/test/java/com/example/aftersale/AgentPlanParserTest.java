@@ -64,7 +64,7 @@ class AgentPlanParserTest {
         assertThatThrownBy(() -> AgentPlanValidator.validate(plan, List.of("search_aftersale_policy",
                 "add_ticket_note")))
                 .isInstanceOf(AgentPlanValidationException.class)
-                .hasMessageContaining("unknown tool");
+                .hasMessageContaining("not allowed for current AgentRun");
     }
 
     @Test
@@ -109,7 +109,7 @@ class AgentPlanParserTest {
 
         assertThatThrownBy(() -> AgentPlanValidator.validate(plan, allToolNames()))
                 .isInstanceOf(AgentPlanValidationException.class)
-                .hasMessageContaining("unknown tool");
+                .hasMessageContaining("not allowed for current AgentRun");
     }
 
     @Test

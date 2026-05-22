@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 暴露为工单触发 AgentRun 的 HTTP 入口。
+ *
+ * <p>边界：Controller 只做 API 编排和响应转换，不能直接访问 Repository、ToolRegistry 或具体 Planner。
+ */
 @RestController
 @RequestMapping("/api/tickets/{ticketId}/agent-runs")
 public class AgentRunController {

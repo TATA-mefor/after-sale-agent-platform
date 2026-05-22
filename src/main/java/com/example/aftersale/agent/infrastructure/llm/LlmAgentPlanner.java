@@ -11,6 +11,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 使用 LLM Provider 基于紧凑 Planner Prompt 生成 AgentPlan。
+ *
+ * <p>边界：LLM 只能返回结构化计划数据。本 Planner 负责解析和校验响应，所有工具执行和业务状态变更
+ * 都保留在 Java 服务中。
+ */
 public class LlmAgentPlanner implements AgentPlanner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LlmAgentPlanner.class);
@@ -36,6 +42,11 @@ public class LlmAgentPlanner implements AgentPlanner {
         this.promptFactory = promptFactory;
     }
 
+    /**
+     * 构建 prompt，调用已配置 Provider，并返回经过 Java 校验的 AgentPlan。
+     *
+     * <p>Provider 原始内容会立即解析，本类不会把完整 prompt 或 completion 作为历史持久化。
+     */
     @Override
     public AgentPlan plan(AgentPlanningContext context) {
         PromptBuildResult prompt = promptFactory.build(context);

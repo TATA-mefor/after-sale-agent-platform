@@ -20,6 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+/**
+ * 基于 AgentRun、ToolCallTrace 和 ApprovalRequest 构建只读执行树。
+ *
+ * <p>边界：本服务只为查看而重建执行过程，不执行工具、不修改 Ticket 状态，也不把 planJson 中的
+ * Workspace 快照当作权威审计数据。
+ */
 @Service
 public class ExecutionTreeApplicationService {
 
@@ -46,6 +52,11 @@ public class ExecutionTreeApplicationService {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 返回一次 AgentRun 的执行树，包括子任务、工具 trace、审批和错误。
+     *
+     * <p>没有 subtaskId 的 trace 会挂在根节点，确保旧数据或根级工具调用不会被丢弃。
+     */
     public ExecutionTreeResponse getExecutionTree(String runId) {
         AgentRun agentRun = agentApplicationService.getAgentRun(runId);
         try (MdcScope ignored = MdcScope.putAll(Map.of(
@@ -138,6 +149,7 @@ public class ExecutionTreeApplicationService {
             String subtaskId = subtaskIdFromTrace(trace, errors);
             MutableSubtaskNode subtaskNode = subtaskNodes.get(subtaskId);
             if (subtaskNode == null) {
+                // 旧 trace 和根级 fallback 计划不会在 inputJson 中携带 subtaskId。
                 rootToolCalls.add(node);
             } else {
                 subtaskNode.addToolCall(node);

@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 保存政策检索工具返回的可引用证据。
+ *
+ * <p>边界：证据用于 AgentRun 内部汇总和解释，不改变政策库内容，也不代表最终审批结论。
+ */
 public record PolicyEvidence(
         String policyId,
         String category,

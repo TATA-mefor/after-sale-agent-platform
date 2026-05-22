@@ -599,3 +599,42 @@ V3 不做：
 - 生产级部署编排；
 - 微服务拆分；
 - 让默认测试依赖本地 MySQL、Docker、真实 LLM 或外部网络。
+
+## V4 范围补充：RAG、Spring AI、Tool / Skill
+
+V4 将 AfterSale-Agent 从关键词政策检索升级为具备 RAG 政策证据链的 Java AI 后端系统。
+
+### V4 范围内
+
+1. Spring AI ChatClient adapter；
+2. Spring AI EmbeddingModel adapter；
+3. Policy document ingestion；
+4. Policy chunking；
+5. Embedding generation；
+6. PostgreSQL + PGvector opt-in profile；
+7. KEYWORD / VECTOR / HYBRID policy retrieval；
+8. `search_aftersale_policy` 返回结构化 evidence chunks；
+9. Tool / Skill 分层；
+10. SkillRegistry / AgentSkill 契约；
+11. AgentWorkspace 保存 PolicyEvidence；
+12. Execution Tree 展示 Skill node 和 RAG evidence node；
+13. RAG evaluation metrics；
+14. Spring Boot completeness：ConfigurationProperties、migration、HealthIndicator、OpenAPI、minimal Security。
+
+### V4 暂不实现
+
+- 真实退款；
+- 真实换货；
+- 真实支付；
+- 真实物流；
+- 真实库存；
+- 真实优惠券补偿；
+- 生产级权限系统；
+- 微服务拆分；
+- LangChain sidecar 主链路；
+- 长期用户画像；
+- 默认测试依赖真实外部服务。
+
+### V4 核心业务语义
+
+RAG 检索结果是政策证据，不是最终业务结论。Agent 可以基于订单事实、商品明细、政策证据和风险边界生成建议，但不得声称真实高风险动作已经完成。

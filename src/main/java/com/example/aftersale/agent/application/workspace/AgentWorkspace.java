@@ -7,6 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 保存单次 AgentRun 内产生的结构化工作记忆。
+    已拿到的订单事实
+    已命中的政策证据
+    子任务阶段性结果
+ * <p>边界：Workspace 只帮助同一次运行生成摘要，仅限单次 run,不做跨会话长期记忆,不存 API key/密码/完整长 prompt 等敏感内容,不替代 trace
+ * 不保存凭证，也不持久化跨会话用户画像。
+ */
 public final class AgentWorkspace {
 
     private final String agentRunId;
@@ -130,6 +138,11 @@ public final class AgentWorkspace {
         return String.join(" ", parts);
     }
 
+    /**
+     * 为 AgentRun planJson 创建可序列化快照。
+     *
+     * <p>该快照用于读侧解释和摘要重建。审计仍必须来自 ToolCallTrace，而不是这个嵌入式 Workspace 视图。
+     */
     public Map<String, Object> toSnapshot() {
         Map<String, Object> snapshot = new LinkedHashMap<>();
         snapshot.put("agentRunId", agentRunId);

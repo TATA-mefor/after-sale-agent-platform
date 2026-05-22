@@ -15,6 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * 路由所有工具调用，并为可审计的 Agent 执行记录 trace 元数据。
+   所有工具调用都必须走 ToolRegistry，例如：
+        get_order_by_id
+        search_aftersale_policy
+        add_ticket_note
+ * <p>边界：调用方必须使用本注册表，而不是直接调用 ToolExecutor Bean。注册表返回结构化失败和需要审批的结果，
+ * 但不拥有业务状态，也不把 trace 数据变成领域事实来源。
+ */
 @Component
 public class ToolRegistry {
 
@@ -48,6 +57,11 @@ public class ToolRegistry {
                 .toList();
     }
 
+    /**
+     * 执行一个已注册工具，并在存在 AgentRun 上下文时记录 ToolCallTrace。
+     *
+     * <p>未知工具、需要审批的工具和执行器异常都会转换为 ToolOutput，使 AgentRun 能暴露失败而不隐藏调用尝试。
+     */
     public ToolOutput execute(String toolName, ToolInput input) {
         long startedAt = System.nanoTime();
         try (MdcScope ignored = MdcScope.putAll(toolMdcValues(toolName, input))) {
@@ -91,6 +105,7 @@ public class ToolRegistry {
     }
 
     private void trace(String toolName, ToolInput input, ToolOutput output, long startedAt) {
+        // AgentRun 外部调用仍可执行，但只有带 run 上下文的调用会进入审计 trace。
         ToolTraceContext.currentRunId()
                 .ifPresent(runId -> traceRecorder.record(new ToolTraceRecord(
                         runId,

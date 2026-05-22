@@ -35,6 +35,9 @@ public final class Ticket {
         return new Ticket(ticketId, userId, orderId, rawUserMessage, now);
     }
 
+    /**
+     * Rehydrates a Ticket from persistence while preserving domain invariants for required fields.
+     */
     public static Ticket restore(
             String ticketId,
             String userId,

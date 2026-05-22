@@ -41,6 +41,9 @@ class LlmAgentPlannerTest {
         assertThat(llmClient.lastRequest.model()).isEqualTo("test-model");
         assertThat(llmClient.lastRequest.systemPrompt()).contains("Return only one JSON object");
         assertThat(llmClient.lastRequest.userPrompt()).contains("T-LLM-1");
+        assertThat(llmClient.lastRequest.userPrompt())
+                .contains("get_order_by_id", "search_aftersale_policy", "add_ticket_note")
+                .doesNotContain("create_aftersale_ticket", "update_ticket_status", "get_user_orders");
     }
 
     private static AgentPlanningContext planningContext() {
@@ -50,7 +53,7 @@ class LlmAgentPlannerTest {
                 "O-LLM-1",
                 "我买的耳机有质量问题，想退货退款。",
                 TicketStatus.CREATED,
-                List.of("search_aftersale_policy", "add_ticket_note"),
+                List.of("get_order_by_id", "search_aftersale_policy", "add_ticket_note"),
                 "High-risk actions require human approval.",
                 Instant.parse("2026-05-14T00:00:00Z"));
     }

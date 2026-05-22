@@ -6,6 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
+/**
+ * 在 LLM 规划调用前执行确定性的 prompt 预算裁剪。
+ *
+ * <p>边界：optional section 可以按固定顺序丢弃或压缩；system instructions 和 compact tool catalog
+ * 等 critical section 一旦超预算或为空，必须 fail-closed。
+ */
 public class PromptBudgetApplier {
 
     private static final int OPTIONAL_MIN_TOKEN_TARGET = 1;
@@ -23,6 +29,9 @@ public class PromptBudgetApplier {
         this.policy = policy;
     }
 
+    /**
+     * 返回预算处理后的 section，以及描述 optional 裁剪行为的 telemetry。
+     */
     public PromptBudgetResult apply(List<PromptSection> inputSections, PromptBudget budget) {
         List<PromptSection> sections = new ArrayList<>(inputSections);
         validateCriticalSections(sections, budget);
@@ -34,6 +43,7 @@ public class PromptBudgetApplier {
                 if (totalTokens(sections) <= budget.totalInputTokens()) {
                     break;
                 }
+                // 裁剪顺序是策略决策，确保超预算行为可预测且可审计。
                 sections = reduce(sections, type, actions);
             }
         }

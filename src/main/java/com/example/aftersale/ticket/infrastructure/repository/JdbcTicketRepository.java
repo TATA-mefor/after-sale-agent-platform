@@ -13,7 +13,10 @@ import java.util.Optional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-
+/*
+如果启用 mysql profile，就用 JdbcTicketRepository.java (line 19)：
+这里会执行 INSERT INTO tickets ... ON DUPLICATE KEY UPDATE ...，也就是写 MySQL。
+*/
 @Repository
 @Profile("mysql")
 public class JdbcTicketRepository implements TicketRepository {

@@ -12,6 +12,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
+/**
+ * 提供低风险售后政策检索工具，为 Agent 输出可追溯政策证据。
+ *
+ * <p>边界：工具只返回政策片段和匹配原因，不根据政策直接执行退款、换货或补偿动作。
+ */
 @Component
 public class SearchAfterSalePolicyToolExecutor implements ToolExecutor {
 

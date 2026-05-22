@@ -6,6 +6,11 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.MDC;
 
+/**
+ * 在 try-with-resources 作用域内临时写入 MDC，并在关闭时恢复原值。
+ *
+ * <p>边界：该工具只管理日志上下文，不能作为跨线程、跨请求或持久化业务上下文使用。
+ */
 public final class MdcScope implements AutoCloseable {
 
     private final Map<String, String> previousValues = new LinkedHashMap<>();

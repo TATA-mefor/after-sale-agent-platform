@@ -11,6 +11,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
+/**
+ * 将 ToolRegistry 调用元数据持久化为 ToolCallTrace 记录。
+ *
+ * <p>边界：trace 记录用于审计和执行树重建，但不是业务状态来源，不能替代所属应用服务或 Repository。
+ */
 @Component
 public class PersistentToolTraceRecorder implements ToolTraceRecorder {
 
@@ -25,6 +30,9 @@ public class PersistentToolTraceRecorder implements ToolTraceRecorder {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 记录一次工具调用结果，并保留成功、失败或需要审批的结构化状态。
+     */
     @Override
     public void record(ToolTraceRecord record) {
         ToolCallTrace trace = ToolCallTrace.start(

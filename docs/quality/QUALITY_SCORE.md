@@ -758,6 +758,31 @@ V3.9 non-regression targets:
 - Live errors must not print API keys, database passwords, full prompt text, or personal paths.
 - Tool execution must remain visible through ToolCallTrace and Execution Tree; the LLM must not execute tools directly.
 
+### V3.10 DashScope Qwen LLM Provider Adapter Quality Summary
+
+Status: completed for provider adapter and default-offline validation.
+
+Current provider status:
+
+- `openai-responses` remains the default live provider and uses the existing Responses client.
+- `openai` remains accepted as a legacy alias for `openai-responses`.
+- `dashscope-responses` uses `DASHSCOPE_API_KEY` and a DashScope responses-compatible endpoint.
+- `dashscope-chat-compatible` uses `DASHSCOPE_API_KEY` and the OpenAI-compatible Chat Completions endpoint.
+- Chat Completions request construction maps the planner system/user prompt into `messages`.
+- Chat Completions response parsing reads `choices[0].message.content` and returns it as `LlmResponse` text.
+- Provider errors include provider, endpoint host, model, status code, and a truncated sanitized body.
+- Provider errors do not include API keys, database passwords, full prompts, or sensitive credentials.
+- Live smoke and real validation paths are still explicit opt-in and skip when the selected provider key is absent.
+- Default tests remain independent from MySQL, Docker, raw datasets, real LLMs, API keys, and external network.
+
+V3.10 non-regression targets:
+
+- Provider selection must not bypass `AgentPlanParser` or `AgentPlanValidator`.
+- DashScope adapters must not let the LLM execute tools directly.
+- `ToolRegistry`, Approval, Trace, Workspace, and specialist handler semantics must remain unchanged.
+- Model/endpoint mismatch errors should stay visible as provider configuration errors, not business logic failures.
+- No real `DASHSCOPE_API_KEY`, `OPENAI_API_KEY`, database password, or personal path may enter the repository.
+
 ### V3 不接受的退化
 
 - 删除 in-memory/test profile；
@@ -768,4 +793,84 @@ V3.9 non-regression targets:
 - Agent 或 Specialist Handler 直接访问 Repository；
 - persistence 绕过 ApplicationService、ToolRegistry、Approval、Trace 或 Workspace 边界；
 - 日志输出敏感凭证、完整长 prompt 或 LLM 原始长文本；
+- 降低 ArchUnit、Checkstyle、SpotBugs 或 JUnit 约束。
+
+## V4 Quality Targets
+
+V4 质量目标聚焦 RAG、Spring AI、Tool / Skill 能力层和 Spring Boot 完整性。V4 不代表真实退款、真实换货、真实支付、真实物流、真实优惠券补偿或生产级权限系统已经实现。
+
+| 维度 | 当前目标 | 验收方式 |
+|---|---|---|
+| Spring AI 接入质量 | Spring AI ChatClient / EmbeddingModel 通过 adapter 接入，不破坏 LlmClient / EmbeddingClient 边界 | 配置测试 + fake client 测试 + live opt-in smoke |
+| RAG 检索质量 | KEYWORD / VECTOR / HYBRID 检索返回结构化 policy evidence | RAG retrieval tests |
+| Vector Store 边界 | PGvector profile 显式 opt-in，默认测试不依赖 PostgreSQL / Docker | profile tests + architecture tests |
+| Policy Ingestion | 文档可 chunk、去重、embedding、入库，并记录 ingestion run | ingestion service tests |
+| Tool / Skill 分层 | Tool 是原子能力，Skill 是复合任务能力，Skill 必须通过 ToolRegistry 调 Tool | SkillRegistry tests + ArchUnit |
+| Agent 集成质量 | RAG evidence 进入 ToolCallTrace、AgentWorkspace 和 Execution Tree | AgentRun flow tests |
+| Evaluation | 默认离线评测包含 evidence recall、citation completeness、no fabrication、skill selection | Evaluation tests |
+| Spring Boot 完整性 | ConfigurationProperties、migration、HealthIndicator、OpenAPI、minimal Security | config/API/security tests |
+| 默认测试确定性 | 默认 mvn test 不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络 | default validation commands |
+| 风险边界 | RAG 不执行业务动作，Skill 不绕过 Approval，高风险动作仍需人工确认 | unit tests + risk policy tests |
+
+### V4 Current Status
+
+Status: active. V4.0 pre-flight fixes are completed; V4.1+ implementation remains planned.
+
+### V4.0 Pre-flight Fixes Quality Summary
+
+Status: completed for AgentRun boundary alignment before Spring AI / RAG implementation.
+
+Current pre-flight status:
+
+- AgentRun planning context now uses a dedicated executable tool policy instead of the full ToolRegistry catalog.
+- AgentPlan validation rejects registered but currently non-executable tools before tool execution begins.
+- LLM prompt tool catalog follows the AgentRun allowed tool set and does not expose tools without current AgentRun
+  input mapping.
+- Current AgentRun executable tools are `get_order_by_id`, `search_aftersale_policy`, and `add_ticket_note`.
+- Specialist handlers check the same allowed tool set before executing planned tools.
+- Evaluation planning uses the same AgentRun executable tool policy as the runtime path.
+- AgentRun failures that leave the ticket in `CREATED` or `AGENT_RUNNING` mark the Ticket `FAILED` with a sanitized
+  failure summary.
+- Human approval status is preserved and not treated as an AgentRun failure.
+- Comment cleanup removed didactic Spring/Java explanations and kept boundary-focused comments.
+- No Spring AI, RAG, PGvector, VectorStore, Policy Ingestion, or SkillRegistry implementation was added in V4.0.
+- Default tests remain independent from real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, and external
+  network.
+
+V4.0 non-regression targets:
+
+- ToolRegistry remains the only tool execution entry point.
+- LLM / Planner still only returns structured plans and never executes tools directly.
+- Approval, Trace, Workspace, Planner, and Specialist Handler core semantics remain unchanged.
+- Registered API/future-skill tools must not be exposed to AgentRun Planner until AgentRun has explicit input mapping
+  and execution support.
+- Failed AgentRuns must not leave tickets indefinitely in `AGENT_RUNNING`.
+
+Planned phases:
+
+```text
+V4.0 Pre-flight Fixes (completed)
+V4.1 Tool / Skill Contract Documentation
+V4.2 Spring AI Adapter
+V4.3 PGvector / VectorStore
+V4.4 Policy Ingestion
+V4.5 Hybrid RAG Policy Search Tool
+V4.6 Skill Layer Integration
+V4.7 Execution Tree / Evaluation / Demo
+V4.8 Spring Boot Completeness
+```
+
+### V4 不接受的退化
+
+- 默认测试依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络；
+- LLM 直接执行 Tool 或 Skill；
+- Skill 绕过 ToolRegistry；
+- Skill 直接访问 Repository、VectorStore、JdbcTemplate、Spring AI ChatClient 或 EmbeddingModel；
+- RAG evidence 被当成最终业务动作；
+- ToolCallTrace 丢失；
+- Workspace 替代 ToolCallTrace；
+- Execution Tree 查询修改业务状态；
+- HIGH-risk 售后动作自动执行；
+- Docker Compose 被写成生产部署方案；
+- 真实 API Key、数据库密码、token、个人路径或 raw private data 进入仓库；
 - 降低 ArchUnit、Checkstyle、SpotBugs 或 JUnit 约束。

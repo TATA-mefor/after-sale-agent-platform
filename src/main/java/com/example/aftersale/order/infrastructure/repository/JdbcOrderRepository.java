@@ -16,6 +16,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 在 mysql profile 下通过 JDBC 读取订单数据。
+ *
+ * <p>边界：该实现位于 infrastructure 层，负责把表结构映射为领域对象；domain 层不能依赖 JDBC 或
+ * Spring 数据库框架，默认测试也不能强依赖该 profile。
+ */
 @Repository
 @Profile("mysql")
 public class JdbcOrderRepository implements OrderRepository {
@@ -67,9 +73,7 @@ public class JdbcOrderRepository implements OrderRepository {
                 instant(resultSet.getTimestamp("paid_at")),
                 nullableInstant(resultSet.getTimestamp("delivered_at")),
                 instant(resultSet.getTimestamp("aftersale_deadline")),
-                orderItems.isEmpty()
-                        ? fallbackOrderItem(orderId, productId, productName, paidAmount, orderStatus)
-                        : orderItems);
+                orderItemsOrFallback(orderId, productId, productName, paidAmount, orderStatus, orderItems));
     }
 
     private List<OrderItem> findOrderItems(String orderId, OrderStatus orderStatus) {
@@ -112,6 +116,19 @@ public class JdbcOrderRepository implements OrderRepository {
                 1,
                 paidAmount,
                 orderStatus));
+    }
+
+    private static List<OrderItem> orderItemsOrFallback(
+            String orderId,
+            String productId,
+            String productName,
+            BigDecimal paidAmount,
+            OrderStatus orderStatus,
+            List<OrderItem> orderItems) {
+        // 兼容旧 seed/schema 中只有订单主表、没有明细行的数据。
+        return orderItems.isEmpty()
+                ? fallbackOrderItem(orderId, productId, productName, paidAmount, orderStatus)
+                : orderItems;
     }
 
     private static Instant instant(Timestamp value) {

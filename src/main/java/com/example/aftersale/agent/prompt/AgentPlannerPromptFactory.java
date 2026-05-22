@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 构建 LLM 生成 AgentPlan 所需的紧凑 Planner Prompt。
+ *
+ * <p>边界：本工厂只组装 prompt section 和 schema 提示。预算策略交给 PromptBudgetApplier，
+ * 避免 prompt 构建过程变成隐藏策略引擎。
+ */
 public class AgentPlannerPromptFactory {
 
     private final ObjectMapper objectMapper;
@@ -48,10 +54,19 @@ public class AgentPlannerPromptFactory {
         return build(context).userPrompt();
     }
 
+    /**
+     * 使用默认 optional section 集合构建 system prompt 和 user prompt。
+     */
     public PromptBuildResult build(AgentPlanningContext context) {
         return buildWithOptionalSections(context, List.of());
     }
 
+    /**
+     * 构建经过预算处理的 prompt，同时允许测试或未来调用方提供 optional context。
+     *
+     * <p>Optional section 可以被预算策略裁剪，但 Planner 契约、风险策略、Ticket 上下文和工具目录等
+     * critical section 必须保留。
+     */
     public PromptBuildResult buildWithOptionalSections(
             AgentPlanningContext context,
             List<PromptSection> optionalSections) {

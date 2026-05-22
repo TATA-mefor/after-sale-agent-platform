@@ -433,3 +433,55 @@ LLM 相关任务只有在以下条件满足时才可完成：
 - 只提交示例配置，不提交真实密钥；
 - 说明启动、停止、清理和健康检查命令；
 - 明确 Docker Compose 只用于本地开发，不代表生产部署。
+
+## V4 RAG / Skill 工作流补充
+
+V4 任务必须先更新或确认 Harness 文档，再进入实现。涉及 Spring AI、RAG、VectorStore、PGvector、Embedding、Tool、Skill、SkillRegistry、Policy Ingestion 的任务，必须额外遵循：
+
+```text
+Read V4 Context
+→ Confirm Tool / Skill / RAG boundary
+→ Write or update execution plan
+→ Implement one small boundary-safe change
+→ Add deterministic tests
+→ Run default verification
+→ Update docs / decision logs / review packet
+→ TASK_COMPLETE
+```
+
+### V4 默认验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+### V4 live / integration 验证
+
+所有 live / integration 验证必须显式 opt-in，例如：
+
+```bash
+mvn test -Dtest=SpringAiPlannerLiveSmokeTest -Dlive.llm=true
+mvn test -Dtest=SpringAiEmbeddingLiveSmokeTest -Dlive.embedding=true
+mvn test -Dtest=RagVectorStoreLiveTest -Dlive.rag=true
+mvn test -Dtest=V4RealAgentRagLiveTest -Dlive.llm=true -Dlive.rag=true
+```
+
+默认验证不得因为 V4 引入 Spring AI、PGvector 或 Docker Compose 而依赖外部环境。
+
+### V4 Review Packet
+
+每个 V4 子任务完成后必须记录：
+
+```text
+Scope
+What Changed
+Boundaries Preserved
+Tests Added
+Validation Commands
+Known Limitations
+Follow-ups
+Completion Signal
+```

@@ -6,6 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * 在 Handler 或工具执行开始前校验 Planner 输出。
+ *
+ * <p>边界：本校验器拒绝当前 AgentRun 不允许的工具、格式错误的子任务、依赖环和不安全的
+ * 高风险完成声明，防止 LLM 或 fallback Planner 绕过 Java 策略。
+ */
 public final class AgentPlanValidator {
 
     private static final int MAX_SUBTASKS = 10;
@@ -73,7 +79,8 @@ public final class AgentPlanValidator {
 
     private static void ensureKnownTool(PlannedToolCall plannedTool, Set<String> availableToolNames) {
         if (!availableToolNames.contains(plannedTool.toolName())) {
-            throw new AgentPlanValidationException("Planner returned unknown tool: " + plannedTool.toolName());
+            throw new AgentPlanValidationException(
+                    "Planner returned tool not allowed for current AgentRun: " + plannedTool.toolName());
         }
     }
 

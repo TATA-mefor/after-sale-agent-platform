@@ -2,7 +2,7 @@ package com.example.aftersale.trace.domain;
 
 import java.time.Instant;
 import java.util.Objects;
-
+// 每次工具调用都会记录 trace（调用了谁、入参摘要、结果、耗时、成功/失败等）。
 public final class ToolCallTrace {
 
     private final String traceId;

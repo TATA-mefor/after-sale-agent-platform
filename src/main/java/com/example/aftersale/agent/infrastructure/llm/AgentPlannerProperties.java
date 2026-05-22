@@ -3,6 +3,11 @@ package com.example.aftersale.agent.infrastructure.llm;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * 承载 Agent Planner 的外部化配置。
+ *
+ * <p>边界：默认配置必须指向离线规则模式；真实 Provider 凭证只能通过运行环境注入，不能写入代码或测试数据。
+ */
 @ConfigurationProperties(prefix = "agent.planner")
 public class AgentPlannerProperties {
 
@@ -34,9 +39,9 @@ public class AgentPlannerProperties {
 
     public static class Llm {
 
-        private String provider = "openai";
+        private String provider = "openai-responses";
 
-        private String model = "gpt-4o-mini";
+        private String model = "gpt-4.1-mini";
 
         private String apiKey = "";
 
@@ -45,6 +50,8 @@ public class AgentPlannerProperties {
         private int timeoutSeconds = 30;
 
         private Budget budget = new Budget();
+
+        private DashScope dashscope = new DashScope();
 
         public String getProvider() {
             return provider;
@@ -98,6 +105,63 @@ public class AgentPlannerProperties {
                 justification = "Spring Boot configuration binding stores nested mutable property objects.")
         public void setBudget(Budget budget) {
             this.budget = budget;
+        }
+
+        @SuppressFBWarnings(
+                value = "EI_EXPOSE_REP",
+                justification = "Spring Boot configuration properties expose nested mutable property objects.")
+        public DashScope getDashscope() {
+            return dashscope;
+        }
+
+        @SuppressFBWarnings(
+                value = "EI_EXPOSE_REP2",
+                justification = "Spring Boot configuration binding stores nested mutable property objects.")
+        public void setDashscope(DashScope dashscope) {
+            this.dashscope = dashscope;
+        }
+    }
+
+    public static class DashScope {
+
+        private String apiKey = "";
+
+        private String baseUrl = "https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1";
+
+        private String responsesEndpoint = "";
+
+        private String chatCompletionsEndpoint = "";
+
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        public void setApiKey(String apiKey) {
+            this.apiKey = apiKey;
+        }
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+
+        public String getResponsesEndpoint() {
+            return responsesEndpoint;
+        }
+
+        public void setResponsesEndpoint(String responsesEndpoint) {
+            this.responsesEndpoint = responsesEndpoint;
+        }
+
+        public String getChatCompletionsEndpoint() {
+            return chatCompletionsEndpoint;
+        }
+
+        public void setChatCompletionsEndpoint(String chatCompletionsEndpoint) {
+            this.chatCompletionsEndpoint = chatCompletionsEndpoint;
         }
     }
 

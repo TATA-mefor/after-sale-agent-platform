@@ -600,11 +600,16 @@ agent:
   planner:
     mode: llm
     llm:
-      provider: openai
-      model: ${AFTERSALE_LLM_MODEL:gpt-4o-mini}
+      provider: ${AFTERSALE_LLM_PROVIDER:openai-responses}
+      model: ${AFTERSALE_LLM_MODEL:gpt-4.1-mini}
       api-key: ${OPENAI_API_KEY:}
       endpoint: ${OPENAI_RESPONSES_ENDPOINT:https://api.openai.com/v1/responses}
       timeout-seconds: 30
+      dashscope:
+        api-key: ${DASHSCOPE_API_KEY:}
+        base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1}
+        responses-endpoint: ${DASHSCOPE_RESPONSES_ENDPOINT:}
+        chat-completions-endpoint: ${DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT:}
       budget:
         system-prompt-tokens: 2000
         history-tokens: 4000
@@ -614,14 +619,46 @@ agent:
         total-input-tokens: 16000
 ```
 
-If `agent.planner.mode=llm` is selected without `agent.planner.llm.api-key` / `OPENAI_API_KEY`, startup fails with a
-clear configuration error. The default `mvn test` path uses `rule` or `fake` and does not require a real LLM, API Key,
-or external network.
+Supported live providers:
+
+- `openai-responses`: OpenAI Responses API. Uses `OPENAI_API_KEY` and `OPENAI_RESPONSES_ENDPOINT`.
+- `dashscope-responses`: DashScope Responses-compatible endpoint. Uses `DASHSCOPE_API_KEY` and either
+  `DASHSCOPE_RESPONSES_ENDPOINT` or `${DASHSCOPE_BASE_URL}/responses`.
+- `dashscope-chat-compatible`: DashScope OpenAI-compatible Chat Completions endpoint. Uses `DASHSCOPE_API_KEY` and
+  either `DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT` or `${DASHSCOPE_BASE_URL}/chat/completions`.
+
+If `agent.planner.mode=llm` is selected without the provider-specific API Key, startup fails with a clear configuration
+error. The default `mvn test` path uses `rule` or `fake` and does not require a real LLM, API Key, or external network.
 
 Current V2.1.1 status: the LLM adapter can call an OpenAI-compatible Responses endpoint when `llm` mode is explicitly
 enabled and configuration is complete. The LLM must return structured JSON, which the Java backend parses, validates,
 and then executes only through `ToolRegistry`. Tests still use `rule`, `fake`, or a fake `LlmClient`; they never require
 a real LLM, API Key, or external network.
+
+V3.10 adds DashScope / Qwen provider adapters without changing the planner boundary. The LLM still only returns an
+`AgentPlan`; Java still validates it and executes tools through `ToolRegistry`.
+
+DashScope Chat Completions compatible example for PowerShell:
+
+```powershell
+$env:AFTERSALE_LLM_PROVIDER="dashscope-chat-compatible"
+$env:DASHSCOPE_API_KEY="你的 DashScope API Key"
+$env:DASHSCOPE_BASE_URL="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1"
+$env:AFTERSALE_LLM_MODEL="qwen3.6-plus"
+```
+
+DashScope Responses compatible example for PowerShell:
+
+```powershell
+$env:AFTERSALE_LLM_PROVIDER="dashscope-responses"
+$env:DASHSCOPE_API_KEY="你的 DashScope API Key"
+$env:DASHSCOPE_BASE_URL="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1"
+$env:AFTERSALE_LLM_MODEL="qwen3.6-plus"
+```
+
+If a provider reports that a model does not match the selected endpoint, switch to the endpoint required by DashScope
+for that model or try a compatible model such as `qwen-plus`. Provider errors are summarized with provider, endpoint
+host, model, status code, and a sanitized response body; API keys and full prompts are not logged.
 
 ### Context Budget / Token Observability
 
@@ -688,19 +725,23 @@ mvn test -Dtest=LlmPlannerLiveSmokeTest -Dlive.llm=true
 Required local environment:
 
 ```text
-OPENAI_API_KEY
+OPENAI_API_KEY for openai-responses, or DASHSCOPE_API_KEY for dashscope providers
 ```
 
 Optional local environment:
 
 ```text
+AFTERSALE_LLM_PROVIDER
 AFTERSALE_LLM_MODEL
 OPENAI_RESPONSES_ENDPOINT
+DASHSCOPE_BASE_URL
+DASHSCOPE_RESPONSES_ENDPOINT
+DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT
 ```
 
-If `-Dlive.llm=true` is omitted, the test is disabled. If `OPENAI_API_KEY` is missing, the live test is skipped with a
-clear message. The smoke test calls only `LlmAgentPlanner` and validates the returned `AgentPlan`; it does not execute
-business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
+If `-Dlive.llm=true` is omitted, the test is disabled. If the selected provider API key is missing, the live test is
+skipped with a clear message. The smoke test calls only `LlmAgentPlanner` and validates the returned `AgentPlan`; it
+does not execute business tools, create `AgentRun`, write `ToolCallTrace`, or mutate tickets.
 
 ### Real LLM + MySQL Seed Data Opt-In Validation
 
@@ -716,7 +757,7 @@ mvn test -Dtest=RealAgentValidationLiveTest -Dlive.llm=true -Dlive.mysql=true
 Required environment:
 
 ```text
-OPENAI_API_KEY
+OPENAI_API_KEY for openai-responses, or DASHSCOPE_API_KEY for dashscope providers
 AFTERSALE_MYSQL_URL
 AFTERSALE_MYSQL_USERNAME
 AFTERSALE_MYSQL_PASSWORD
@@ -725,7 +766,11 @@ AFTERSALE_MYSQL_PASSWORD
 Optional environment:
 
 ```text
+AFTERSALE_LLM_PROVIDER
 OPENAI_RESPONSES_ENDPOINT
+DASHSCOPE_BASE_URL
+DASHSCOPE_RESPONSES_ENDPOINT
+DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT
 AFTERSALE_LLM_MODEL
 AFTERSALE_LIVE_ORDER_ID
 ```
@@ -1136,3 +1181,69 @@ OPENAI_RESPONSES_ENDPOINT
 
 `AFTERSALE_LLM_MODEL` 和 `OPENAI_RESPONSES_ENDPOINT` 可选；未设置时分别使用 `gpt-4o-mini` 和 OpenAI Responses
 API 默认 endpoint。不要将真实 API Key 写入代码、测试、README、docs、`application.yml` 或提交历史。
+
+## V4 Roadmap: RAG, Spring AI, Tool / Skill Layer
+
+V4 focuses on interview-critical AI engineering capabilities:
+
+- Spring AI provider adapter;
+- RAG / vectorized after-sale policy retrieval;
+- PostgreSQL + PGvector opt-in profile;
+- Policy document ingestion, chunking, embedding, and evidence retrieval;
+- Tool / Skill capability layer;
+- Execution Tree evidence visualization;
+- Spring Boot completeness improvements.
+
+V4 preserves the existing Agent safety model:
+
+```text
+LLM plans only.
+Skill orchestrates safely.
+ToolRegistry executes atomic tools.
+RAG retrieves policy evidence.
+ToolCallTrace records tool calls.
+Approval blocks high-risk actions.
+```
+
+### Planned V4 Profiles
+
+```text
+default       -> in-memory / fake embedding / no external dependency
+mysql         -> existing V3 MySQL persistence
+rag-postgres  -> PostgreSQL + PGvector for policy RAG
+spring-ai-live -> explicit live provider validation
+```
+
+### Planned V4 Demo Flow
+
+```text
+Policy document ingestion
+→ chunking
+→ embedding
+→ vector store write
+→ ticket creation
+→ AgentRun
+→ SkillRegistry
+→ search_aftersale_policy with HYBRID retrieval
+→ ToolCallTrace
+→ AgentWorkspace.PolicyEvidence
+→ Execution Tree evidence node
+→ final suggestion with policy evidence
+```
+
+### V4 Default Test Boundary
+
+Default validation remains:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+Default validation must not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, or external network.
+
+### V4 Non-goals
+
+V4 does not implement real refund, real exchange, real payment, real logistics, real inventory mutation, real coupon compensation, production authentication, microservices, or a LangChain sidecar main path.

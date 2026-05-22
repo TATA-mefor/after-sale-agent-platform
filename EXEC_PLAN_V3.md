@@ -843,7 +843,83 @@ V3.9 已完成：
   能力一致；
 - 增加 `docs/demo/REAL_AGENT_VALIDATION.md` 和 V3.9 完成记录。
 
-## 12. V3 当前状态
+## 12. V3.10 DashScope Qwen LLM Provider Adapter
+
+### 12.1 状态
+
+completed
+
+### 12.2 目标
+
+让 `LlmAgentPlanner` 在保留 OpenAI Responses provider 的同时，支持阿里云百炼 DashScope / Qwen 的
+Responses-compatible 和 OpenAI-compatible Chat Completions 调用方式。默认测试仍然不调用真实 LLM、MySQL、
+Docker 或外部网络。
+
+### 12.3 范围
+
+V3.10 覆盖：
+
+1. 增加 provider 配置值 `openai-responses`、`dashscope-responses`、`dashscope-chat-compatible`；
+2. 保留旧 `openai` 配置值到 `openai-responses` 的兼容映射；
+3. 增加 DashScope API Key、base URL、responses endpoint、chat completions endpoint 配置；
+4. 增加 provider-aware `LlmClientFactory`；
+5. 复用 Responses client 处理 OpenAI Responses 和 DashScope Responses-compatible endpoint；
+6. 新增 Chat Completions compatible client，将 system/user prompt 转换为 `messages`；
+7. 将 `choices[0].message.content` 统一转换为 `LlmResponse` 文本；
+8. provider error 摘要包含 provider、endpoint host、model、status code 和脱敏响应体；
+9. 更新 live smoke / real validation 的 provider key 判断，使 DashScope 缺 key 时跳过；
+10. 更新 README、real validation 手册、LLM contract、质量分和完成记录。
+
+### 12.4 不做什么
+
+V3.10 不做：
+
+- 不把真实 DashScope / OpenAI 调用加入默认测试；
+- 不提交任何 API Key、数据库密码或个人路径；
+- 不绕过 `AgentPlanParser`、`AgentPlanValidator`、ToolRegistry、Approval、Trace 或 Workspace 边界；
+- 不让 LLM 直接执行工具；
+- 不实现真实退款、换货、支付、物流或库存动作；
+- 不引入复杂 provider SDK 或外部监控平台。
+
+### 12.5 验收标准
+
+V3.10 完成时必须满足：
+
+1. `openai-responses` 使用 Responses client；
+2. `dashscope-responses` 使用 DashScope responses endpoint；
+3. `dashscope-chat-compatible` 使用 Chat Completions compatible client；
+4. Chat client 能生成 `messages` 请求并解析 `choices[0].message.content`；
+5. provider error summary 不包含 API Key 或完整 prompt；
+6. live validation 在缺少所选 provider API Key 时跳过或给出清晰提示；
+7. 默认 `mvn test` 不调用真实 DashScope、OpenAI、MySQL 或 Docker；
+8. ArchitectureTest、Checkstyle、SpotBugs 和默认测试继续通过。
+
+### 12.6 验证命令
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+可选 DashScope live smoke：
+
+```bash
+mvn test -Dtest=LlmPlannerLiveSmokeTest -Dlive.llm=true
+```
+
+### 12.7 完成记录
+
+V3.10 已完成：
+
+- 新增 provider enum、provider settings、provider-aware client factory 和 provider error formatter；
+- 新增 DashScope Chat Completions compatible client；
+- 更新 `application.yml`、live smoke test 和 HTTP live validation 的 provider 配置路径；
+- 增加 provider selection、chat request/response 和 error sanitization 单测；
+- 文档补充 DashScope / Qwen PowerShell 示例和 endpoint/model mismatch 风险说明。
+
+## 13. V3 当前状态
 
 ```text
 V3.1 MySQL Persistence: completed
@@ -855,6 +931,7 @@ V3.6 Order Items Tool Enrichment: completed
 V3.7 Item-Specific Recommendation: completed
 V3.8 Context Budget & Token Observability: completed
 V3.9 Real LLM + MySQL Seed Data Opt-In Validation: completed
+V3.10 DashScope Qwen LLM Provider Adapter: completed
 ```
 
 V3.1 已完成显式 MySQL profile、Spring JDBC repository、schema/seed 初始化和默认 in-memory 回归保护。V3.2
@@ -864,4 +941,5 @@ V3.4 已完成最终系统复盘和文档收口。V3.5 已完成可选 demo data
 trace。V3.7 已完成 Return / Exchange handler 的商品明细级建议，使工具结果能进入最终建议和 Ticket note。
 V3.8 已完成 LLM Planner context budget、compact tool catalog 和 token telemetry，为后续真实 LLM 演练提供
 输入成本边界。V3.9 已完成真实 LLM + MySQL seed data 的显式 opt-in HTTP 验证路径，默认测试仍保持离线确定性。
-V3 基础设施收口阶段完成。
+V3.10 已完成 DashScope / Qwen provider adapter，使真实 LLM 验证可在 OpenAI Responses 和 DashScope
+compatible endpoints 之间显式切换。V3 基础设施收口阶段完成。

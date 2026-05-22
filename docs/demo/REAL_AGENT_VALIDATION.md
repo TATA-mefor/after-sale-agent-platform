@@ -54,10 +54,10 @@ O202605130001
 
 You can override it with `AFTERSALE_LIVE_ORDER_ID` if your local seed data uses another order.
 
-Set required environment variables locally:
+Set required environment variables locally for the selected LLM provider:
 
 ```text
-OPENAI_API_KEY
+OPENAI_API_KEY for openai-responses, or DASHSCOPE_API_KEY for dashscope providers
 AFTERSALE_MYSQL_URL
 AFTERSALE_MYSQL_USERNAME
 AFTERSALE_MYSQL_PASSWORD
@@ -66,12 +66,40 @@ AFTERSALE_MYSQL_PASSWORD
 Optional environment variables:
 
 ```text
+AFTERSALE_LLM_PROVIDER
 OPENAI_RESPONSES_ENDPOINT
+DASHSCOPE_BASE_URL
+DASHSCOPE_RESPONSES_ENDPOINT
+DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT
 AFTERSALE_LLM_MODEL
 AFTERSALE_LIVE_ORDER_ID
 ```
 
 Do not commit real API keys, database passwords, local absolute paths, or provider account details.
+
+## DashScope / Qwen Provider Examples
+
+DashScope Chat Completions compatible mode:
+
+```powershell
+$env:AFTERSALE_LLM_PROVIDER="dashscope-chat-compatible"
+$env:DASHSCOPE_API_KEY="你的 DashScope API Key"
+$env:DASHSCOPE_BASE_URL="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1"
+$env:AFTERSALE_LLM_MODEL="qwen3.6-plus"
+```
+
+DashScope Responses compatible mode:
+
+```powershell
+$env:AFTERSALE_LLM_PROVIDER="dashscope-responses"
+$env:DASHSCOPE_API_KEY="你的 DashScope API Key"
+$env:DASHSCOPE_BASE_URL="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1"
+$env:AFTERSALE_LLM_MODEL="qwen3.6-plus"
+```
+
+For `dashscope-responses`, the default endpoint is `${DASHSCOPE_BASE_URL}/responses`. For
+`dashscope-chat-compatible`, the default endpoint is `${DASHSCOPE_BASE_URL}/chat/completions`. You can override them
+with `DASHSCOPE_RESPONSES_ENDPOINT` or `DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT`.
 
 ## Run Command
 
@@ -124,6 +152,8 @@ LLM output:
 - AgentPlan parsing fails.
 - AgentPlan validation rejects an unknown tool, unsafe claim, invalid subtask, or dependency cycle.
 - Prompt budget is exceeded before the provider call.
+- The selected DashScope model and endpoint do not match. In that case, switch to the endpoint required by DashScope for
+  that model or try a compatible model such as `qwen-plus`.
 
 The implementation must not print full prompts, API keys, database passwords, or sensitive credentials in logs or
 assertion output.

@@ -4,7 +4,7 @@ import com.example.aftersale.agent.application.planner.SubtaskType;
 import com.example.aftersale.tool.application.ToolRegistry;
 import java.util.List;
 import org.springframework.stereotype.Component;
-
+//据子任务语义组织执行步骤
 @Component
 public class ReturnAgentHandler extends AbstractSpecialistAgentHandler {
 

@@ -3,6 +3,11 @@ package com.example.aftersale.agent.application.workspace;
 import com.example.aftersale.tool.domain.ToolRiskLevel;
 import java.util.Objects;
 
+/**
+ * 记录本次 AgentRun 中被识别出的风险提示。
+ *
+ * <p>边界：风险提示只能辅助编排和审批判断，不能绕过 RiskPolicy 或直接授权高风险业务动作。
+ */
 public record RiskFlag(
         String subtaskId,
         ToolRiskLevel riskLevel,

@@ -5,6 +5,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 保存订单查询工具提炼出的订单事实。
+ *
+ * <p>边界：该结构只属于单次 AgentRun 的工作记忆，不能替代订单领域模型，也不能作为审计记录来源。
+ */
 public record OrderFact(
         String orderId,
         String productName,
