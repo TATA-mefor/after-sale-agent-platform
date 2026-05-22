@@ -7,7 +7,8 @@ public enum LlmProvider {
 
     OPENAI_RESPONSES("openai-responses"),
     DASHSCOPE_RESPONSES("dashscope-responses"),
-    DASHSCOPE_CHAT_COMPATIBLE("dashscope-chat-compatible");
+    DASHSCOPE_CHAT_COMPATIBLE("dashscope-chat-compatible"),
+    SPRING_AI_CHAT("spring-ai-chat");
 
     private final String configValue;
 

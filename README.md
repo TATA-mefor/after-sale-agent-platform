@@ -1196,9 +1196,9 @@ V4 focuses on interview-critical AI engineering capabilities:
 - Execution Tree evidence visualization;
 - Spring Boot completeness improvements.
 
-V4.0 pre-flight fixes are completed. V4.1 Tool / Skill Layer Foundation is completed as a conservative foundation:
-Skill is now a first-class Java contract and registry concept, while the current AgentRun execution path still uses the
-existing Specialist Handler dispatch.
+V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, and V4.2 Spring AI Adapter are completed. Skill is now a
+first-class Java contract and registry concept, while the current AgentRun execution path still uses the existing
+Specialist Handler dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
 
 V4 preserves the existing Agent safety model:
 
@@ -1252,6 +1252,48 @@ Implemented V4.1 foundation:
 V4.1 does not implement Spring AI, RAG, PGvector, policy ingestion, Execution Tree skill nodes, or full runtime migration
 from `SpecialistAgentHandlerRegistry` to `SkillRegistry`. `plannedSkills` remains a documented future extension and is
 not generated, parsed, or executed by default.
+
+### V4.2 Spring AI Adapter
+
+Implemented V4.2 adapter foundation:
+
+- `spring-ai-chat` LLM provider routes through `SpringAiLlmClient`, then returns plain text to the existing
+  `LlmAgentPlanner`;
+- provider output still passes through `AgentPlanParser` and `AgentPlanValidator`;
+- Spring AI `ChatClient` is kept inside `agent.infrastructure.springai` and is not exposed to Agent, Handler, Skill,
+  ToolRegistry, Repository, or domain code;
+- `EmbeddingClient`, `FakeEmbeddingClient`, and `SpringAiEmbeddingClient` establish the embedding provider boundary
+  for later RAG work;
+- default configuration disables Spring AI model auto-creation with `spring.ai.model.*=none` unless explicitly enabled;
+- live Spring AI smoke tests are opt-in and do not create tickets, AgentRuns, traces, vector stores, or database rows.
+
+V4.2 does not implement RAG, VectorStore, PGvector, policy ingestion, Spring AI tool/function calling, or any direct
+tool execution by the provider.
+
+Spring AI chat live example:
+
+```powershell
+$env:AFTERSALE_LLM_PROVIDER="spring-ai-chat"
+$env:SPRING_AI_ENABLED="true"
+$env:SPRING_AI_CHAT_ENABLED="true"
+$env:SPRING_AI_MODEL_CHAT="openai"
+$env:SPRING_AI_OPENAI_API_KEY="你的 API Key"
+$env:SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL="gpt-4.1-mini"
+mvn test "-Dtest=SpringAiLlmClientLiveSmokeTest" "-Dlive.spring-ai=true" "-Dlive.llm=true"
+```
+
+Spring AI embedding live example:
+
+```powershell
+$env:SPRING_AI_ENABLED="true"
+$env:SPRING_AI_EMBEDDING_ENABLED="true"
+$env:SPRING_AI_MODEL_EMBEDDING="openai"
+$env:SPRING_AI_OPENAI_API_KEY="你的 API Key"
+mvn test "-Dtest=SpringAiEmbeddingClientLiveSmokeTest" "-Dlive.spring-ai=true" "-Dlive.embedding=true"
+```
+
+Spring AI provider only supplies planner text or embedding vectors through project-owned adapters. Project tools are
+still executed only by Java through `ToolRegistry`; do not register `ToolRegistry` tools as Spring AI tool callbacks.
 
 ### V4 Default Test Boundary
 

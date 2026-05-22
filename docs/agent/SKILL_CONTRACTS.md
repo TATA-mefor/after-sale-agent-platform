@@ -257,6 +257,10 @@ SkillRegistry 必须：
 V4.1 的 `SkillRegistry` 允许同一 `SubtaskType` 返回多个候选 Skill 列表；当前内置 Specialist Skill 每个
 SubtaskType 只有一个默认候选。后续如果需要 primary skill 选择策略，必须在 SkillRegistry 或规划校验层显式表达，不得隐式随机选择。
 
+V4.2 adds Spring AI adapters only behind infrastructure boundaries. Skill implementations still must not inject
+`ChatClient`, `ChatModel`, `EmbeddingModel`, `LlmClient`, or concrete Spring AI adapters directly. A future RAG evidence
+Skill must acquire evidence through ToolRegistry and policy tools, not by calling Spring AI or VectorStore directly.
+
 ## 11. Planner 与 Skill
 
 Planner 可以输出：

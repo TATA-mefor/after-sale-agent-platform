@@ -598,3 +598,12 @@ V4.1 implementation boundary:
 Spring AI ChatClient may be used behind LlmClient adapter. Spring AI EmbeddingModel may be used behind EmbeddingClient adapter.
 
 Neither ChatClient nor EmbeddingModel may be injected into Planner business logic, Skill, Handler, ToolExecutor, Controller, Repository, or domain model directly.
+
+V4.2 implementation boundary:
+
+- `provider=spring-ai-chat` selects `SpringAiLlmClient`.
+- Spring AI chat output is plain planner text and must still pass through `AgentPlanParser` and `AgentPlanValidator`.
+- Spring AI tool/function calling is not registered with project tools.
+- `ToolRegistry` remains the only tool execution entry point.
+- Default tests keep Spring AI disabled and must not require API keys, provider network access, databases, Docker, Redis,
+  or external services.

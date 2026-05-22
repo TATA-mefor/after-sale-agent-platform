@@ -73,6 +73,11 @@ DASHSCOPE_RESPONSES_ENDPOINT
 DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT
 AFTERSALE_LLM_MODEL
 AFTERSALE_LIVE_ORDER_ID
+SPRING_AI_ENABLED
+SPRING_AI_CHAT_ENABLED
+SPRING_AI_MODEL_CHAT
+SPRING_AI_OPENAI_API_KEY
+SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL
 ```
 
 Do not commit real API keys, database passwords, local absolute paths, or provider account details.
@@ -100,6 +105,35 @@ $env:AFTERSALE_LLM_MODEL="qwen3.6-plus"
 For `dashscope-responses`, the default endpoint is `${DASHSCOPE_BASE_URL}/responses`. For
 `dashscope-chat-compatible`, the default endpoint is `${DASHSCOPE_BASE_URL}/chat/completions`. You can override them
 with `DASHSCOPE_RESPONSES_ENDPOINT` or `DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT`.
+
+## Spring AI Provider Example
+
+Spring AI can be used as the LLM provider adapter for the same live Agent validation path. It remains opt-in and does
+not execute project tools through Spring AI tool/function calling.
+
+```powershell
+$env:AFTERSALE_LLM_PROVIDER="spring-ai-chat"
+$env:SPRING_AI_ENABLED="true"
+$env:SPRING_AI_CHAT_ENABLED="true"
+$env:SPRING_AI_MODEL_CHAT="openai"
+$env:SPRING_AI_OPENAI_API_KEY="你的 API Key"
+$env:SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL="gpt-4.1-mini"
+```
+
+With this provider, Spring AI only returns planner text. The Java backend still performs context budgeting, parses the
+plan with `AgentPlanParser`, validates it with `AgentPlanValidator`, and executes allowed tools through `ToolRegistry`.
+Default tests do not enable Spring AI and do not require any Spring AI environment variables.
+
+Spring AI embedding live smoke is separate from Real Agent validation and does not create tickets, AgentRuns, traces,
+vector stores, or database rows:
+
+```powershell
+$env:SPRING_AI_ENABLED="true"
+$env:SPRING_AI_EMBEDDING_ENABLED="true"
+$env:SPRING_AI_MODEL_EMBEDDING="openai"
+$env:SPRING_AI_OPENAI_API_KEY="你的 API Key"
+mvn test "-Dtest=SpringAiEmbeddingClientLiveSmokeTest" "-Dlive.spring-ai=true" "-Dlive.embedding=true"
+```
 
 ## Run Command
 

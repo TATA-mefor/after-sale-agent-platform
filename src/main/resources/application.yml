@@ -1,6 +1,15 @@
 spring:
   application:
     name: after-sale-agent-platform
+  ai:
+    model:
+      chat: ${SPRING_AI_MODEL_CHAT:none}
+      embedding: ${SPRING_AI_MODEL_EMBEDDING:none}
+      audio:
+        speech: ${SPRING_AI_MODEL_AUDIO_SPEECH:none}
+        transcription: ${SPRING_AI_MODEL_AUDIO_TRANSCRIPTION:none}
+      image: ${SPRING_AI_MODEL_IMAGE:none}
+      moderation: ${SPRING_AI_MODEL_MODERATION:none}
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
@@ -16,6 +25,13 @@ logging:
     level: "%5p requestId=%X{requestId:-} ticketId=%X{ticketId:-} agentRunId=%X{agentRunId:-} subtaskId=%X{subtaskId:-} toolName=%X{toolName:-} approvalRequestId=%X{approvalRequestId:-}"
 
 agent:
+  spring-ai:
+    enabled: ${SPRING_AI_ENABLED:false}
+    chat-enabled: ${SPRING_AI_CHAT_ENABLED:false}
+    embedding-enabled: ${SPRING_AI_EMBEDDING_ENABLED:false}
+    provider-type: ${SPRING_AI_PROVIDER_TYPE:openai}
+    api-key: ${SPRING_AI_OPENAI_API_KEY:}
+    endpoint-host: ${SPRING_AI_ENDPOINT_HOST:spring-ai-managed}
   planner:
     mode: rule
     llm:

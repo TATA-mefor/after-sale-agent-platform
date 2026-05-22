@@ -100,6 +100,7 @@ class LlmPlannerLiveSmokeTest {
             case OPENAI_RESPONSES -> !properties.getApiKey().isBlank();
             case DASHSCOPE_RESPONSES, DASHSCOPE_CHAT_COMPATIBLE ->
                     !properties.getDashscope().getApiKey().isBlank();
+            case SPRING_AI_CHAT -> false;
         };
     }
 }

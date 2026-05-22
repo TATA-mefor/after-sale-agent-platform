@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.aftersale.agent.application.planner.AgentPlanValidationException;
+import com.example.aftersale.agent.infrastructure.springai.SpringAiChatGateway;
+import com.example.aftersale.agent.infrastructure.springai.SpringAiLlmClient;
+import com.example.aftersale.common.ai.SpringAiProviderProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +52,27 @@ class LlmProviderConfigurationTest {
 
         assertThat(client).isInstanceOf(ChatCompletionsLlmClient.class);
         assertThat(settings.endpoint()).endsWith("/chat/completions");
+    }
+
+    @Test
+    void springAiChatProviderUsesSpringAiLlmClient() {
+        AgentPlannerProperties.Llm properties = baseProperties("spring-ai-chat");
+        SpringAiLlmClient springAiClient = new SpringAiLlmClient(enabledSpringAiProperties(), stubGateway());
+        LlmClientFactory springAiFactory = new LlmClientFactory(objectMapper, springAiClient);
+
+        LlmClient client = springAiFactory.create(properties);
+
+        assertThat(client).isSameAs(springAiClient);
+    }
+
+    @Test
+    void springAiChatProviderWithoutClientFailsClearly() {
+        AgentPlannerProperties.Llm properties = baseProperties("spring-ai-chat");
+
+        assertThatThrownBy(() -> factory.create(properties))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("provider=spring-ai-chat")
+                .hasMessageContaining("SpringAiLlmClient");
     }
 
     @Test
@@ -112,6 +136,36 @@ class LlmProviderConfigurationTest {
         assertThatThrownBy(() -> LlmProvider.from("unknown-provider"))
                 .isInstanceOf(AgentPlanValidationException.class)
                 .hasMessageContaining("Unsupported LLM provider");
+    }
+
+    private static SpringAiProviderProperties enabledSpringAiProperties() {
+        SpringAiProviderProperties properties = new SpringAiProviderProperties();
+        properties.setEnabled(true);
+        properties.setChatEnabled(true);
+        return properties;
+    }
+
+    private static SpringAiChatGateway stubGateway() {
+        return (model, systemPrompt, userPrompt) -> """
+                {
+                  "intent": "RETURN_AND_REFUND",
+                  "riskLevel": "MEDIUM",
+                  "policyQuery": "质量问题 退货 退款",
+                  "noteToAdd": "用户反馈质量问题，建议进入人工审核。",
+                  "finalSuggestion": "建议根据质量问题规则处理。",
+                  "evidenceHints": ["质量问题"],
+                  "plannedTools": [
+                    {
+                      "toolName": "search_aftersale_policy",
+                      "reason": "检索政策"
+                    },
+                    {
+                      "toolName": "add_ticket_note",
+                      "reason": "记录建议"
+                    }
+                  ]
+                }
+                """;
     }
 
     private static AgentPlannerProperties.Llm baseProperties(String provider) {

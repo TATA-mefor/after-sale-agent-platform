@@ -16,6 +16,10 @@ RAG 只能提供政策证据，不能替代 AgentPlanValidator、RiskPolicy、Ap
 
 ## 2. 检索边界
 
+V4.2 status: only the embedding provider adapter boundary exists. `EmbeddingClient`, `FakeEmbeddingClient`, and
+`SpringAiEmbeddingClient` prepare for later vector retrieval, but V4.2 does not create VectorStore, PGvector schema,
+policy chunk ingestion, similarity search, or HYBRID retrieval runtime.
+
 允许链路：
 
 ```text

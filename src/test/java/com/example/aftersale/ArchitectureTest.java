@@ -244,4 +244,30 @@ class ArchitectureTest {
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
+
+    @Test
+    void agentHandlerAndSkillMustNotDependOnSpringAiClasses() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("org.springframework.ai..")
+                .because("Agent application, handler, and skill code must use project boundaries, not Spring AI APIs.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void springAiAdaptersMustStayInfrastructureAndNotAccessRepositories() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..infrastructure.springai..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("Spring AI adapters are provider adapters and must not access persistence.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
 }

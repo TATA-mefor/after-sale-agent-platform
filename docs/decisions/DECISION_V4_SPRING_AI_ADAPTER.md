@@ -19,7 +19,7 @@ Spring AI 只作为 provider abstraction 的一个实现：
 ```text
 LlmAgentPlanner
 → LlmClient
-→ SpringAiChatClientAdapter
+→ SpringAiLlmClient
 → Spring AI ChatClient
 ```
 
@@ -28,7 +28,7 @@ Embedding 能力通过独立 embedding client 边界进入 RAG：
 ```text
 PolicyEmbeddingService
 → EmbeddingClient
-→ SpringAiEmbeddingClientAdapter
+→ SpringAiEmbeddingClient
 → Spring AI EmbeddingModel
 ```
 
@@ -38,16 +38,18 @@ PolicyEmbeddingService
 
 ```yaml
 agent:
+  spring-ai:
+    enabled: false
+    chat-enabled: false
+    embedding-enabled: false
   planner:
     llm:
-      provider: spring-ai
-
-rag:
-  embedding:
-    provider: spring-ai
+      provider: spring-ai-chat
 ```
 
 默认 profile 不创建真实 Spring AI provider。真实 provider 只能在显式 live profile 或 opt-in test 中使用。
+Spring AI model auto-configuration is disabled by default with `spring.ai.model.*=none` until a local operator enables
+the relevant model type.
 
 ## Boundaries
 
@@ -78,8 +80,8 @@ Provider 输出仍必须经过 AgentPlanParser 和 AgentPlanValidator。
 Live tests 必须显式 opt-in：
 
 ```bash
-mvn test -Dtest=SpringAiPlannerLiveSmokeTest -Dlive.llm=true
-mvn test -Dtest=SpringAiEmbeddingLiveSmokeTest -Dlive.embedding=true
+mvn test -Dtest=SpringAiLlmClientLiveSmokeTest -Dlive.spring-ai=true -Dlive.llm=true
+mvn test -Dtest=SpringAiEmbeddingClientLiveSmokeTest -Dlive.spring-ai=true -Dlive.embedding=true
 ```
 
 缺少 API Key 或 provider configuration 时，live tests 必须 skip 或给出清晰 setup error，不得污染默认测试。

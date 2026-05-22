@@ -1,7 +1,9 @@
 package com.example.aftersale.agent.infrastructure.llm;
 
+import com.example.aftersale.agent.infrastructure.springai.SpringAiLlmClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Optional;
 
 /**
  * 根据配置创建具体 LLM Provider Client。
@@ -15,19 +17,34 @@ public class LlmClientFactory {
 
     private final ObjectMapper objectMapper;
 
+    private final Optional<SpringAiLlmClient> springAiLlmClient;
+
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
             justification = "Spring-managed ObjectMapper is stored to construct provider clients consistently.")
     public LlmClientFactory(ObjectMapper objectMapper) {
+        this(objectMapper, null);
+    }
+
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "Spring AI LLM client is an optional infrastructure adapter selected by provider config.")
+    public LlmClientFactory(ObjectMapper objectMapper, SpringAiLlmClient springAiLlmClient) {
         this.objectMapper = objectMapper;
+        this.springAiLlmClient = Optional.ofNullable(springAiLlmClient);
     }
 
     public LlmClient create(AgentPlannerProperties.Llm properties) {
         LlmProvider provider = LlmProvider.from(properties.getProvider());
-        LlmProviderSettings settings = settings(provider, properties);
         return switch (provider) {
-            case OPENAI_RESPONSES, DASHSCOPE_RESPONSES -> new OpenAiLlmClient(settings, objectMapper);
-            case DASHSCOPE_CHAT_COMPATIBLE -> new ChatCompletionsLlmClient(settings, objectMapper);
+            case OPENAI_RESPONSES, DASHSCOPE_RESPONSES -> new OpenAiLlmClient(
+                    settings(provider, properties),
+                    objectMapper);
+            case DASHSCOPE_CHAT_COMPATIBLE -> new ChatCompletionsLlmClient(
+                    settings(provider, properties),
+                    objectMapper);
+            case SPRING_AI_CHAT -> springAiLlmClient.orElseThrow(() -> new IllegalStateException(
+                    "provider=spring-ai-chat requires SpringAiLlmClient configuration"));
         };
     }
 
@@ -63,6 +80,8 @@ public class LlmClientFactory {
                             properties.getDashscope().getBaseUrl(),
                             CHAT_COMPLETIONS_PATH),
                     properties.getTimeoutSeconds());
+            case SPRING_AI_CHAT -> throw new IllegalArgumentException(
+                    "spring-ai-chat is selected through SpringAiLlmClient and does not use HTTP provider settings");
         };
     }
 

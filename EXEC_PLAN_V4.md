@@ -222,42 +222,54 @@ Planner
 
 ## 6. V4.2 Spring AI Adapter
 
+Status: completed.
+
+V4.2 completed only the Spring AI chat and embedding adapter foundation. It did not implement RAG, VectorStore,
+PGvector, Policy Ingestion, Spring AI tool/function calling, or Skill runtime migration.
+
 ### 6.1 目标
 
 在不删除现有 OpenAI / DashScope provider 和 LlmClient 边界的前提下，引入 Spring AI adapter，使项目能通过 Spring AI ChatClient 和 EmbeddingModel 接入 LLM 与 embedding provider。
 
-### 6.2 预期模型 / 类
+### 6.2 已完成模型 / 类
 
 ```text
-agent/infrastructure/springai/SpringAiChatClientAdapter
-policy/rag/infrastructure/springai/SpringAiEmbeddingClientAdapter
+agent/infrastructure/springai/SpringAiLlmClient
+agent/infrastructure/springai/SpringAiChatGateway
+agent/infrastructure/springai/ChatClientSpringAiChatGateway
+agent/infrastructure/springai/SpringAiConfiguration
 common/ai/SpringAiProviderProperties
-common/ai/SpringAiConfiguration
+common/ai/SpringAiProviderErrorFormatter
+policy/rag/infrastructure/springai/SpringAiEmbeddingClient
+policy/rag/infrastructure/springai/SpringAiEmbeddingGateway
+policy/rag/infrastructure/springai/EmbeddingModelSpringAiEmbeddingGateway
+policy/rag/infrastructure/springai/SpringAiEmbeddingConfiguration
 policy/rag/application/EmbeddingClient
 policy/rag/application/FakeEmbeddingClient
 ```
 
-### 6.3 配置目标
+### 6.3 配置
 
 ```yaml
 agent:
+  spring-ai:
+    enabled: false
+    chat-enabled: false
+    embedding-enabled: false
   planner:
     llm:
-      provider: spring-ai
-
-rag:
-  embedding:
-    provider: spring-ai
+      provider: spring-ai-chat
 ```
 
-默认 profile 不创建真实 ChatClient / EmbeddingModel。live profile 或显式 opt-in profile 才允许真实 provider。
+默认 profile 不创建真实 ChatClient / EmbeddingModel。真实 provider 必须显式设置 `SPRING_AI_ENABLED=true`，
+并按需设置 `SPRING_AI_CHAT_ENABLED=true` 或 `SPRING_AI_EMBEDDING_ENABLED=true`。
 
-### 6.4 验收标准
+### 6.4 已完成验收
 
-- `agent.planner.llm.provider=spring-ai` 可被配置；
+- `agent.planner.llm.provider=spring-ai-chat` 可被配置；
 - Spring AI ChatClient adapter 输出仍进入 AgentPlanParser 和 AgentPlanValidator；
 - Spring AI EmbeddingModel adapter 只用于 embedding，不用于工具执行；
-- 默认测试使用 fake client；
+- 默认测试使用 fake embedding client，不调用真实 Spring AI provider；
 - provider error 不输出 API Key、full prompt、database password 或 sensitive credentials；
 - live smoke test 显式 opt-in。
 
@@ -557,7 +569,7 @@ mvn test -Dtest=ArchitectureTest
 
 ```bash
 mvn test -Dtest=RagVectorStoreLiveTest -Dlive.rag=true
-mvn test -Dtest=SpringAiEmbeddingLiveSmokeTest -Dlive.embedding=true
+mvn test -Dtest=SpringAiEmbeddingClientLiveSmokeTest -Dlive.spring-ai=true -Dlive.embedding=true
 mvn test -Dtest=V4RealAgentRagLiveTest -Dlive.llm=true -Dlive.rag=true
 ```
 

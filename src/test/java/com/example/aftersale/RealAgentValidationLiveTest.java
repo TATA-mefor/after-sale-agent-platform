@@ -206,6 +206,15 @@ class RealAgentValidationLiveTest {
             String apiKey = System.getenv("DASHSCOPE_API_KEY");
             return apiKey != null && !apiKey.isBlank();
         }
+        if ("spring-ai-chat".equals(provider)) {
+            String enabled = System.getenv("SPRING_AI_ENABLED");
+            String chatEnabled = System.getenv("SPRING_AI_CHAT_ENABLED");
+            String apiKey = System.getenv("SPRING_AI_OPENAI_API_KEY");
+            return "true".equalsIgnoreCase(enabled)
+                    && "true".equalsIgnoreCase(chatEnabled)
+                    && apiKey != null
+                    && !apiKey.isBlank();
+        }
         String apiKey = System.getenv("OPENAI_API_KEY");
         return apiKey != null && !apiKey.isBlank();
     }
