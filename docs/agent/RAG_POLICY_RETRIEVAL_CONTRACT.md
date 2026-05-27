@@ -54,6 +54,14 @@ against the ingestion repository. V4.4.2 does not call EmbeddingClient, call Spr
 add JDBC ingestion persistence, add ingestion API/tool, implement RAG runtime, implement HYBRID retrieval, or change
 `search_aftersale_policy` behavior.
 
+V4.4.3 status: only the fake-provider embedding pipeline boundary exists. The project defines
+`PolicyEmbeddingPipelineService`, options, result, and failure models. The pipeline may use the `EmbeddingClient`
+abstraction with `FakeEmbeddingClient` in default offline tests and may write `PolicyDocument`, `PolicyChunk`, and
+`PolicyEmbedding` through the `PolicyVectorRepository` contract with `InMemoryPolicyVectorRepository`. V4.4.3 does
+not call the real Spring AI embedding adapter in default tests, call Spring AI `VectorStore`, connect PostgreSQL /
+PGvector, add JDBC repositories, add ingestion API/tool, implement RAG runtime, implement HYBRID retrieval, or change
+`search_aftersale_policy` behavior.
+
 允许链路：
 
 ```text
@@ -244,8 +252,9 @@ PolicyEvidenceNode
 ## 11. Ingestion Contract
 
 V4.4.1 defines the ingestion domain and repository contract only. V4.4.2 adds deterministic chunking, token estimate,
-SHA-256 checksum, and checksum dedup service boundaries. It does not implement ingestion database tables, embedding
-generation, vector repository writes, Admin API, Agent tool registration, or ingestion runtime.
+SHA-256 checksum, and checksum dedup service boundaries. V4.4.3 adds the fake-provider embedding pipeline boundary for
+offline tests and writes through the vector repository contract only. It does not implement ingestion database tables,
+real embedding generation, JDBC vector writes, Admin API, Agent tool registration, or RAG retrieval runtime.
 
 Policy ingestion 必须可追踪：
 
@@ -278,6 +287,23 @@ dedup decisions = NEW_CONTENT / DUPLICATE_DOCUMENT / DUPLICATE_CHUNK
 
 Chunking and dedup errors must not include complete raw text, API keys, database passwords, tokens, full prompts, or
 local absolute paths.
+
+V4.4.3 fake embedding pipeline rules:
+
+```text
+eligible run status = CHUNKED / EMBEDDING
+CHUNKED -> EMBEDDING before embedding work
+all chunks embedded -> COMPLETED
+some embedded or skipped plus failures -> PARTIALLY_FAILED
+all chunks failed -> FAILED
+default provider for tests = FakeEmbeddingClient
+vector write boundary = PolicyVectorRepository contract
+duplicate embedding = skip or fail according to options
+dimension mismatch = fail or skip according to options
+```
+
+Embedding pipeline failures must not include complete chunk content, API keys, database passwords, tokens, full prompts,
+local absolute paths, or provider secrets.
 
 V4.4.1 status transitions:
 

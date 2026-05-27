@@ -414,7 +414,7 @@ class ArchitectureTest {
                         "..order..infrastructure..repository..",
                         "..ticket..infrastructure..repository..",
                         "..policy..infrastructure..repository..")
-                .because("chunking, checksum, and dedup services must stay deterministic and offline.")
+                .because("ingestion application services must stay offline and avoid provider implementations.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
 
@@ -433,8 +433,8 @@ class ArchitectureTest {
                 .resideInAnyPackage("..policy.rag.ingestion.application..")
                 .should()
                 .dependOnClassesThat()
-                .haveSimpleName("PolicyVectorRepository")
-                .because("V4.4.2 must not write vector repository records or perform RAG retrieval.")
+                .haveSimpleName("SpringAiEmbeddingClient")
+                .because("V4.4.3 may use EmbeddingClient but must not call the real Spring AI adapter.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }

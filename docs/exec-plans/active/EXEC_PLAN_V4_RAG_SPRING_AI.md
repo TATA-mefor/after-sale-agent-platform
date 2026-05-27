@@ -278,8 +278,8 @@ agent:
 Status: active. V4.3.1 PostgreSQL / PGvector dependency and profile boundary, V4.3.2 vector schema /
 repository contract, V4.3.3 fake vector store / default offline vector tests, and V4.3.4 Docker Compose /
 opt-in integration docs are completed. V4.4.1 Policy Ingestion domain / status / repository foundation and V4.4.2
-chunking / checksum dedup service are completed. Embedding pipeline, vector repository writes, and Hybrid RAG runtime
-remain planned.
+chunking / checksum dedup service are completed. V4.4.3 fake-provider embedding pipeline is completed for offline
+tests using `FakeEmbeddingClient` and `PolicyVectorRepository` contract writes. Hybrid RAG runtime remains planned.
 
 ### 7.1 目标
 
@@ -371,7 +371,7 @@ V4.3.3 -> fake vector store / default offline vector tests (completed)
 V4.3.4 -> Docker Compose / opt-in integration docs (completed)
 V4.4.1 -> Policy Ingestion domain / status / repository foundation (completed)
 V4.4.2 -> chunking and checksum dedup (completed)
-V4.4.3 -> embedding pipeline with fake provider
+V4.4.3 -> embedding pipeline with fake provider (completed)
 V4.4.4 -> ingestion docs / completion record
 V4.5   -> Hybrid RAG Policy Search Tool
 ```
@@ -433,8 +433,8 @@ policy_embeddings:
 
 ## 8. V4.4 Policy Ingestion
 
-Status: active. V4.4.1 Policy document / chunk domain and ingestion run model and V4.4.2 chunking / checksum dedup
-service are completed. Embedding pipeline, vector repository writes, ingestion API, and RAG / HYBRID retrieval remain
+Status: active. V4.4.1 Policy document / chunk domain and ingestion run model, V4.4.2 chunking / checksum dedup
+service, and V4.4.3 fake-provider embedding pipeline are completed. Ingestion API and RAG / HYBRID retrieval remain
 planned.
 
 ### 8.1 目标
@@ -482,6 +482,30 @@ V4.4.2 只完成 chunking / checksum / dedup service:
 V4.4.2 不包含 EmbeddingClient 调用、Spring AI 调用、PolicyVectorRepository 写入、JdbcPolicyIngestionRepository、
 JdbcPolicyVectorRepository、Admin Controller、ingestion tool、RAG / HYBRID retrieval 或 `search_aftersale_policy`
 行为变更。Policy Ingestion 仍是 admin / pipeline capability，不是 Agent 自动工具。
+
+### 8.1.3 V4.4.3 已完成边界
+
+V4.4.3 只完成 fake-provider embedding pipeline:
+
+- 新增 `PolicyEmbeddingPipelineOptions`、`PolicyEmbeddingPipelineResult`、`PolicyEmbeddingPipelineFailure` 和
+  `PolicyEmbeddingPipelineService`；
+- pipeline 读取 `PolicyIngestionRepository` 中的 run / document / chunk，使用 `EmbeddingClient` abstraction
+  调用 fake provider 测试路径，并写入 `PolicyVectorRepository` contract；
+- 默认测试使用 `FakeEmbeddingClient` 和 `InMemoryPolicyVectorRepository`，验证 document / chunk / embedding
+  保存后可直接通过 repository search 找到 evidence chunk；
+- ingestion document / chunk 到 vector document / chunk 的 ID 映射保持 deterministic，embedding ID 使用
+  chunkId + model hash 派生，测试不依赖随机 ID；
+- pipeline 支持 expectedDimension、duplicate embedding skip/fail、maxChunksPerRun、partial failure、all failure 和
+  sanitized failure 结果；
+- run 状态从 CHUNKED 进入 EMBEDDING，并根据结果进入 COMPLETED / PARTIALLY_FAILED / FAILED；
+- ArchitectureTest 允许 ingestion application 依赖 `EmbeddingClient` abstraction 和 `PolicyVectorRepository`
+  contract，但继续禁止 Spring AI adapter、Spring AI VectorStore、JDBC、DataSource、PGvector infrastructure、
+  vector memory infrastructure、业务 repository、Tool、Handler 和 Skill 依赖。
+
+V4.4.3 不包含真实 Spring AI embedding call、`SpringAiEmbeddingClient` default tests、Spring AI `VectorStore`、
+PGvector / JDBC repository、`JdbcPolicyVectorRepository`、`JdbcPolicyIngestionRepository`、Admin Controller、
+ingestion tool、RAG / HYBRID retrieval 或 `search_aftersale_policy` 行为变更。Policy Ingestion 仍是 admin /
+pipeline capability，不是 Agent 自动工具。
 
 ### 8.2 Ingestion Flow
 

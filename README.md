@@ -1199,8 +1199,8 @@ V4 focuses on interview-critical AI engineering capabilities:
 V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3.1 PostgreSQL / PGvector
 profile boundary, V4.3.2 vector schema / repository contract, V4.3.3 fake vector store / default offline vector
 tests, V4.3.4 Docker Compose / opt-in PGvector integration docs, V4.4.1 Policy Ingestion domain / status /
-repository foundation, and V4.4.2 chunking / checksum dedup services are completed. Skill is now a first-class Java
-contract and registry concept, while the current
+repository foundation, V4.4.2 chunking / checksum dedup services, and V4.4.3 fake-provider embedding pipeline are
+completed. Skill is now a first-class Java contract and registry concept, while the current
 AgentRun execution path still uses the existing Specialist Handler dispatch. Spring AI is available as an optional
 provider adapter and is disabled by default.
 
@@ -1465,6 +1465,29 @@ implement `JdbcPolicyIngestionRepository` or `JdbcPolicyVectorRepository`, does 
 ingestion tools, does not implement RAG / HYBRID retrieval, and does not change `search_aftersale_policy`. Policy
 Ingestion remains an admin/pipeline capability. V4.4.3 handles embedding pipeline with fake provider, and V4.5 wires
 HYBRID RAG into `search_aftersale_policy`.
+
+### V4.4.3 Embedding Pipeline with Fake Provider
+
+Implemented V4.4.3 fake-provider embedding boundary:
+
+- `PolicyEmbeddingPipelineOptions`, `PolicyEmbeddingPipelineResult`, `PolicyEmbeddingPipelineFailure`, and
+  `PolicyEmbeddingPipelineService` define the offline embedding pipeline;
+- the pipeline reads ingestion run/document/chunk state, calls the `EmbeddingClient` abstraction, and writes
+  `PolicyDocument`, `PolicyChunk`, and `PolicyEmbedding` through the `PolicyVectorRepository` contract;
+- default tests use `FakeEmbeddingClient` and `InMemoryPolicyVectorRepository`, then verify direct repository search
+  can find the saved evidence chunk;
+- pipeline result handling covers expected dimension checks, duplicate embedding skip/fail behavior,
+  `maxChunksPerRun`, partial failure, all failure, and sanitized failure details;
+- ingestion run status moves from CHUNKED to EMBEDDING and then to COMPLETED, PARTIALLY_FAILED, or FAILED;
+- architecture tests keep the pipeline away from Spring AI adapter classes, Spring AI `VectorStore`, JDBC, DataSource,
+  PGvector infrastructure, vector memory infrastructure, business repositories, Tool, Handler, and Skill packages.
+
+V4.4.3 does not call a real Spring AI `EmbeddingModel`, does not call `SpringAiEmbeddingClient` in default tests, does
+not call Spring AI `VectorStore`, does not implement `JdbcPolicyIngestionRepository` or `JdbcPolicyVectorRepository`,
+does not connect PostgreSQL / PGvector, does not add Admin ingestion API or Agent ingestion tools, does not implement
+RAG / HYBRID retrieval, and does not change `search_aftersale_policy`. Policy Ingestion remains an admin/pipeline
+capability. V4.4.4 handles ingestion docs / final V4.4 completion record, and V4.5 wires HYBRID RAG into
+`search_aftersale_policy`.
 
 ### V4 Default Test Boundary
 

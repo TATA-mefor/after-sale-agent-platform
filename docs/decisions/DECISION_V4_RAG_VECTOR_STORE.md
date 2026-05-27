@@ -47,6 +47,14 @@ backed by checksum queries on `PolicyIngestionRepository`. There is still no emb
 call, `PolicyVectorRepository` write, JDBC ingestion repository, ingestion API/tool, HYBRID retrieval, RAG runtime, or
 `search_aftersale_policy` vector wiring.
 
+V4.4.3 implementation status: the fake-provider embedding pipeline boundary is completed. The project now has
+`PolicyEmbeddingPipelineService`, options, result, and failure models. The pipeline reads ingestion run/document/chunk
+state, calls the `EmbeddingClient` abstraction in offline tests with `FakeEmbeddingClient`, writes `PolicyDocument`,
+`PolicyChunk`, and `PolicyEmbedding` through the `PolicyVectorRepository` contract, and verifies this path with
+`InMemoryPolicyVectorRepository`. There is still no real Spring AI embedding call in default tests, Spring AI
+`VectorStore`, PGvector / JDBC repository, ingestion API/tool, HYBRID retrieval, RAG runtime, or
+`search_aftersale_policy` vector wiring.
+
 推荐 profile：
 
 ```text
@@ -75,8 +83,9 @@ policy_embeddings
 ```
 
 `policy_ingestion_runs` is not part of the V4.3.2 schema file. V4.4.1 defines the ingestion domain/status/repository
-contract in Java only. V4.4.2 adds deterministic chunking, checksum, and dedup services in Java only. Database schema,
-JDBC persistence, embedding generation, and vector writes remain future work.
+contract in Java only. V4.4.2 adds deterministic chunking, checksum, and dedup services in Java only. V4.4.3 adds an
+offline fake-provider embedding pipeline that writes through the repository contract only. Database ingestion schema,
+JDBC persistence, real embedding generation, and live PGvector writes remain future work.
 
 核心领域对象：
 
@@ -93,6 +102,7 @@ InMemoryPolicyVectorRepository
 PolicyChunkingService
 PolicyContentChecksumService
 PolicyIngestionDedupService
+PolicyEmbeddingPipelineService
 ```
 
 ## Retrieval Flow
@@ -190,6 +200,9 @@ Costs:
 - 不在 V4.4.2 中调用 EmbeddingClient、调用 Spring AI、写入 PolicyVectorRepository、实现
   JdbcPolicyIngestionRepository、实现 JdbcPolicyVectorRepository、实现 Admin Controller、注册 ingestion tool、实现
   RAG / HYBRID retrieval 或修改 `search_aftersale_policy` 行为；
+- 不在 V4.4.3 中调用真实 Spring AI EmbeddingModel、调用 SpringAiEmbeddingClient default path、调用 Spring AI
+  VectorStore、实现 JdbcPolicyIngestionRepository、实现 JdbcPolicyVectorRepository、连接 PostgreSQL / PGvector、
+  实现 Admin Controller、注册 ingestion tool、实现 RAG / HYBRID retrieval 或修改 `search_aftersale_policy` 行为；
 - 不把 PGvector compose 写成 production deployment，`docker-compose-rag.yml` 只用于 local development opt-in；
 - 不引入大型分布式向量库；
 - 不做复杂 reranking service；
