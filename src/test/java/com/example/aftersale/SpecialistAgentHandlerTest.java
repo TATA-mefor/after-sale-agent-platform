@@ -107,6 +107,13 @@ class SpecialistAgentHandlerTest {
         assertThat(context.workspace().policyEvidence())
                 .extracting(PolicyEvidence::policyId)
                 .contains("POL-QUALITY-RETURN-EXCHANGE");
+        assertThat(context.workspace().policyEvidence())
+                .allSatisfy(evidence -> {
+                    assertThat(evidence.retrievalMode()).isEqualTo("KEYWORD");
+                    assertThat(evidence.source()).isEqualTo("KEYWORD_POLICY");
+                    assertThat(evidence.score()).isNotNull();
+                    assertThat(evidence.summary()).contains("Policy evidence[KEYWORD]");
+                });
         assertThat(context.workspace().toolResultSummaries())
                 .extracting(toolSummary -> toolSummary.toolName())
                 .containsExactly("get_order_by_id", "search_aftersale_policy", "add_ticket_note");

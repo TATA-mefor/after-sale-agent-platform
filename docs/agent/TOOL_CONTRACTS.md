@@ -197,6 +197,24 @@ runtime, does not call `EmbeddingClient`, does not call `PolicyVectorRepository.
 does not connect PostgreSQL / PGvector, and does not modify ToolRegistry, ToolCallTrace, AgentWorkspace, AgentRun,
 Skill runtime, or Execution Tree. Runtime HYBRID wiring remains V4.5.3.
 
+V4.5.3 status: runtime HYBRID wiring completed. `search_aftersale_policy` now accepts optional `retrievalMode`,
+`topK`, `minScore`, `category`, `productType`, `effectiveAt`, and `embeddingModel` fields. Missing
+`retrievalMode` defaults to KEYWORD, so old input remains compatible. VECTOR / HYBRID default tests use
+`FakeEmbeddingClient` and `InMemoryPolicyVectorRepository`; real PGvector, real embedding providers, and Spring AI
+`VectorStore` are not the default path. The tool remains LOW-risk read-only and approval-free. V4.5.3 does not modify
+ToolCallTrace schema, AgentWorkspace evidence writes, AgentRun, Skill runtime, ToolRegistry semantics, or Execution
+Tree. V4.5.4 now completes ToolCallTrace / Workspace evidence visibility.
+
+V4.5.4 status: ToolCallTrace / Workspace evidence wiring completed. The existing ToolCallTrace schema is unchanged,
+but `search_aftersale_policy` output JSON now exposes stable RAG evidence fields through legacy-compatible `results`
+and explicit `evidences`. AgentWorkspace stores single-AgentRun policy evidence summaries, AgentRun final summary
+shows concise evidence references, and Execution Tree read-only output can display evidence summaries. This does not
+change retrieval algorithms, ToolRegistry semantics, AgentRun main flow semantics, Skill runtime semantics, approval
+risk, or the LOW-risk read-only nature of `search_aftersale_policy`. RAG evidence remains evidence only and does not
+execute refunds, exchanges, coupon compensation, payment changes, logistics changes, or dispute closure. Default tests
+remain offline and do not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+providers, or external network; real PGvector and real embedding providers remain opt-in / future paths.
+
 Input:
 
 ```text
@@ -231,6 +249,8 @@ results[]
   effectiveTo optional
 message
 fallbackUsed
+totalKeywordMatches
+totalVectorMatches
 ```
 
 The tool must not mutate Ticket, Order, Payment, Inventory, Logistics, Coupon, ApprovalRequest, or any external business system.

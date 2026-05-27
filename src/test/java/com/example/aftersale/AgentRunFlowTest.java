@@ -116,6 +116,16 @@ class AgentRunFlowTest {
         assertThat((List<?>) JsonPath.read(planJson, "$.workspace.orderFacts")).hasSize(1);
         assertThat((List<?>) JsonPath.read(planJson, "$.workspace.policyEvidence")).isNotEmpty();
         assertThat((List<?>) JsonPath.read(planJson, "$.workspace.toolResultSummaries")).hasSize(3);
+        assertThat(JsonPath.read(planJson, "$.workspace.policyEvidence[0].retrievalMode").toString())
+                .isEqualTo("KEYWORD");
+        assertThat(JsonPath.read(planJson, "$.workspace.policyEvidence[0].source").toString())
+                .isEqualTo("KEYWORD_POLICY");
+        assertThat((Double) JsonPath.read(planJson, "$.workspace.policyEvidence[0].score"))
+                .isBetween(0.0d, 1.0d);
+        String finalSuggestion = JsonPath.read(result.getResponse().getContentAsString(), "$.data.finalSuggestion");
+        assertThat(finalSuggestion)
+                .contains("Policy evidence[KEYWORD]", "score=")
+                .doesNotContain("{\"", "已退款", "已换货", "已补偿", "已关闭争议");
         assertThat(traceApplicationService.findByRunId(runId))
                 .extracting(ToolCallTrace::getToolName)
                 .contains("get_order_by_id", "search_aftersale_policy", "add_ticket_note");
@@ -208,11 +218,22 @@ class AgentRunFlowTest {
                         hasItem(containsString("\"query\""))))
                 .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].outputJson",
                         hasItem(containsString("\"results\""))))
+                .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].outputJson",
+                        hasItem(containsString("\"evidences\""))))
+                .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].outputJson",
+                        hasItem(containsString("\"retrievalMode\""))))
+                .andExpect(jsonPath("$.data[?(@.toolName == 'search_aftersale_policy')].outputJson",
+                        hasItem(containsString("\"score\""))))
                 .andExpect(jsonPath("$.data[?(@.toolName == 'get_order_by_id')].outputJson",
                         hasItem(containsString("\"orderItems\""))))
                 .andExpect(jsonPath("$.data[?(@.toolName == 'add_ticket_note')].inputJson",
                         hasItem(containsString("\"note\""))))
                 .andExpect(jsonPath("$.data[*].status", hasItems("SUCCEEDED", "SUCCEEDED")));
+        traceApplicationService.findByRunId(runId).stream()
+                .filter(trace -> "search_aftersale_policy".equals(trace.getToolName()))
+                .map(ToolCallTrace::getOutputJson)
+                .forEach(outputJson -> assertThat(outputJson)
+                        .doesNotContain("apiKey", "password", "token", "D:\\", "rawText"));
     }
 
     @Test

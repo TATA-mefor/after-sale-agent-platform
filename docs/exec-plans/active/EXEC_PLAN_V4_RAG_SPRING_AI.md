@@ -375,7 +375,7 @@ V4.4.3 -> embedding pipeline with fake provider (completed)
 V4.4.4 -> ingestion docs / completion record (completed)
 V4.5.1 -> RAG search contract / retrieval mode / evidence model (completed)
 V4.5.2 -> keyword + vector merge service (completed)
-V4.5.3 -> search_aftersale_policy HYBRID mode wiring
+V4.5.3 -> search_aftersale_policy HYBRID mode wiring (completed)
 V4.5.4 -> ToolCallTrace / Workspace evidence wiring
 ```
 
@@ -575,9 +575,9 @@ PolicyVectorRepository
 
 ## 9. V4.5 Hybrid RAG Policy Search Tool
 
-Status: active. V4.5.1 RAG search contract / retrieval mode / evidence model is completed. V4.5.2 keyword + vector
-merge service is completed. V4.5.3 `search_aftersale_policy` HYBRID runtime wiring and V4.5.4 ToolCallTrace /
-Workspace evidence wiring remain future work.
+Status: completed through V4.5.4. V4.5.1 RAG search contract / retrieval mode / evidence model is completed. V4.5.2
+keyword + vector merge service is completed. V4.5.3 `search_aftersale_policy` HYBRID runtime wiring is completed.
+V4.5.4 ToolCallTrace / Workspace evidence wiring is completed.
 
 ### 9.1 目标
 
@@ -605,8 +605,8 @@ EmbeddingClient，不调用 PolicyVectorRepository.search，不连接 PostgreSQL
 VectorStore，不修改 AgentRun、ToolCallTrace、AgentWorkspace、Skill runtime、ToolRegistry 或 Execution Tree。
 默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。
 
-V4.5.2 才处理 keyword + vector merge service。V4.5.3 才把 `search_aftersale_policy` 接入 HYBRID mode。
-V4.5.4 才处理 ToolCallTrace / Workspace evidence wiring。
+V4.5.2 已处理 keyword + vector merge service。V4.5.3 已把 `search_aftersale_policy` 接入 HYBRID mode。
+V4.5.4 已处理 ToolCallTrace / Workspace evidence wiring。
 
 ### 9.1.2 V4.5.2 已完成边界
 
@@ -626,7 +626,53 @@ VectorStore，不修改 AgentRun、ToolCallTrace、AgentWorkspace、Skill runtim
 默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。RAG evidence 仍只是
 evidence，不是业务动作执行。
 
-V4.5.3 才把 `search_aftersale_policy` 接入 HYBRID mode。V4.5.4 才处理 ToolCallTrace / Workspace evidence wiring。
+V4.5.3 已把 `search_aftersale_policy` 接入 HYBRID mode。V4.5.4 已处理 ToolCallTrace / Workspace evidence wiring。
+
+### 9.1.3 V4.5.3 已完成边界
+
+V4.5.3 只完成 `search_aftersale_policy` KEYWORD / VECTOR / HYBRID runtime wiring:
+
+- 扩展 `search_aftersale_policy` input parsing，支持 optional `retrievalMode`、`topK`、`minScore`、`category`、
+  `productType`、`effectiveAt` 和 `embeddingModel`；
+- 未提供 `retrievalMode` 时继续默认 KEYWORD，旧 input JSON 兼容；
+- 新增 RAG policy search application boundary，KEYWORD 调用现有 keyword policy retrieval，VECTOR 通过
+  `EmbeddingClient` abstraction 和 `PolicyVectorRepository.search` contract，HYBRID 使用 keyword + vector evidence
+  merge service；
+- 默认测试的 VECTOR / HYBRID runtime 使用 `FakeEmbeddingClient` 和 `InMemoryPolicyVectorRepository`；
+- vector repository 缺失、vector result 为空或 embedding 失败时有清晰 fallback / failure 行为，HYBRID 可 fallback
+  到 KEYWORD evidence；
+- tool output 保留旧 `results` 字段，并增加 `query`、`retrievalMode`、`evidences`、`message`、
+  `fallbackUsed`、`totalKeywordMatches` 和 `totalVectorMatches`；
+- `search_aftersale_policy` 仍是 LOW-risk read-only tool，不需要 approval，只能作为 policy evidence retrieval。
+
+V4.5.3 不连接真实 PostgreSQL / PGvector，不实现 `JdbcPolicyVectorRepository`，默认测试不调用真实 Spring AI
+EmbeddingModel，不调用 Spring AI `VectorStore`，不新增 Admin Controller 或 ingestion tool，不修改 AgentRun 主流程、
+Skill runtime、ToolRegistry 执行语义、ToolCallTrace schema、AgentWorkspace evidence 写入逻辑或 Execution Tree。
+默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。
+
+V4.5.4 handles ToolCallTrace / Workspace evidence visibility without changing retrieval algorithms.
+
+### 9.1.4 V4.5.4 已完成边界
+
+V4.5.4 只完成 RAG evidence observability / workspace wiring / summary visibility:
+
+- `search_aftersale_policy` tool output keeps legacy `results` and exposes stable `evidences`, `retrievalMode`,
+  `fallbackUsed`, `totalKeywordMatches` and `totalVectorMatches` fields for ToolCallTrace audit JSON;
+- `AgentWorkspace.PolicyEvidence` can store single-run RAG evidence summaries with evidenceId, policyId, documentId,
+  chunkId, documentTitle, productType, score, retrievalMode and source;
+- AgentRun final summary includes concise policy evidence summaries without full JSON, full chunk content or business
+  action completion claims;
+- Execution Tree read-only response can display policy evidence summaries and associate them with subtask/tool call
+  metadata when available;
+- output sanitization keeps API keys, passwords, tokens, local paths, full prompts, rawText and long chunk content out
+  of evidence summaries.
+
+V4.5.4 不改变 `search_aftersale_policy` KEYWORD / VECTOR / HYBRID retrieval algorithm，不连接真实 PostgreSQL /
+PGvector，不实现 `JdbcPolicyVectorRepository`，默认测试不调用真实 Spring AI EmbeddingModel 或 Spring AI
+`VectorStore`，不新增 Admin Controller 或 ingestion tool，不改变 ToolCallTrace 表结构，不改变 Skill runtime 语义，
+不让 Agent / Handler / Skill 直接访问 embedding、vector、PGvector、JDBC、DataSource 或 fake vector repository。
+默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。V4.6 可继续做
+evaluation / demo / Spring Boot completeness 后续工作。
 
 ### 9.2 Tool Input
 
@@ -666,11 +712,12 @@ V4.5.3 才把 `search_aftersale_policy` 接入 HYBRID mode。V4.5.4 才处理 To
 
 ### 9.4 验收标准
 
-- 支持 KEYWORD / VECTOR / HYBRID；
+- `search_aftersale_policy` 支持 KEYWORD / VECTOR / HYBRID；
+- 未提供 `retrievalMode` 的旧调用仍默认 KEYWORD；
 - unsupported query 返回结构化空结果，不编造依据；
-- ToolCallTrace outputJson 包含 chunkId、documentId、score、retrievalMode；
-- AgentWorkspace.PolicyEvidence 保存 RAG evidence；
-- Execution Tree 可展示 policy evidence；
+- 默认 VECTOR / HYBRID 测试使用 fake embedding + in-memory vector repository；
+- real PGvector / real embedding provider / Spring AI VectorStore 不是默认路径；
+- ToolCallTrace output JSON、AgentWorkspace、final summary 和 Execution Tree 能展示 concise RAG evidence summary；
 - 默认测试不依赖真实 embedding provider 或 vector store；
 - RAG evidence 不得直接声称退款、换货或补偿已完成。
 

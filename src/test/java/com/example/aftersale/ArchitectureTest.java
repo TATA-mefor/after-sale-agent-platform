@@ -177,6 +177,21 @@ class ArchitectureTest {
                 .because("AgentWorkspace must not execute tools or replace ToolRegistry.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAPackage("..agent.application.workspace..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure..")
+                .because("Workspace evidence mapping must stay a local summary and avoid RAG infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
     }
 
     @Test
@@ -364,6 +379,95 @@ class ArchitectureTest {
     }
 
     @Test
+    void ragPolicySearchApplicationServiceMustUseOnlyProjectContracts() {
+        noClasses()
+                .that()
+                .haveSimpleName("RagPolicySearchApplicationService")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework.web..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure.pgvector..",
+                        "..policy.rag.infrastructure.springai..",
+                        "..policy.rag.infrastructure.memory..")
+                .because("V4.5.3 runtime search may use EmbeddingClient and PolicyVectorRepository contracts only.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void searchPolicyToolExecutorMustNotDependOnVectorInfrastructureOrProviderImplementations() {
+        noClasses()
+                .that()
+                .haveSimpleName("SearchAfterSalePolicyToolExecutor")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure.pgvector..",
+                        "..policy.rag.infrastructure.springai..",
+                        "..policy.rag.infrastructure.memory..")
+                .because("the search tool executor must call the RAG application service, not provider infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .haveSimpleName("SearchAfterSalePolicyToolExecutor")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("PolicyVectorRepository")
+                .because("the tool executor must not directly access vector repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void executionTreeMustRemainReadOnlyAndNotDependOnRagRuntimeInfrastructure() {
+        noClasses()
+                .that()
+                .haveSimpleName("ExecutionTreeApplicationService")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure..")
+                .because("Execution Tree is a read-only explanation view and must not call RAG infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .haveSimpleName("ExecutionTreeApplicationService")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("EmbeddingClient")
+                .because("Execution Tree must display recorded evidence, not perform embedding.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .haveSimpleName("ExecutionTreeApplicationService")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("PolicyVectorRepository")
+                .because("Execution Tree must display trace/workspace evidence, not query vector repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void agentHandlerAndSkillMustNotDependOnPolicyVectorRepositoryContract() {
         noClasses()
                 .that()
@@ -384,6 +488,16 @@ class ArchitectureTest {
                 .because("Agent code must not depend on fake vector repository implementations directly.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("EmbeddingClient")
+                .because("Agent code must reach vector retrieval through ToolRegistry, not embedding clients directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
     }
 
     @Test
@@ -394,7 +508,7 @@ class ArchitectureTest {
                 .should()
                 .dependOnClassesThat()
                 .resideInAPackage("..policy.rag.search..")
-                .because("V4.5 search contracts and merge service are preparation models, not Agent runtime wiring.")
+                .because("Agent, handler, and skill code must not bypass the search tool into RAG search internals.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }

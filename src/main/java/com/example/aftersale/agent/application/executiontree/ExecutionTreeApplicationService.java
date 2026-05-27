@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,6 +33,7 @@ public class ExecutionTreeApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionTreeApplicationService.class);
 
     private static final String SUBTASK_ID_FIELD = "subtaskId";
+    private static final String SEARCH_POLICY_TOOL = "search_aftersale_policy";
 
     private final AgentApplicationService agentApplicationService;
     private final ToolCallTraceApplicationService traceApplicationService;
@@ -66,7 +68,12 @@ public class ExecutionTreeApplicationService {
             List<String> errors = new ArrayList<>();
             JsonNode planRoot = parsePlan(agentRun, errors);
             Map<String, MutableSubtaskNode> subtaskNodes = subtaskNodes(planRoot);
-            List<ExecutionTreeToolCallNode> rootToolCalls = attachToolCalls(agentRun, subtaskNodes, errors);
+            List<ExecutionTreePolicyEvidenceNode> rootPolicyEvidence = new ArrayList<>();
+            List<ExecutionTreeToolCallNode> rootToolCalls = attachToolCalls(
+                    agentRun,
+                    subtaskNodes,
+                    rootPolicyEvidence,
+                    errors);
             List<ExecutionTreeApprovalNode> rootApprovalRequests = attachApprovalRequests(agentRun, subtaskNodes);
             addRunError(agentRun, errors);
 
@@ -80,6 +87,7 @@ public class ExecutionTreeApplicationService {
                             .map(MutableSubtaskNode::toResponse)
                             .toList(),
                     rootToolCalls,
+                    rootPolicyEvidence,
                     rootApprovalRequests,
                     errors,
                     agentRun.getStartedAt(),
@@ -139,6 +147,7 @@ public class ExecutionTreeApplicationService {
     private List<ExecutionTreeToolCallNode> attachToolCalls(
             AgentRun agentRun,
             Map<String, MutableSubtaskNode> subtaskNodes,
+            List<ExecutionTreePolicyEvidenceNode> rootPolicyEvidence,
             List<String> errors) {
         List<ExecutionTreeToolCallNode> rootToolCalls = new ArrayList<>();
         for (ToolCallTrace trace : traceApplicationService.findByRunId(agentRun.getRunId())) {
@@ -148,11 +157,14 @@ public class ExecutionTreeApplicationService {
             }
             String subtaskId = subtaskIdFromTrace(trace, errors);
             MutableSubtaskNode subtaskNode = subtaskNodes.get(subtaskId);
+            List<ExecutionTreePolicyEvidenceNode> evidenceNodes = policyEvidenceNodes(trace, subtaskId, errors);
             if (subtaskNode == null) {
                 // 旧 trace 和根级 fallback 计划不会在 inputJson 中携带 subtaskId。
                 rootToolCalls.add(node);
+                rootPolicyEvidence.addAll(evidenceNodes);
             } else {
                 subtaskNode.addToolCall(node);
+                evidenceNodes.forEach(subtaskNode::addPolicyEvidence);
             }
         }
         return List.copyOf(rootToolCalls);
@@ -206,6 +218,54 @@ public class ExecutionTreeApplicationService {
                 request.getReviewedAt());
     }
 
+    private List<ExecutionTreePolicyEvidenceNode> policyEvidenceNodes(
+            ToolCallTrace trace,
+            String subtaskId,
+            List<String> errors) {
+        if (!SEARCH_POLICY_TOOL.equals(trace.getToolName())
+                || trace.getOutputJson() == null
+                || trace.getOutputJson().isBlank()) {
+            return List.of();
+        }
+        try {
+            JsonNode outputRoot = objectMapper.readTree(trace.getOutputJson());
+            JsonNode data = outputRoot.has("data") ? outputRoot.path("data") : outputRoot;
+            JsonNode evidences = data.path("evidences");
+            if (!evidences.isArray()) {
+                evidences = data.path("results");
+            }
+            if (!evidences.isArray()) {
+                return List.of();
+            }
+            List<ExecutionTreePolicyEvidenceNode> nodes = new ArrayList<>();
+            for (JsonNode evidence : evidences) {
+                String snippet = firstText(evidence, "snippet", "matchedText");
+                String category = text(evidence, "category");
+                if (!snippet.isBlank() && !category.isBlank()) {
+                    nodes.add(new ExecutionTreePolicyEvidenceNode(
+                            text(evidence, "evidenceId"),
+                            text(evidence, "policyId"),
+                            text(evidence, "documentId"),
+                            text(evidence, "chunkId"),
+                            text(evidence, "documentTitle"),
+                            category,
+                            text(evidence, "productType"),
+                            snippet,
+                            nullableDouble(evidence, "score"),
+                            text(evidence, "retrievalMode"),
+                            text(evidence, "source"),
+                            subtaskId,
+                            trace.getTraceId()));
+                }
+            }
+            return List.copyOf(nodes);
+        } catch (RuntimeException | JsonProcessingException exception) {
+            errors.add("Failed to parse policy evidence from trace " + trace.getTraceId()
+                    + ": " + exception.getMessage());
+            return List.of();
+        }
+    }
+
     private static void addRunError(AgentRun agentRun, List<String> errors) {
         String errorMessage = agentRun.getErrorMessage();
         if (errorMessage != null && !errorMessage.isBlank()) {
@@ -240,6 +300,33 @@ public class ExecutionTreeApplicationService {
         return value.asText("");
     }
 
+    private static String firstText(JsonNode node, String firstFieldName, String secondFieldName) {
+        String first = text(node, firstFieldName);
+        if (!first.isBlank()) {
+            return first;
+        }
+        return text(node, secondFieldName);
+    }
+
+    @Nullable
+    private static Double nullableDouble(JsonNode node, String fieldName) {
+        JsonNode value = node.path(fieldName);
+        if (value.isMissingNode() || value.isNull()) {
+            return null;
+        }
+        if (value.isNumber()) {
+            return value.asDouble();
+        }
+        if (value.isTextual() && !value.asText().isBlank()) {
+            try {
+                return Double.parseDouble(value.asText());
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     private static int integer(JsonNode node, String fieldName) {
         JsonNode value = node.path(fieldName);
         if (value.isMissingNode() || value.isNull()) {
@@ -258,6 +345,7 @@ public class ExecutionTreeApplicationService {
         private String status;
         private String summary;
         private final List<ExecutionTreeToolCallNode> toolCalls = new ArrayList<>();
+        private final List<ExecutionTreePolicyEvidenceNode> policyEvidence = new ArrayList<>();
         private final List<ExecutionTreeApprovalNode> approvalRequests = new ArrayList<>();
 
         private MutableSubtaskNode(
@@ -315,6 +403,10 @@ public class ExecutionTreeApplicationService {
             toolCalls.add(toolCall);
         }
 
+        private void addPolicyEvidence(ExecutionTreePolicyEvidenceNode evidence) {
+            policyEvidence.add(evidence);
+        }
+
         private void addApprovalRequest(ExecutionTreeApprovalNode approvalRequest) {
             approvalRequests.add(approvalRequest);
         }
@@ -329,6 +421,7 @@ public class ExecutionTreeApplicationService {
                     status,
                     summary,
                     toolCalls,
+                    policyEvidence,
                     approvalRequests);
         }
     }

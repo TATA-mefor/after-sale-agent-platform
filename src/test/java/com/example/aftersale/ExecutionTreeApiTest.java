@@ -60,6 +60,10 @@ class ExecutionTreeApiTest {
                 .andExpect(jsonPath("$.data.toolCalls[*].status", hasItems("SUCCEEDED")))
                 .andExpect(jsonPath("$.data.toolCalls[?(@.toolName == 'get_order_by_id')].inputJson",
                         hasItems(containsString("\"orderId\""))))
+                .andExpect(jsonPath("$.data.policyEvidence[0].retrievalMode").value("KEYWORD"))
+                .andExpect(jsonPath("$.data.policyEvidence[0].source").value("KEYWORD_POLICY"))
+                .andExpect(jsonPath("$.data.policyEvidence[0].score").exists())
+                .andExpect(jsonPath("$.data.policyEvidence[0].toolCallId").isNotEmpty())
                 .andExpect(jsonPath("$.data.errors", empty()));
     }
 
@@ -91,6 +95,9 @@ class ExecutionTreeApiTest {
         assertSubtaskToolCalls(subtasks, "subtask-1");
         assertSubtaskToolCalls(subtasks, "subtask-2");
         assertSubtaskToolCalls(subtasks, "subtask-3");
+        assertSubtaskPolicyEvidence(subtasks, "subtask-1");
+        assertSubtaskPolicyEvidence(subtasks, "subtask-2");
+        assertSubtaskHasNoFabricatedPolicyEvidence(subtasks, "subtask-3");
     }
 
     @Test
@@ -114,5 +121,41 @@ class ExecutionTreeApiTest {
         assertThat(toolCalls)
                 .extracting(item -> item.get("inputJson"))
                 .allSatisfy(inputJson -> assertThat(inputJson.toString()).contains(subtaskId));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void assertSubtaskPolicyEvidence(List<Map<String, Object>> subtasks, String subtaskId) {
+        Map<String, Object> subtask = subtasks.stream()
+                .filter(item -> subtaskId.equals(item.get("subtaskId")))
+                .findFirst()
+                .orElseThrow();
+        List<Map<String, Object>> evidence = (List<Map<String, Object>>) subtask.get("policyEvidence");
+        assertThat(evidence).isNotEmpty();
+        assertThat(evidence)
+                .allSatisfy(item -> {
+                    assertThat(item.get("subtaskId")).isEqualTo(subtaskId);
+                    assertThat(item.get("toolCallId")).isNotNull();
+                    assertThat(item.get("retrievalMode")).isEqualTo("KEYWORD");
+                    assertThat(item.get("source")).isEqualTo("KEYWORD_POLICY");
+                    assertThat(item.get("snippet").toString()).doesNotContain("rawText", "password", "token");
+                });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void assertSubtaskHasNoFabricatedPolicyEvidence(
+            List<Map<String, Object>> subtasks, String subtaskId) {
+        Map<String, Object> subtask = subtasks.stream()
+                .filter(item -> subtaskId.equals(item.get("subtaskId")))
+                .findFirst()
+                .orElseThrow();
+        List<Map<String, Object>> evidence = (List<Map<String, Object>>) subtask.get("policyEvidence");
+        assertThat(evidence).isEmpty();
+        List<Map<String, Object>> toolCalls = (List<Map<String, Object>>) subtask.get("toolCalls");
+        assertThat(toolCalls)
+                .filteredOn(item -> "search_aftersale_policy".equals(item.get("toolName")))
+                .singleElement()
+                .satisfies(item -> assertThat(item.get("outputJson").toString())
+                        .contains("\"evidences\":[]")
+                        .contains("No after-sale policy matched the query."));
     }
 }

@@ -1219,6 +1219,80 @@ V4.5 follow-up:
 - V4.5.3 wires `search_aftersale_policy` to HYBRID mode while preserving LOW-risk read-only semantics.
 - V4.5.4 wires ToolCallTrace / Workspace evidence output.
 
+### V4.5.3 search_aftersale_policy HYBRID Runtime Quality Summary
+
+Status: completed for KEYWORD / VECTOR / HYBRID runtime wiring in `search_aftersale_policy`, input compatibility,
+fake-provider vector runtime tests, fallback behavior, docs harness, and architecture boundary coverage.
+
+Current V4.5.3 quality status:
+
+- Input compatibility quality: old input without `retrievalMode` defaults to KEYWORD; invalid mode, topK, and minScore
+  return clear LOW-risk tool failures without sensitive details.
+- KEYWORD quality: KEYWORD mode keeps existing deterministic keyword policy retrieval behavior and does not call
+  `EmbeddingClient` or `PolicyVectorRepository`.
+- VECTOR quality: VECTOR mode uses `EmbeddingClient` abstraction plus `PolicyVectorRepository.search` contract and is
+  covered by fake embedding + in-memory vector repository tests.
+- HYBRID quality: HYBRID mode combines keyword and vector evidence through `RagPolicyEvidenceMergeService`, preserves
+  keywordScore / vectorScore, and falls back to keyword evidence when vector dependencies or vector execution fail.
+- Tool boundary quality: `search_aftersale_policy` remains LOW-risk read-only, approval-free, and executable through
+  ToolRegistry; Handler and Agent paths keep using the tool boundary.
+- Evidence-only quality: output evidence and scores are policy retrieval evidence only and do not execute or claim
+  completed refund, exchange, coupon compensation, payment, logistics, or dispute-closure actions.
+- Default test boundary: default validation uses fake embedding and in-memory vector repository where vector runtime is
+  tested and does not require PostgreSQL, PGvector, Docker, MySQL, Redis, real LLMs, API keys, real embedding
+  providers, Spring AI provider calls, or external network.
+- Architecture boundary: search tool runtime and RAG application service depend only on abstractions/contracts, not
+  Spring AI provider classes, Spring AI `VectorStore`, JDBC, `DataSource`, PGvector infrastructure, or vector
+  repository implementations. Agent, Handler, and Skill layers do not directly depend on vector or embedding
+  infrastructure.
+
+Known limitations:
+
+- No ToolCallTrace schema change, AgentWorkspace evidence write change, Execution Tree evidence node, live PGvector
+  search, `JdbcPolicyVectorRepository`, real embedding default path, Admin Controller, or ingestion tool is implemented
+  in V4.5.3.
+
+V4.5 follow-up:
+
+- V4.5.4 wires ToolCallTrace / Workspace evidence output.
+
+### V4.5.4 ToolCallTrace / Workspace Evidence Quality Summary
+
+Status: completed for RAG evidence observability, ToolCallTrace output JSON stability, AgentWorkspace policy evidence
+summary mapping, AgentRun final summary visibility, Execution Tree read-only evidence nodes, docs harness coverage, and
+architecture boundary coverage.
+
+Current V4.5.4 quality status:
+
+- ToolCallTrace evidence quality: `search_aftersale_policy` output preserves legacy `results` while exposing stable
+  `evidences`, `retrievalMode`, `fallbackUsed`, `totalKeywordMatches`, and `totalVectorMatches` fields in output JSON.
+- Workspace evidence quality: `AgentWorkspace.PolicyEvidence` stores single-run evidence summaries with evidenceId,
+  policyId, documentId, chunkId, documentTitle, productType, score, retrievalMode, and source when available.
+- Final summary quality: AgentRun final summary includes concise policy evidence summaries and avoids full evidence
+  JSON, full chunk content, long raw text, and business-action completion claims.
+- Execution Tree quality: read-only Execution Tree output can show policy evidence summaries and safely degrades if
+  tool output JSON parsing fails.
+- Evidence-only quality: RAG evidence and scores remain retrieval evidence only and do not execute or claim completed
+  refund, exchange, coupon compensation, payment, logistics, or dispute-closure actions.
+- Default test boundary: default validation uses fake / in-memory dependencies where vector evidence is exercised and
+  does not require PostgreSQL, PGvector, Docker, MySQL, Redis, real LLMs, API keys, real embedding providers, Spring AI
+  provider calls, or external network.
+- Architecture boundary: Workspace mapping may depend on RAG model shapes but not RAG infrastructure. Execution Tree
+  does not depend on `EmbeddingClient`, `PolicyVectorRepository`, PGvector infrastructure, Spring AI, JDBC,
+  `DataSource`, or repository implementations. Agent, Handler, and Skill layers do not directly access vector or
+  embedding infrastructure.
+
+Known limitations:
+
+- V4.5.4 does not change retrieval algorithms, implement live PGvector search, implement `JdbcPolicyVectorRepository`,
+  add Admin Controller, add ingestion tool, add Skill runtime migration, or make real embedding providers a default
+  test path.
+
+V4.6 follow-up:
+
+- V4.6 can continue evaluation, demo, Spring Boot completeness, or Skill-layer integration work without treating RAG
+  evidence as a business action.
+
 Planned phases:
 
 ```text
@@ -1235,8 +1309,8 @@ V4.4.3 Embedding Pipeline with Fake Provider (completed)
 V4.4.4 Policy Ingestion Docs / Completion Record (completed)
 V4.5.1 RAG Search Contract (completed)
 V4.5.2 Keyword + Vector Merge Service (completed)
-V4.5.3 search_aftersale_policy HYBRID Mode Wiring
-V4.5.4 ToolCallTrace / Workspace Evidence Wiring
+V4.5.3 search_aftersale_policy HYBRID Mode Wiring (completed)
+V4.5.4 ToolCallTrace / Workspace Evidence Wiring (completed)
 V4.6 Skill Layer Integration
 V4.7 Execution Tree / Evaluation / Demo
 V4.8 Spring Boot Completeness

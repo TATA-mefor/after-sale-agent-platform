@@ -1537,6 +1537,45 @@ PGvector, and does not modify ToolRegistry, ToolCallTrace, AgentWorkspace, Agent
 RAG output remains evidence only. V4.5.3 handles HYBRID mode runtime wiring, and V4.5.4 handles ToolCallTrace /
 Workspace evidence wiring.
 
+### V4.5.3 search_aftersale_policy HYBRID Runtime
+
+Implemented V4.5.3 runtime wiring:
+
+- `search_aftersale_policy` supports `retrievalMode` values `KEYWORD`, `VECTOR`, and `HYBRID`;
+- old input without `retrievalMode` still defaults to KEYWORD and keeps legacy `results` output compatibility;
+- KEYWORD mode uses existing deterministic keyword policy retrieval;
+- VECTOR mode uses the `EmbeddingClient` abstraction and `PolicyVectorRepository.search` contract when available;
+- HYBRID mode combines keyword and vector evidence through `RagPolicyEvidenceMergeService`;
+- default VECTOR / HYBRID tests use `FakeEmbeddingClient` and `InMemoryPolicyVectorRepository`.
+
+V4.5.3 does not connect real PostgreSQL / PGvector, does not implement `JdbcPolicyVectorRepository`, does not call a
+real Spring AI EmbeddingModel in default tests, and does not call Spring AI `VectorStore`. `search_aftersale_policy`
+remains a LOW-risk read-only tool, does not need approval, and returns evidence only; it does not execute refunds,
+exchanges, coupon compensation, payment changes, logistics changes, or dispute closure. V4.5.4 now completes
+ToolCallTrace / Workspace evidence visibility. Default tests remain offline and do not require real LLMs, API keys, PostgreSQL,
+PGvector, Docker, MySQL, Redis, real embedding providers, or external network.
+
+### V4.5.4 ToolCallTrace / Workspace Evidence Wiring
+
+Implemented V4.5.4 evidence observability:
+
+- `search_aftersale_policy` output keeps legacy `results` compatibility and exposes stable RAG `evidences`,
+  `retrievalMode`, `fallbackUsed`, `totalKeywordMatches`, and `totalVectorMatches` fields for ToolCallTrace JSON;
+- `AgentWorkspace.PolicyEvidence` stores single-AgentRun policy evidence summaries with RAG identifiers, score,
+  retrievalMode, and source when available;
+- AgentRun final summary includes concise policy evidence references instead of full evidence JSON or long chunk text;
+- Execution Tree read-only output can display policy evidence summaries and associate them with subtask/tool call
+  metadata when available.
+
+V4.5.4 does not change the KEYWORD / VECTOR / HYBRID retrieval algorithms, does not change ToolCallTrace table schema,
+does not connect real PostgreSQL / PGvector, does not implement `JdbcPolicyVectorRepository`, does not call real Spring
+AI EmbeddingModel, and does not call Spring AI `VectorStore`. `search_aftersale_policy` remains a LOW-risk read-only
+tool, RAG evidence remains evidence only, and no refund, exchange, coupon compensation, payment, logistics, or dispute
+closure action is executed by retrieval evidence. Default tests remain offline and do not require real LLMs, API keys,
+PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, or external network. Real PGvector and real
+embedding providers remain opt-in / future paths. V4.6 can continue with evaluation, demo, and Spring Boot
+completeness work.
+
 ### V4 Default Test Boundary
 
 Default validation remains:

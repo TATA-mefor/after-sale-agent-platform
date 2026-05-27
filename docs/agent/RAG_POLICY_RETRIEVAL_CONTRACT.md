@@ -83,6 +83,25 @@ already supplied KEYWORD / VECTOR RAG evidence. V4.5.2 does not change `search_a
 PGvector, call Spring AI VectorStore, modify AgentRun, modify ToolCallTrace output, or modify AgentWorkspace writes.
 V4.5.3 handles `search_aftersale_policy` HYBRID mode runtime wiring.
 
+V4.5.3 status: `search_aftersale_policy` now supports KEYWORD / VECTOR / HYBRID runtime modes. Old calls without
+`retrievalMode` remain KEYWORD. VECTOR mode uses the `EmbeddingClient` abstraction and `PolicyVectorRepository.search`
+contract when both are available; HYBRID mode combines keyword and vector evidence through
+`RagPolicyEvidenceMergeService`. Default tests use `FakeEmbeddingClient` and `InMemoryPolicyVectorRepository` and do
+not connect PostgreSQL / PGvector, call real Spring AI EmbeddingModel, call Spring AI VectorStore, require API keys, or
+use external network. V4.5.3 does not change ToolCallTrace schema, AgentWorkspace evidence writes, AgentRun, Skill
+runtime, ToolRegistry semantics, or Execution Tree. V4.5.4 now completes ToolCallTrace / Workspace evidence
+visibility.
+
+V4.5.4 status: ToolCallTrace / Workspace evidence wiring completed. `search_aftersale_policy` output JSON is the
+ToolCallTrace audit surface for RAG evidence, AgentWorkspace stores single-run policy evidence summaries, AgentRun
+final summary includes concise evidence references, and Execution Tree read-only output can show policy evidence
+summaries associated with subtask/tool call metadata when available. V4.5.4 does not change KEYWORD / VECTOR / HYBRID
+retrieval algorithms, does not change ToolCallTrace schema, does not connect PGvector, does not call real Spring AI
+EmbeddingModel, and does not call Spring AI VectorStore. RAG evidence remains evidence-only and never executes refund,
+exchange, coupon compensation, payment, logistics, or dispute-closure actions. Default tests remain offline and do not
+require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, or external network.
+Real PGvector and real embedding providers remain opt-in / future paths.
+
 允许链路：
 
 ```text
@@ -121,7 +140,7 @@ type: read-only evidence retrieval
 
 ## 4. Input Schema
 
-V4.5.1 defines this future schema but does not wire it into runtime.
+V4.5.3 wires this schema into `search_aftersale_policy` runtime while keeping old KEYWORD input compatible.
 
 ```json
 {
@@ -140,8 +159,8 @@ V4.5.1 defines this future schema but does not wire it into runtime.
 
 ```text
 query: required, non-blank
-retrievalMode: KEYWORD | VECTOR | HYBRID, default KEYWORD in V4.5.1 contracts
-topK: bounded integer, default 5, maximum 20 in V4.5.1 contracts
+retrievalMode: KEYWORD | VECTOR | HYBRID, default KEYWORD
+topK: bounded integer, default 5, maximum 20
 minScore: optional threshold between 0.0 and 1.0
 category: optional, narrows policy category
 productType: optional, narrows product type
@@ -151,8 +170,7 @@ subtaskId: optional trace attribution field
 
 ## 5. Output Schema
 
-V4.5.1 defines this future output shape for mappers and tests only. Existing tool output remains unchanged until
-V4.5.3.
+V4.5.3 adds this RAG evidence shape to `search_aftersale_policy` output while preserving the legacy `results` field.
 
 ```json
 {
@@ -186,8 +204,8 @@ V4.5.3.
 
 ## 6. Retrieval Modes
 
-V4.5.1 introduces `RetrievalMode` as a contract enum only. The current `search_aftersale_policy` behavior remains
-equivalent to KEYWORD and is not wired to vector search yet.
+V4.5.3 wires `RetrievalMode` into `search_aftersale_policy` runtime. Missing `retrievalMode` remains equivalent to
+KEYWORD for backward compatibility.
 
 ### KEYWORD
 
@@ -199,10 +217,9 @@ equivalent to KEYWORD and is not wired to vector search yet.
 ### VECTOR
 
 - 使用 embedding 相似度搜索；
-- 仅在 vector store profile / fake vector repository 可用时启用；
-- 默认测试使用 fake embedding / fake vector repository；
-- V4.3.3 only tests `PolicyVectorRepository.search` directly and does not route `search_aftersale_policy` through the
-  fake repository yet;
+- 仅在 `EmbeddingClient` abstraction 和 `PolicyVectorRepository` contract 可用时启用；
+- 默认测试使用 fake embedding / in-memory vector repository；
+- 缺少 vector dependency 时返回清晰 empty / failure message；
 - live vector test 必须显式 opt-in。
 
 ### HYBRID
@@ -211,8 +228,7 @@ equivalent to KEYWORD and is not wired to vector search yet.
 - 去重规则以 chunkId、policyId、normalized snippet 为准；
 - score merge 使用 keywordWeight / vectorWeight 的 deterministic weighted average，并保留 keywordScore / vectorScore；
 - fallbackUsed 必须标明 keyword-only、vector-only 或 both-empty fallback。
-- V4.5.2 implements merge behavior only over already supplied evidence. It does not execute retrieval or change
-  `search_aftersale_policy` runtime.
+- vector side unavailable or failed falls back to keyword evidence when keyword evidence exists.
 
 ## 7. Evidence Rules
 
@@ -265,18 +281,24 @@ RAG result 进入 workspace 时，应写入：
 
 ```text
 PolicyEvidence
+- evidenceId optional
+- policyId optional
 - chunkId
 - documentId
 - documentTitle
 - category
+- productType optional
 - snippet
-- score
+- score optional
 - retrievalMode
+- source optional
 - subtaskId
 - toolCallTraceId optional
 ```
 
-Workspace 不替代 ToolCallTrace。ToolCallTrace 仍是实际 tool audit record。
+Workspace stores only the current AgentRun policy evidence summary. It must not store full rawText, full chunk content,
+full prompt, API keys, passwords, tokens, local paths, or long raw text. Workspace 不替代 ToolCallTrace。ToolCallTrace
+仍是实际 tool audit record。
 
 ## 10. Execution Tree 展示规则
 
@@ -284,15 +306,24 @@ Execution Tree 应展示：
 
 ```text
 PolicyEvidenceNode
+- evidenceId
+- policyId
 - chunkId
 - documentId
 - documentTitle
+- category
+- productType
 - score
 - retrievalMode
+- source
 - snippet
 - attachedSubtaskId
+- attachedToolCallId
 - attachedSkillName optional
 ```
+
+Execution Tree evidence output is read-only. Querying it must not modify Ticket, AgentRun, ToolCallTrace,
+ApprovalRequest, Workspace, or retrieval state. JSON parse failures degrade safely and must not break the whole tree.
 
 ## 11. Ingestion Contract
 
@@ -308,8 +339,10 @@ in ToolRegistry, and is not called by `search_aftersale_policy` yet. The current
 chunk policy text, compute checksums, make dedup decisions, use `FakeEmbeddingClient` in default tests, and write
 records through the `PolicyVectorRepository` contract with in-memory infrastructure.
 
-V4.5 is the first planned phase where `search_aftersale_policy` may use HYBRID retrieval. Until then,
-`search_aftersale_policy` remains on its existing behavior and is not wired to vector search yet.
+V4.5.3 is the first phase where `search_aftersale_policy` uses KEYWORD / VECTOR / HYBRID runtime modes. Missing
+`retrievalMode` still defaults to KEYWORD. V4.5.4 makes the resulting RAG evidence visible in ToolCallTrace output
+JSON, AgentWorkspace policy evidence summaries, AgentRun final summary, and Execution Tree read-only evidence
+summaries.
 
 RAG retrieval results remain policy evidence only. They must not be represented as refund, exchange, payment,
 logistics, coupon, or dispute actions already completed.

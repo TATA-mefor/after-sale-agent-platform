@@ -69,6 +69,25 @@ project now has `RetrievalMode`, `RagPolicySearchQuery`, `RagPolicyEvidenceSourc
 `PolicyVectorRepository.search`, connect PGvector, call Spring AI VectorStore, modify ToolCallTrace output, or modify
 AgentWorkspace writes.
 
+V4.5.2 implementation status: the keyword + vector merge service boundary is completed. The project now has
+`RagPolicyEvidenceMergeOptions` and `RagPolicyEvidenceMergeService` for deterministic score merge, dedup, topK,
+minScore, and fallback over already supplied KEYWORD / VECTOR evidence. V4.5.2 does not change
+`search_aftersale_policy` runtime or execute keyword/vector retrieval.
+
+V4.5.3 implementation status: `search_aftersale_policy` now supports KEYWORD / VECTOR / HYBRID runtime modes while
+remaining LOW-risk, read-only, and ToolRegistry-bound. Old calls without `retrievalMode` default to KEYWORD. VECTOR /
+HYBRID default tests use `FakeEmbeddingClient` and `InMemoryPolicyVectorRepository`. Real PGvector, real embedding
+providers, and Spring AI `VectorStore` are not the default path. ToolCallTrace schema, AgentWorkspace evidence writes,
+AgentRun, Skill runtime, and Execution Tree remain unchanged until later wiring.
+
+V4.5.4 implementation status: ToolCallTrace / Workspace evidence wiring is completed. The existing ToolCallTrace
+schema remains unchanged, but `search_aftersale_policy` output JSON exposes stable RAG evidence for audit. Workspace
+stores single-AgentRun policy evidence summaries, final summary includes concise policy evidence references, and
+Execution Tree can display read-only evidence summaries. This wiring does not change retrieval algorithms, does not
+connect PGvector, does not call real Spring AI EmbeddingModel, does not call Spring AI `VectorStore`, and does not give
+Agent, Handler, or Skill layers direct access to `EmbeddingClient`, `PolicyVectorRepository`, vector infrastructure,
+JDBC, `DataSource`, PGvector, or fake vector repository implementations.
+
 推荐 profile：
 
 ```text
@@ -150,6 +169,15 @@ from normal customer-facing AgentRun execution.
 V4.5.1 RAG search contracts also do not enter ToolRegistry or Agent runtime. They prepare the future
 `search_aftersale_policy` evidence schema while preserving the current keyword-only runtime behavior until V4.5.3.
 
+V4.5.3 RAG search runtime enters Agent execution only through the existing LOW-risk `search_aftersale_policy` tool and
+ToolRegistry. Agent, Handler, and Skill layers still do not directly access `EmbeddingClient`,
+`PolicyVectorRepository`, vector infrastructure, JDBC, `DataSource`, PGvector, or fake vector repository
+implementations.
+
+V4.5.4 evidence observability stays on the same boundary: ToolCallTrace remains the tool audit source of truth,
+Workspace stores only single-run evidence summaries, and Execution Tree is a read-only explanation view. None of these
+surfaces execute retrieval directly or bypass ToolRegistry.
+
 ## Ingestion Flow
 
 ```text
@@ -201,7 +229,8 @@ Positive:
 
 - 项目具备真实 RAG 工程结构；
 - 政策证据可被 chunkId / documentId / score / retrievalMode 追踪；
-- RAG 可以进入 ToolCallTrace、Workspace 和 Execution Tree；
+- RAG evidence can be returned through `search_aftersale_policy`, audited through ToolCallTrace output JSON, summarized
+  in AgentWorkspace and final summary, and displayed through Execution Tree read-only evidence nodes;
 - 默认测试继续离线稳定。
 
 Costs:

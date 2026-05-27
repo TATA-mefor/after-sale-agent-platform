@@ -12,6 +12,7 @@ public record ExecutionTreeSubtaskNode(
         String status,
         String summary,
         List<ExecutionTreeToolCallNode> toolCalls,
+        List<ExecutionTreePolicyEvidenceNode> policyEvidence,
         List<ExecutionTreeApprovalNode> approvalRequests) {
 
     public ExecutionTreeSubtaskNode {
@@ -22,6 +23,9 @@ public record ExecutionTreeSubtaskNode(
         status = status == null ? "" : status;
         summary = summary == null ? "" : summary;
         toolCalls = List.copyOf(Objects.requireNonNull(toolCalls, "toolCalls must not be null"));
+        policyEvidence = List.copyOf(Objects.requireNonNull(
+                policyEvidence,
+                "policyEvidence must not be null"));
         approvalRequests = List.copyOf(Objects.requireNonNull(
                 approvalRequests,
                 "approvalRequests must not be null"));

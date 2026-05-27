@@ -309,14 +309,15 @@ abstract class AbstractSpecialistAgentHandler implements SpecialistAgentHandler 
     }
 
     private static List<String> extractEvidence(ToolOutput policyOutput) {
-        Object results = policyOutput.data().get("results");
-        if (!(results instanceof List<?> resultList) || resultList.isEmpty()) {
+        List<PolicyEvidence> policyEvidence = PolicyEvidence.fromToolData(
+                SEARCH_POLICY_TOOL,
+                "",
+                policyOutput.data());
+        if (policyEvidence.isEmpty()) {
             return List.of("No matching after-sale policy was found.");
         }
-        return resultList.stream()
-                .filter(Map.class::isInstance)
-                .map(Map.class::cast)
-                .map(result -> result.get("policyId") + ": " + result.get("category"))
+        return policyEvidence.stream()
+                .map(PolicyEvidence::summary)
                 .toList();
     }
 

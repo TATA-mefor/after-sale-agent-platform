@@ -13,6 +13,7 @@ public record ExecutionTreeResponse(
         String rootSummary,
         List<ExecutionTreeSubtaskNode> subtasks,
         List<ExecutionTreeToolCallNode> toolCalls,
+        List<ExecutionTreePolicyEvidenceNode> policyEvidence,
         List<ExecutionTreeApprovalNode> approvalRequests,
         List<String> errors,
         Instant createdAt,
@@ -26,6 +27,9 @@ public record ExecutionTreeResponse(
         rootSummary = rootSummary == null ? "" : rootSummary;
         subtasks = List.copyOf(Objects.requireNonNull(subtasks, "subtasks must not be null"));
         toolCalls = List.copyOf(Objects.requireNonNull(toolCalls, "toolCalls must not be null"));
+        policyEvidence = List.copyOf(Objects.requireNonNull(
+                policyEvidence,
+                "policyEvidence must not be null"));
         approvalRequests = List.copyOf(Objects.requireNonNull(
                 approvalRequests,
                 "approvalRequests must not be null"));
