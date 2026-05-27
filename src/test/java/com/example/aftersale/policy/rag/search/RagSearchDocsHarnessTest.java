@@ -36,6 +36,30 @@ class RagSearchDocsHarnessTest {
     }
 
     @Test
+    void ragMergeServiceDocsDescribeV452Boundary() throws IOException {
+        String docs = projectText("docs/agent/TOOL_CONTRACTS.md")
+                + "\n"
+                + projectText("docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md")
+                + "\n"
+                + projectText("README.md")
+                + "\n"
+                + projectText("docs/quality/QUALITY_SCORE.md")
+                + "\n"
+                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md");
+
+        assertThat(docs).contains("V4.5.2");
+        assertThat(docs).contains("keyword + vector merge service");
+        assertThat(docs).contains("score merge");
+        assertThat(docs).contains("dedup");
+        assertThat(docs).contains("fallback");
+        assertThat(docs).contains("does not change `search_aftersale_policy` runtime");
+        assertThat(docs).contains("does not call `EmbeddingClient`");
+        assertThat(docs).contains("does not call `PolicyVectorRepository.search`");
+        assertThat(docs).contains("V4.5.3");
+        assertThat(docs).contains("evidence only");
+    }
+
+    @Test
     void ragSearchCompletionRecordExists() throws IOException {
         String completionRecord = projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md");
 
@@ -47,10 +71,23 @@ class RagSearchDocsHarnessTest {
     }
 
     @Test
+    void ragMergeServiceCompletionRecordExists() throws IOException {
+        String completionRecord = projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md");
+
+        assertThat(completionRecord).contains("Status: Completed");
+        assertThat(completionRecord).contains("Merge Service Boundary");
+        assertThat(completionRecord).contains("Score Merge Boundary");
+        assertThat(completionRecord).contains("Dedup Boundary");
+        assertThat(completionRecord).contains("Fallback Boundary");
+        assertThat(completionRecord).contains("TASK_COMPLETE");
+    }
+
+    @Test
     void ragSearchDocsDoNotContainRealSecretsOrLocalPaths() throws IOException {
         assertSecretSafe(projectText("docs/agent/TOOL_CONTRACTS.md"));
         assertSecretSafe(projectText("docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md"));
         assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md"));
+        assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md"));
     }
 
     private static String projectText(String path) throws IOException {

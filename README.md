@@ -1521,6 +1521,22 @@ remains a LOW-risk read-only tool and RAG output remains evidence only. V4.5.2 h
 V4.5.3 handles HYBRID mode wiring into `search_aftersale_policy`, and V4.5.4 handles ToolCallTrace / Workspace evidence
 wiring.
 
+### V4.5.2 Keyword + Vector Merge Service
+
+Implemented V4.5.2 merge preparation:
+
+- `RagPolicyEvidenceMergeOptions` defines bounded topK, minScore, keyword/vector weights, tie behavior, and dedup flags;
+- `RagPolicyEvidenceMergeService` merges supplied KEYWORD and VECTOR evidence into HYBRID evidence;
+- score merge is deterministic, normalized to 0.0-1.0, and keeps keywordScore/vectorScore as retrieval evidence scores;
+- dedup supports chunkId, policyId, and normalized snippet matching;
+- fallback behavior covers keyword-only, vector-only, both-empty, and null-input merge cases.
+
+V4.5.2 does not change `search_aftersale_policy` runtime, does not call `EmbeddingClient`, does not call
+`PolicyVectorRepository.search`, does not access keyword or vector repositories, does not connect PostgreSQL /
+PGvector, and does not modify ToolRegistry, ToolCallTrace, AgentWorkspace, AgentRun, Skill runtime, or Execution Tree.
+RAG output remains evidence only. V4.5.3 handles HYBRID mode runtime wiring, and V4.5.4 handles ToolCallTrace /
+Workspace evidence wiring.
+
 ### V4 Default Test Boundary
 
 Default validation remains:

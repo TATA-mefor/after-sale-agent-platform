@@ -76,6 +76,13 @@ modify ToolCallTrace output, or modify AgentWorkspace writes. V4.5.2 handles key
 handles `search_aftersale_policy` HYBRID mode runtime wiring, and V4.5.4 handles ToolCallTrace / Workspace evidence
 wiring.
 
+V4.5.2 status: only keyword + vector merge service exists. The project now defines `RagPolicyEvidenceMergeOptions`
+and `RagPolicyEvidenceMergeService` for deterministic score merge, dedup, topK, minScore, and fallback behavior over
+already supplied KEYWORD / VECTOR RAG evidence. V4.5.2 does not change `search_aftersale_policy` runtime, call
+`EmbeddingClient`, call `PolicyVectorRepository.search`, access keyword or vector repositories, connect PostgreSQL /
+PGvector, call Spring AI VectorStore, modify AgentRun, modify ToolCallTrace output, or modify AgentWorkspace writes.
+V4.5.3 handles `search_aftersale_policy` HYBRID mode runtime wiring.
+
 允许链路：
 
 ```text
@@ -201,10 +208,11 @@ equivalent to KEYWORD and is not wired to vector search yet.
 ### HYBRID
 
 - 合并 keyword 和 vector results；
-- 去重规则以 chunkId / documentId + chunkIndex 为准；
-- score 必须可解释；
-- fallbackUsed 必须标明是否退回 keyword-only。
-- V4.5.1 does not implement the merge service; V4.5.2 owns keyword + vector merge behavior.
+- 去重规则以 chunkId、policyId、normalized snippet 为准；
+- score merge 使用 keywordWeight / vectorWeight 的 deterministic weighted average，并保留 keywordScore / vectorScore；
+- fallbackUsed 必须标明 keyword-only、vector-only 或 both-empty fallback。
+- V4.5.2 implements merge behavior only over already supplied evidence. It does not execute retrieval or change
+  `search_aftersale_policy` runtime.
 
 ## 7. Evidence Rules
 

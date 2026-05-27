@@ -191,6 +191,12 @@ models, and keyword/vector result mappers for future KEYWORD / VECTOR / HYBRID o
 behavior. V4.5.2 handles keyword + vector merge service, V4.5.3 handles runtime HYBRID wiring, and V4.5.4 handles
 ToolCallTrace / Workspace evidence wiring.
 
+V4.5.2 status: keyword + vector merge service completed. The merge service performs score merge, dedup, topK,
+minScore, and fallback handling over already supplied RAG evidence. V4.5.2 does not change `search_aftersale_policy`
+runtime, does not call `EmbeddingClient`, does not call `PolicyVectorRepository.search`, does not access repositories,
+does not connect PostgreSQL / PGvector, and does not modify ToolRegistry, ToolCallTrace, AgentWorkspace, AgentRun,
+Skill runtime, or Execution Tree. Runtime HYBRID wiring remains V4.5.3.
+
 Input:
 
 ```text

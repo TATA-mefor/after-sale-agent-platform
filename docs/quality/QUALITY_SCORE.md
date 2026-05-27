@@ -1186,6 +1186,39 @@ V4.5 follow-up:
 - V4.5.3 wires `search_aftersale_policy` to HYBRID mode while preserving LOW-risk read-only semantics.
 - V4.5.4 wires ToolCallTrace / Workspace evidence output.
 
+### V4.5.2 Keyword + Vector Merge Service Quality Summary
+
+Status: completed for pure keyword + vector merge service, merge options, deterministic scoring, dedup, fallback,
+offline tests, docs harness, and architecture boundary coverage.
+
+Current V4.5.2 quality status:
+
+- Merge options quality: `RagPolicyEvidenceMergeOptions` validates bounded topK, minScore, non-negative weights,
+  non-zero weight sum, tie preference, dedup flags, and include flags.
+- Score merge quality: `RagPolicyEvidenceMergeService` uses deterministic weighted average scoring, normalizes scores
+  to 0.0-1.0, sorts descending by score, and keeps keywordScore / vectorScore as retrieval evidence scores.
+- Dedup quality: merge behavior supports chunkId, policyId, and normalized snippet dedup without fabricating
+  documentId, chunkId, or policyId.
+- Fallback quality: keyword-only, vector-only, both-empty, and null input cases return clear HYBRID results without
+  inventing evidence.
+- Runtime isolation quality: V4.5.2 does not change `search_aftersale_policy` runtime, ToolRegistry execution,
+  ToolCallTrace output, AgentWorkspace writes, AgentRun flow, Skill runtime, or Execution Tree behavior.
+- Default test boundary: default validation does not require PostgreSQL, PGvector, Docker, MySQL, Redis, real LLMs,
+  API keys, real embedding providers, Spring AI provider calls, or external network.
+- Architecture boundary: merge service stays free of Spring Web, JDBC, `DataSource`, Spring AI, VectorStore,
+  PGvector infrastructure, repository dependencies, and `EmbeddingClient`. Agent, Handler, and Skill layers do not
+  depend on the merge service.
+
+Known limitations:
+
+- No `search_aftersale_policy` HYBRID runtime wiring, `PolicyVectorRepository.search` call, `EmbeddingClient` call,
+  PGvector live search, ToolCallTrace evidence wiring, or Workspace evidence wiring is implemented in V4.5.2.
+
+V4.5 follow-up:
+
+- V4.5.3 wires `search_aftersale_policy` to HYBRID mode while preserving LOW-risk read-only semantics.
+- V4.5.4 wires ToolCallTrace / Workspace evidence output.
+
 Planned phases:
 
 ```text
@@ -1201,7 +1234,7 @@ V4.4.2 Chunking and Checksum Dedup (completed)
 V4.4.3 Embedding Pipeline with Fake Provider (completed)
 V4.4.4 Policy Ingestion Docs / Completion Record (completed)
 V4.5.1 RAG Search Contract (completed)
-V4.5.2 Keyword + Vector Merge Service
+V4.5.2 Keyword + Vector Merge Service (completed)
 V4.5.3 search_aftersale_policy HYBRID Mode Wiring
 V4.5.4 ToolCallTrace / Workspace Evidence Wiring
 V4.6 Skill Layer Integration

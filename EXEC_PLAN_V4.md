@@ -374,7 +374,7 @@ V4.4.2 -> chunking and checksum dedup (completed)
 V4.4.3 -> embedding pipeline with fake provider (completed)
 V4.4.4 -> ingestion docs / completion record (completed)
 V4.5.1 -> RAG search contract / retrieval mode / evidence model (completed)
-V4.5.2 -> keyword + vector merge service
+V4.5.2 -> keyword + vector merge service (completed)
 V4.5.3 -> search_aftersale_policy HYBRID mode wiring
 V4.5.4 -> ToolCallTrace / Workspace evidence wiring
 ```
@@ -576,8 +576,8 @@ PolicyVectorRepository
 ## 9. V4.5 Hybrid RAG Policy Search Tool
 
 Status: active. V4.5.1 RAG search contract / retrieval mode / evidence model is completed. V4.5.2 keyword + vector
-merge service, V4.5.3 `search_aftersale_policy` HYBRID runtime wiring, and V4.5.4 ToolCallTrace / Workspace evidence
-wiring remain future work.
+merge service is completed. V4.5.3 `search_aftersale_policy` HYBRID runtime wiring and V4.5.4 ToolCallTrace /
+Workspace evidence wiring remain future work.
 
 ### 9.1 目标
 
@@ -607,6 +607,26 @@ VectorStore，不修改 AgentRun、ToolCallTrace、AgentWorkspace、Skill runtim
 
 V4.5.2 才处理 keyword + vector merge service。V4.5.3 才把 `search_aftersale_policy` 接入 HYBRID mode。
 V4.5.4 才处理 ToolCallTrace / Workspace evidence wiring。
+
+### 9.1.2 V4.5.2 已完成边界
+
+V4.5.2 只完成 keyword + vector merge service:
+
+- 新增 `RagPolicyEvidenceMergeOptions`，约束 topK、minScore、keywordWeight、vectorWeight、tie preference、
+  dedup flags 和 include flags；
+- 新增 `RagPolicyEvidenceMergeService`，只合并已经给定的 KEYWORD / VECTOR `RagPolicySearchResult`；
+- score merge 使用 deterministic weighted average，结果归一到 0.0 到 1.0，并保留 keywordScore / vectorScore；
+- dedup 支持 chunkId、policyId、normalized snippet；
+- fallback 覆盖 keyword-only、vector-only、both-empty 和 null input；
+- 新增 merge service tests、docs harness 和 ArchUnit 边界。
+
+V4.5.2 不改变 `search_aftersale_policy` runtime，不接入 ToolRegistry runtime，不调用 EmbeddingClient，不调用
+PolicyVectorRepository.search，不调用 policy repository implementation，不连接 PostgreSQL / PGvector，不调用 Spring AI
+VectorStore，不修改 AgentRun、ToolCallTrace、AgentWorkspace、Skill runtime、ToolRegistry 或 Execution Tree。
+默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。RAG evidence 仍只是
+evidence，不是业务动作执行。
+
+V4.5.3 才把 `search_aftersale_policy` 接入 HYBRID mode。V4.5.4 才处理 ToolCallTrace / Workspace evidence wiring。
 
 ### 9.2 Tool Input
 

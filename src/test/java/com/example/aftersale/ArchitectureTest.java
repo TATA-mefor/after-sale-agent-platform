@@ -324,6 +324,46 @@ class ArchitectureTest {
     }
 
     @Test
+    void ragEvidenceMergeServiceMustStayPureAndRepositoryFree() {
+        noClasses()
+                .that()
+                .haveSimpleName("RagPolicyEvidenceMergeService")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework.web..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure..",
+                        "..policy.infrastructure.repository..")
+                .because("V4.5.2 merge service is pure evidence merge logic, not runtime retrieval wiring.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .haveSimpleName("RagPolicyEvidenceMergeService")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("merge service must not access keyword or vector repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .haveSimpleName("RagPolicyEvidenceMergeService")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("EmbeddingClient")
+                .because("merge service must not call embedding providers.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void agentHandlerAndSkillMustNotDependOnPolicyVectorRepositoryContract() {
         noClasses()
                 .that()
@@ -354,7 +394,7 @@ class ArchitectureTest {
                 .should()
                 .dependOnClassesThat()
                 .resideInAPackage("..policy.rag.search..")
-                .because("V4.5.1 search contracts are preparation models, not Agent runtime wiring.")
+                .because("V4.5 search contracts and merge service are preparation models, not Agent runtime wiring.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
