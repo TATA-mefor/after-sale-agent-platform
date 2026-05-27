@@ -318,6 +318,29 @@ class ArchitectureTest {
     }
 
     @Test
+    void agentHandlerAndSkillMustNotDependOnPolicyIngestionRepositoryContract() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("PolicyIngestionRepository")
+                .because("Policy ingestion is an admin pipeline capability, not an Agent runtime tool.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("InMemoryPolicyIngestionRepository")
+                .because("Agent code must not depend on ingestion infrastructure directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void policyVectorRepositoryContractMustNotDependOnInfrastructure() {
         noClasses()
                 .that()
@@ -326,6 +349,38 @@ class ArchitectureTest {
                 .dependOnClassesThat()
                 .resideInAPackage("..infrastructure..")
                 .because("repository contracts must stay independent from infrastructure implementations.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void policyIngestionDomainMustStayPureDomainContract() {
+        noClasses()
+                .that()
+                .resideInAPackage("..policy.rag.ingestion.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "..policy.rag.infrastructure..",
+                        "..policy.rag.ingestion.infrastructure..")
+                .because("policy ingestion domain contracts must stay free of Spring, JDBC, Spring AI, and infra.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void policyIngestionRepositoryContractMustNotDependOnInfrastructure() {
+        noClasses()
+                .that()
+                .haveSimpleName("PolicyIngestionRepository")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("..infrastructure..")
+                .because("ingestion repository contracts must stay independent from infrastructure implementations.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
@@ -362,6 +417,35 @@ class ArchitectureTest {
                 .dependOnClassesThat()
                 .resideInAnyPackage("..tool..", "..agent.application.handler..", "..agent.application.skill..")
                 .because("PGvector infrastructure must not bypass ToolRegistry or Agent execution boundaries.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void ingestionMemoryInfrastructureMustStayOfflineAndNotAccessBusinessRepositories() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.ingestion.infrastructure.memory..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "..order..infrastructure..repository..",
+                        "..ticket..infrastructure..repository..",
+                        "..policy..infrastructure..repository..")
+                .because("ingestion memory infrastructure must stay offline and avoid business repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.ingestion.infrastructure.memory..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("..tool..", "..agent.application.handler..", "..agent.application.skill..")
+                .because("ingestion memory infrastructure must not bypass ToolRegistry or Agent execution boundaries.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }

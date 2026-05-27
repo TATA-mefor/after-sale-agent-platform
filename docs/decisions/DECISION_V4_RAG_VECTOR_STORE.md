@@ -34,6 +34,13 @@ placeholder profile settings, and `docs/demo/V4_PGVECTOR_LOCAL_SETUP.md` documen
 validation steps. There is still no JDBC repository, PGvector live search, policy ingestion, HYBRID retrieval, RAG
 runtime, or `search_aftersale_policy` vector wiring.
 
+V4.4.1 implementation status: the Policy Ingestion domain / status / repository foundation is completed.
+`PolicyIngestionRun`, ingestion source/document/chunk/error models, `PolicyIngestionStateMachine`,
+`PolicyIngestionRepository`, and `InMemoryPolicyIngestionRepository` define the admin/pipeline ingestion boundary.
+There is still no chunking service, checksum dedup service, embedding pipeline, vector repository write,
+JdbcPolicyIngestionRepository, ingestion API/tool, HYBRID retrieval, RAG runtime, or `search_aftersale_policy` vector
+wiring.
+
 推荐 profile：
 
 ```text
@@ -61,7 +68,8 @@ policy_chunks
 policy_embeddings
 ```
 
-`policy_ingestion_runs` remains planned for V4.4 Policy Ingestion and is not part of the V4.3.2 schema file.
+`policy_ingestion_runs` is not part of the V4.3.2 schema file. V4.4.1 defines the ingestion domain/status/repository
+contract in Java only; database schema and JDBC persistence remain future work.
 
 核心领域对象：
 
@@ -166,6 +174,9 @@ Costs:
 - 不在 V4.3.4 中实现 JDBC repository、PGvector live search、调用 EmbeddingClient、调用 Spring AI VectorStore、
   实现 Policy Ingestion、实现 RAG / HYBRID retrieval、让 app 默认连接 PGvector 或修改 `search_aftersale_policy`
   行为；
+- 不在 V4.4.1 中实现 chunking service、checksum dedup service、调用 EmbeddingClient、写入 PolicyVectorRepository、
+  实现 JdbcPolicyIngestionRepository、实现 ingestion API/tool、实现 RAG / HYBRID retrieval 或修改
+  `search_aftersale_policy` 行为；
 - 不把 PGvector compose 写成 production deployment，`docker-compose-rag.yml` 只用于 local development opt-in；
 - 不引入大型分布式向量库；
 - 不做复杂 reranking service；

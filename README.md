@@ -1198,9 +1198,10 @@ V4 focuses on interview-critical AI engineering capabilities:
 
 V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3.1 PostgreSQL / PGvector
 profile boundary, V4.3.2 vector schema / repository contract, V4.3.3 fake vector store / default offline vector
-tests, and V4.3.4 Docker Compose / opt-in PGvector integration docs are completed. Skill is now a first-class Java
-contract and registry concept, while the current AgentRun execution path still uses the existing Specialist Handler
-dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
+tests, V4.3.4 Docker Compose / opt-in PGvector integration docs, and V4.4.1 Policy Ingestion domain / status /
+repository foundation are completed. Skill is now a first-class Java contract and registry concept, while the current
+AgentRun execution path still uses the existing Specialist Handler dispatch. Spring AI is available as an optional
+provider adapter and is disabled by default.
 
 V4 preserves the existing Agent safety model:
 
@@ -1417,6 +1418,29 @@ V4.3.4 does not add a `JdbcPolicyVectorRepository`, Policy Ingestion, HYBRID ret
 `VectorStore` usage, EmbeddingClient calls, or `search_aftersale_policy` vector wiring. Default validation does not
 start Docker and does not require PostgreSQL, PGvector, MySQL, Redis, real LLMs, API keys, embedding providers, or
 external network.
+
+### V4.4.1 Policy Ingestion Domain Model
+
+Implemented V4.4.1 ingestion foundation:
+
+- `PolicyIngestionRun`, `PolicyIngestionStatus`, `PolicyIngestionSource`, `PolicyIngestionDocument`,
+  `PolicyIngestionChunk`, and `PolicyIngestionError` define the admin/pipeline ingestion domain model;
+- `PolicyIngestionStateMachine` validates CREATED, RUNNING, CHUNKED, EMBEDDING, COMPLETED, FAILED,
+  PARTIALLY_FAILED, and CANCELLED transitions, with terminal states locked;
+- `PolicyIngestionRepository` defines the ingestion run/document/chunk/error contract separately from
+  `PolicyVectorRepository`;
+- `InMemoryPolicyIngestionRepository` provides default offline persistence for tests without PostgreSQL, PGvector,
+  Docker, MySQL, Redis, real LLMs, API keys, embedding providers, or external network;
+- ingestion error text is sanitized and bounded so API keys, passwords, tokens, prompts, and local paths are not
+  persisted in error details;
+- architecture tests keep ingestion domain pure and prevent Agent, Handler, and Skill layers from depending on
+  ingestion repositories or memory infrastructure.
+
+V4.4.1 does not implement chunking, checksum deduplication, embedding pipeline, vector repository writes,
+`JdbcPolicyIngestionRepository`, `JdbcPolicyVectorRepository`, Admin ingestion API, ingestion tools, RAG / HYBRID
+retrieval, or `search_aftersale_policy` behavior changes. Policy Ingestion remains an admin/pipeline capability, not
+an Agent runtime tool. V4.4.2 handles chunking and checksum dedup, V4.4.3 handles embedding pipeline with fake provider,
+V4.4.4 handles ingestion docs / completion record, and V4.5 wires HYBRID RAG into `search_aftersale_policy`.
 
 ### V4 Default Test Boundary
 

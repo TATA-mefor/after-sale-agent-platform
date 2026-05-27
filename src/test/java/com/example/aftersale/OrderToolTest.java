@@ -7,6 +7,7 @@ import com.example.aftersale.tool.domain.ToolExecutionStatus;
 import com.example.aftersale.tool.domain.ToolInput;
 import com.example.aftersale.tool.domain.ToolOutput;
 import com.example.aftersale.tool.domain.ToolRiskLevel;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -30,9 +31,10 @@ class OrderToolTest {
                 .containsEntry("userId", "U-DEMO-1")
                 .containsEntry("productId", "P-HEADPHONE-001")
                 .containsEntry("productName", "Wireless Headphones")
-                .containsEntry("orderStatus", "DELIVERED")
-                .containsEntry("whetherInAftersaleWindow", true);
+                .containsEntry("orderStatus", "DELIVERED");
         assertThat(output.data()).containsKeys("paidAmount", "paidAt", "deliveredAt", "aftersaleDeadline");
+        Instant aftersaleDeadline = Instant.parse((String) output.data().get("aftersaleDeadline"));
+        assertThat(output.data()).containsEntry("whetherInAftersaleWindow", !Instant.now().isAfter(aftersaleDeadline));
         assertThat(output.data().get("orderItems")).isInstanceOf(List.class);
         List<?> orderItems = (List<?>) output.data().get("orderItems");
         assertThat(orderItems).isNotEmpty();

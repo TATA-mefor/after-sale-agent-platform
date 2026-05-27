@@ -42,6 +42,12 @@ V4.3.4 status: only the Docker Compose / opt-in PGvector integration docs exist.
 initialization path. V4.3.4 does not add a JDBC repository, PGvector live search, Spring AI `VectorStore`, embedding
 calls, ingestion, RAG runtime, HYBRID retrieval, or any `search_aftersale_policy` behavior change.
 
+V4.4.1 status: only the Policy Ingestion domain / status / repository foundation exists. The project defines
+ingestion runs, sources, ingestion documents, ingestion chunks, errors, legal status transitions, a repository
+contract, and an in-memory repository for offline tests. V4.4.1 does not add chunking, checksum deduplication,
+EmbeddingClient calls, PolicyVectorRepository writes, JDBC ingestion persistence, ingestion API/tool, RAG runtime,
+HYBRID retrieval, or any `search_aftersale_policy` behavior change.
+
 允许链路：
 
 ```text
@@ -231,14 +237,16 @@ PolicyEvidenceNode
 
 ## 11. Ingestion Contract
 
-V4.3.2 does not implement ingestion tables or ingestion runtime. `policy_ingestion_runs` remains a V4.4 contract item.
+V4.4.1 defines the ingestion domain and repository contract only. It does not implement ingestion database tables,
+chunking, checksum deduplication, embedding generation, vector repository writes, Admin API, Agent tool registration,
+or ingestion runtime.
 
 Policy ingestion 必须可追踪：
 
 ```text
 PolicyIngestionRun
 - runId
-- sourceType
+- source
 - status
 - documentCount
 - chunkCount
@@ -250,6 +258,19 @@ PolicyIngestionRun
 ```
 
 同一 document checksum 重复导入时不得重复生成 chunk 和 embedding，除非显式 version 更新。
+
+V4.4.1 status transitions:
+
+```text
+CREATED -> RUNNING / CANCELLED
+RUNNING -> CHUNKED / FAILED / CANCELLED
+CHUNKED -> EMBEDDING / FAILED / CANCELLED
+EMBEDDING -> COMPLETED / PARTIALLY_FAILED / FAILED / CANCELLED
+COMPLETED / FAILED / PARTIALLY_FAILED / CANCELLED -> terminal
+```
+
+Policy Ingestion is an admin / pipeline capability. It must not be exposed as an Agent runtime tool without a separate
+security and execution-boundary decision.
 
 ## 12. Testing Contract
 
