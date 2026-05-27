@@ -275,11 +275,11 @@ agent:
 
 ## 7. V4.3 Vector Store / PGvector
 
-Status: active. V4.3.1 PostgreSQL / PGvector dependency and profile boundary, V4.3.2 vector schema /
+Status: completed for V4.3.1 through V4.3.4. V4.3.1 PostgreSQL / PGvector dependency and profile boundary, V4.3.2 vector schema /
 repository contract, V4.3.3 fake vector store / default offline vector tests, and V4.3.4 Docker Compose /
 opt-in integration docs are completed. V4.4.1 Policy Ingestion domain / status / repository foundation and V4.4.2
-chunking / checksum dedup service are completed. V4.4.3 fake-provider embedding pipeline is completed for offline
-tests using `FakeEmbeddingClient` and `PolicyVectorRepository` contract writes. Hybrid RAG runtime remains planned.
+chunking / checksum dedup service are completed. V4.4.3 fake-provider embedding pipeline and V4.4.4 ingestion docs /
+completion record are completed. Hybrid RAG runtime remains planned.
 
 ### 7.1 目标
 
@@ -372,7 +372,7 @@ V4.3.4 -> Docker Compose / opt-in integration docs (completed)
 V4.4.1 -> Policy Ingestion domain / status / repository foundation (completed)
 V4.4.2 -> chunking and checksum dedup (completed)
 V4.4.3 -> embedding pipeline with fake provider (completed)
-V4.4.4 -> ingestion docs / completion record
+V4.4.4 -> ingestion docs / completion record (completed)
 V4.5   -> Hybrid RAG Policy Search Tool
 ```
 
@@ -433,9 +433,9 @@ policy_embeddings:
 
 ## 8. V4.4 Policy Ingestion
 
-Status: active. V4.4.1 Policy document / chunk domain and ingestion run model, V4.4.2 chunking / checksum dedup
-service, and V4.4.3 fake-provider embedding pipeline are completed. Ingestion API and RAG / HYBRID retrieval remain
-planned.
+Status: completed. V4.4.1 Policy document / chunk domain and ingestion run model, V4.4.2 chunking / checksum dedup
+service, V4.4.3 fake-provider embedding pipeline, and V4.4.4 ingestion docs / completion record are completed.
+Ingestion API and RAG / HYBRID retrieval remain planned.
 
 ### 8.1 目标
 
@@ -506,6 +506,35 @@ V4.4.3 不包含真实 Spring AI embedding call、`SpringAiEmbeddingClient` defa
 PGvector / JDBC repository、`JdbcPolicyVectorRepository`、`JdbcPolicyIngestionRepository`、Admin Controller、
 ingestion tool、RAG / HYBRID retrieval 或 `search_aftersale_policy` 行为变更。Policy Ingestion 仍是 admin /
 pipeline capability，不是 Agent 自动工具。
+
+### 8.1.4 V4.4.4 已完成边界
+
+V4.4.4 只完成 ingestion docs / V4.4 completion record:
+
+- 新增 `docs/demo/V4_POLICY_INGESTION_PIPELINE.md`，说明 ingestion 目的、当前能力、当前不包含、pipeline flow、
+  default offline example、future real path、failure handling 和 security / safety；
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md`，作为 V4.4 总收口记录；
+- README、RAG policy retrieval contract、RAG vector store decision、quality summary 和 V4 主计划均标记
+  V4.4.1 / V4.4.2 / V4.4.3 / V4.4.4 completed；
+- 新增 docs harness tests，验证 ingestion 文档存在、边界措辞完整、默认测试隔离说明完整、无真实 secret 或本地绝对路径。
+
+V4.4.4 不新增 ingestion 运行时代码，不修改 chunking/checksum/embedding pipeline 行为，不调用
+EmbeddingClient，不调用 PolicyVectorRepository，不连接 PostgreSQL / PGvector，不新增 Admin Controller，不新增
+ingestion tool，不接入 ToolRegistry，不实现 RAG / HYBRID retrieval，也不修改 `search_aftersale_policy` 或
+AgentRun 主链路。
+
+### 8.1.5 V4.4 总收口
+
+V4.4 已完成 policy ingestion foundation:
+
+- V4.4.1: domain / status / repository foundation；
+- V4.4.2: deterministic chunking / checksum / dedup；
+- V4.4.3: fake-provider embedding pipeline；
+- V4.4.4: ingestion docs / V4.4 completion record。
+
+V4.4 未实现 Admin API、ToolRegistry ingestion tool、PGvector JDBC write、real provider default path、RAG runtime
+或 HYBRID retrieval。V4.5 下一步是 Hybrid RAG Policy Search Tool，将 `search_aftersale_policy` 接入受控的
+HYBRID retrieval。
 
 ### 8.2 Ingestion Flow
 

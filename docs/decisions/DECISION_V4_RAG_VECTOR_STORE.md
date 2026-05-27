@@ -55,6 +55,13 @@ state, calls the `EmbeddingClient` abstraction in offline tests with `FakeEmbedd
 `VectorStore`, PGvector / JDBC repository, ingestion API/tool, HYBRID retrieval, RAG runtime, or
 `search_aftersale_policy` vector wiring.
 
+V4.4.4 implementation status: the ingestion documentation and V4.4 completion record are completed.
+`docs/demo/V4_POLICY_INGESTION_PIPELINE.md` documents the V4.4 ingestion foundation, default offline path, failure
+handling, safety boundary, and future real-provider path. `docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md`
+records the total V4.4 completion. There is still no Admin Controller, `ingest_policy_document` tool, ToolRegistry
+wiring, real Spring AI embedding default path, JDBC repository, PGvector live write, HYBRID retrieval, RAG runtime, or
+`search_aftersale_policy` vector wiring.
+
 推荐 profile：
 
 ```text
@@ -85,7 +92,8 @@ policy_embeddings
 `policy_ingestion_runs` is not part of the V4.3.2 schema file. V4.4.1 defines the ingestion domain/status/repository
 contract in Java only. V4.4.2 adds deterministic chunking, checksum, and dedup services in Java only. V4.4.3 adds an
 offline fake-provider embedding pipeline that writes through the repository contract only. Database ingestion schema,
-JDBC persistence, real embedding generation, and live PGvector writes remain future work.
+JDBC persistence, real embedding generation, and live PGvector writes remain future work. V4.4.4 closes the ingestion
+foundation documentation without changing runtime behavior.
 
 核心领域对象：
 
@@ -121,6 +129,10 @@ AgentSkill / Specialist Handler
 ```
 
 Agent、Handler、Skill 不得直接访问 VectorStore。RAG 检索必须通过 `search_aftersale_policy` tool 或 PolicyApplicationService 边界进入 Agent 链路。
+
+Policy ingestion does not enter ToolRegistry or Agent runtime in V4.4. It is an admin / offline pipeline foundation
+for preparing future policy evidence data. This keeps ingestion credentials, raw text handling, and vector writes away
+from normal customer-facing AgentRun execution.
 
 ## Ingestion Flow
 
@@ -203,6 +215,9 @@ Costs:
 - 不在 V4.4.3 中调用真实 Spring AI EmbeddingModel、调用 SpringAiEmbeddingClient default path、调用 Spring AI
   VectorStore、实现 JdbcPolicyIngestionRepository、实现 JdbcPolicyVectorRepository、连接 PostgreSQL / PGvector、
   实现 Admin Controller、注册 ingestion tool、实现 RAG / HYBRID retrieval 或修改 `search_aftersale_policy` 行为；
+- 不在 V4.4.4 中新增 ingestion 运行时代码、修改 chunking/checksum/embedding pipeline 行为、调用 EmbeddingClient、
+  调用 PolicyVectorRepository、连接 PostgreSQL / PGvector、实现 Admin Controller、注册 ingestion tool、实现 RAG /
+  HYBRID retrieval 或修改 `search_aftersale_policy` 行为；
 - 不把 PGvector compose 写成 production deployment，`docker-compose-rag.yml` 只用于 local development opt-in；
 - 不引入大型分布式向量库；
 - 不做复杂 reranking service；

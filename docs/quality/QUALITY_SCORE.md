@@ -1115,6 +1115,40 @@ V4.4.3 non-regression targets:
 - V4.4.4 must handle ingestion docs / final V4.4 completion record; V4.5 must connect HYBRID retrieval to
   `search_aftersale_policy`.
 
+### V4.4 Policy Ingestion Foundation Quality Summary
+
+Status: completed for V4.4 ingestion foundation, documentation closeout, and offline harness coverage.
+
+Current V4.4 quality status:
+
+- Ingestion domain quality: V4.4.1 models ingestion run/source/document/chunk/error state with validation and sanitized
+  error text.
+- State transition correctness: `PolicyIngestionStateMachine` locks terminal states and validates CREATED, RUNNING,
+  CHUNKED, EMBEDDING, COMPLETED, PARTIALLY_FAILED, FAILED, and CANCELLED transitions.
+- Chunking determinism: V4.4.2 deterministic chunking uses bounded character windows, overlap, paragraph-boundary
+  preference, chunk index from 0, and simple token estimates.
+- Checksum/dedup determinism: SHA-256 checksum uses Java standard library with documented normalization, and dedup
+  returns deterministic `NEW_CONTENT`, `DUPLICATE_DOCUMENT`, or `DUPLICATE_CHUNK` decisions.
+- Fake embedding pipeline offline correctness: V4.4.3 uses `FakeEmbeddingClient` and `InMemoryPolicyVectorRepository`
+  in default tests, then verifies repository writes and direct repository search without live infrastructure.
+- Sanitized error handling: ingestion and embedding failures must not include complete raw text, complete chunk content,
+  API keys, passwords, tokens, local paths, full prompts, or provider secrets.
+- Default test boundary: default validation does not require PostgreSQL, PGvector, Docker, MySQL, Redis, real LLMs,
+  API keys, real embedding providers, or external network.
+- Architecture boundary: ingestion remains an admin / pipeline capability, not an Agent runtime tool, and Agent,
+  Handler, Skill, and ToolRegistry runtime semantics remain unchanged.
+
+Known limitations:
+
+- No Admin Controller, no `ingest_policy_document` tool, no ToolRegistry wiring, no real Spring AI embedding default
+  path, no `JdbcPolicyIngestionRepository`, no `JdbcPolicyVectorRepository`, no PGvector live writes, no RAG / HYBRID
+  retrieval, and `search_aftersale_policy` is not wired to vector search yet.
+
+V4.5 follow-up:
+
+- Connect controlled HYBRID retrieval to `search_aftersale_policy` while preserving LOW-risk read-only evidence
+  semantics and ToolRegistry / ToolCallTrace boundaries.
+
 Planned phases:
 
 ```text
@@ -1128,7 +1162,7 @@ V4.3.4 Docker Compose / Opt-in Integration Docs (completed)
 V4.4.1 Policy Ingestion Domain Model (completed)
 V4.4.2 Chunking and Checksum Dedup (completed)
 V4.4.3 Embedding Pipeline with Fake Provider (completed)
-V4.4.4 Policy Ingestion Docs / Completion Record
+V4.4.4 Policy Ingestion Docs / Completion Record (completed)
 V4.5 Hybrid RAG Policy Search Tool
 V4.6 Skill Layer Integration
 V4.7 Execution Tree / Evaluation / Demo

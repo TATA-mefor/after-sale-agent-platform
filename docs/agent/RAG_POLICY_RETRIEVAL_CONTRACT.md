@@ -62,6 +62,12 @@ not call the real Spring AI embedding adapter in default tests, call Spring AI `
 PGvector, add JDBC repositories, add ingestion API/tool, implement RAG runtime, implement HYBRID retrieval, or change
 `search_aftersale_policy` behavior.
 
+V4.4.4 status: only ingestion documentation and the V4.4 completion record were added. V4.4.4 documents the ingestion
+pipeline foundation, default offline path, failure handling, safety boundary, and future real-provider path. It does
+not add runtime ingestion code, Admin Controller, `ingest_policy_document` tool, ToolRegistry wiring, real Spring AI
+embedding default path, JDBC repositories, PGvector live writes, RAG runtime, HYBRID retrieval, or any
+`search_aftersale_policy` behavior change.
+
 允许链路：
 
 ```text
@@ -255,6 +261,19 @@ V4.4.1 defines the ingestion domain and repository contract only. V4.4.2 adds de
 SHA-256 checksum, and checksum dedup service boundaries. V4.4.3 adds the fake-provider embedding pipeline boundary for
 offline tests and writes through the vector repository contract only. It does not implement ingestion database tables,
 real embedding generation, JDBC vector writes, Admin API, Agent tool registration, or RAG retrieval runtime.
+
+### V4.4 Ingestion Pipeline Foundation
+
+V4.4 ingestion prepares upstream policy evidence data for future retrieval. It is not Agent runtime, is not registered
+in ToolRegistry, and is not called by `search_aftersale_policy` yet. The current foundation can model ingestion runs,
+chunk policy text, compute checksums, make dedup decisions, use `FakeEmbeddingClient` in default tests, and write
+records through the `PolicyVectorRepository` contract with in-memory infrastructure.
+
+V4.5 is the first planned phase where `search_aftersale_policy` may use HYBRID retrieval. Until then,
+`search_aftersale_policy` remains on its existing behavior and is not wired to vector search yet.
+
+RAG retrieval results remain policy evidence only. They must not be represented as refund, exchange, payment,
+logistics, coupon, or dispute actions already completed.
 
 Policy ingestion 必须可追踪：
 

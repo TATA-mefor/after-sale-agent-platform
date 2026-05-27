@@ -1199,8 +1199,8 @@ V4 focuses on interview-critical AI engineering capabilities:
 V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3.1 PostgreSQL / PGvector
 profile boundary, V4.3.2 vector schema / repository contract, V4.3.3 fake vector store / default offline vector
 tests, V4.3.4 Docker Compose / opt-in PGvector integration docs, V4.4.1 Policy Ingestion domain / status /
-repository foundation, V4.4.2 chunking / checksum dedup services, and V4.4.3 fake-provider embedding pipeline are
-completed. Skill is now a first-class Java contract and registry concept, while the current
+repository foundation, V4.4.2 chunking / checksum dedup services, V4.4.3 fake-provider embedding pipeline, and
+V4.4.4 ingestion docs / completion record are completed. Skill is now a first-class Java contract and registry concept, while the current
 AgentRun execution path still uses the existing Specialist Handler dispatch. Spring AI is available as an optional
 provider adapter and is disabled by default.
 
@@ -1488,6 +1488,21 @@ does not connect PostgreSQL / PGvector, does not add Admin ingestion API or Agen
 RAG / HYBRID retrieval, and does not change `search_aftersale_policy`. Policy Ingestion remains an admin/pipeline
 capability. V4.4.4 handles ingestion docs / final V4.4 completion record, and V4.5 wires HYBRID RAG into
 `search_aftersale_policy`.
+
+### V4.4.4 Policy Ingestion Docs / Completion Record
+
+Implemented V4.4.4 documentation closeout:
+
+- `docs/demo/V4_POLICY_INGESTION_PIPELINE.md` describes the V4.4 ingestion foundation, offline example, failure
+  handling, security boundary, and future real-provider path;
+- `docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md` records the total V4.4 completion signal;
+- V4 roadmap, RAG contract, vector-store decision, and quality summary now mark V4.4.1 through V4.4.4 completed.
+
+V4.4 is an ingestion foundation, not a production ingestion API. It does not add an Admin Controller,
+`ingest_policy_document` tool, ToolRegistry wiring, real Spring AI embedding default path, JDBC repositories,
+PGvector live writes, RAG / HYBRID retrieval, AgentRun runtime usage, or `search_aftersale_policy` vector wiring.
+Default tests remain offline and do not require PostgreSQL, PGvector, Docker, MySQL, Redis, API keys, real LLMs, real
+embedding providers, or external network. V4.5 is the phase that wires HYBRID RAG into `search_aftersale_policy`.
 
 ### V4 Default Test Boundary
 
