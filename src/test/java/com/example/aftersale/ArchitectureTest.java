@@ -338,6 +338,16 @@ class ArchitectureTest {
                 .because("Agent code must not depend on ingestion infrastructure directly.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("..policy.rag.ingestion.application..")
+                .because("chunking and dedup services are admin pipeline helpers, not Agent runtime tools.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
     }
 
     @Test
@@ -381,6 +391,50 @@ class ArchitectureTest {
                 .dependOnClassesThat()
                 .resideInAPackage("..infrastructure..")
                 .because("ingestion repository contracts must stay independent from infrastructure implementations.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void policyIngestionApplicationMustStayOfflineAndNotBypassAgentRuntime() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.ingestion.application..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework.web..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure.pgvector..",
+                        "..policy.rag.infrastructure.springai..",
+                        "..policy.rag.infrastructure.memory..",
+                        "..order..infrastructure..repository..",
+                        "..ticket..infrastructure..repository..",
+                        "..policy..infrastructure..repository..")
+                .because("chunking, checksum, and dedup services must stay deterministic and offline.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.ingestion.application..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("..tool..", "..agent.application.handler..", "..agent.application.skill..")
+                .because("ingestion helpers must not become Agent tools or bypass ToolRegistry.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.ingestion.application..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("PolicyVectorRepository")
+                .because("V4.4.2 must not write vector repository records or perform RAG retrieval.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }

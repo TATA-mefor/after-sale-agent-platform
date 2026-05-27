@@ -48,6 +48,12 @@ contract, and an in-memory repository for offline tests. V4.4.1 does not add chu
 EmbeddingClient calls, PolicyVectorRepository writes, JDBC ingestion persistence, ingestion API/tool, RAG runtime,
 HYBRID retrieval, or any `search_aftersale_policy` behavior change.
 
+V4.4.2 status: only the chunking / checksum / dedup service boundary exists. The project defines deterministic
+chunking options/service, SHA-256 content checksum calculation, and checksum-based document/chunk duplicate decisions
+against the ingestion repository. V4.4.2 does not call EmbeddingClient, call Spring AI, write PolicyVectorRepository,
+add JDBC ingestion persistence, add ingestion API/tool, implement RAG runtime, implement HYBRID retrieval, or change
+`search_aftersale_policy` behavior.
+
 允许链路：
 
 ```text
@@ -237,9 +243,9 @@ PolicyEvidenceNode
 
 ## 11. Ingestion Contract
 
-V4.4.1 defines the ingestion domain and repository contract only. It does not implement ingestion database tables,
-chunking, checksum deduplication, embedding generation, vector repository writes, Admin API, Agent tool registration,
-or ingestion runtime.
+V4.4.1 defines the ingestion domain and repository contract only. V4.4.2 adds deterministic chunking, token estimate,
+SHA-256 checksum, and checksum dedup service boundaries. It does not implement ingestion database tables, embedding
+generation, vector repository writes, Admin API, Agent tool registration, or ingestion runtime.
 
 Policy ingestion 必须可追踪：
 
@@ -258,6 +264,20 @@ PolicyIngestionRun
 ```
 
 同一 document checksum 重复导入时不得重复生成 chunk 和 embedding，除非显式 version 更新。
+
+V4.4.2 chunking / checksum rules:
+
+```text
+chunkIndex starts at 0
+tokenEstimate = ceil(chars / tokenEstimateDivisor)
+document checksum = SHA-256(normalized rawText)
+chunk checksum = SHA-256(normalized chunk content)
+normalization = line-ending normalization + trim
+dedup decisions = NEW_CONTENT / DUPLICATE_DOCUMENT / DUPLICATE_CHUNK
+```
+
+Chunking and dedup errors must not include complete raw text, API keys, database passwords, tokens, full prompts, or
+local absolute paths.
 
 V4.4.1 status transitions:
 

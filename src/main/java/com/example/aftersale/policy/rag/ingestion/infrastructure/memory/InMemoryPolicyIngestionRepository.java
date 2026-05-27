@@ -65,6 +65,14 @@ public class InMemoryPolicyIngestionRepository implements PolicyIngestionReposit
     }
 
     @Override
+    public Optional<PolicyIngestionDocument> findDocumentByChecksum(String checksum) {
+        String normalizedChecksum = requireText(checksum, "checksum");
+        return documents.values().stream()
+                .filter(document -> normalizedChecksum.equals(document.checksum()))
+                .findFirst();
+    }
+
+    @Override
     public PolicyIngestionChunk saveChunk(PolicyIngestionChunk chunk) {
         PolicyIngestionChunk normalized = Objects.requireNonNull(chunk, "chunk must not be null");
         requireRun(normalized.runId());
@@ -87,6 +95,31 @@ public class InMemoryPolicyIngestionRepository implements PolicyIngestionReposit
     public List<PolicyIngestionChunk> findChunksByDocumentId(String ingestionDocumentId) {
         return chunks.values().stream()
                 .filter(chunk -> chunk.ingestionDocumentId().equals(ingestionDocumentId))
+                .sorted(Comparator.comparingInt(PolicyIngestionChunk::chunkIndex)
+                        .thenComparing(PolicyIngestionChunk::ingestionChunkId))
+                .toList();
+    }
+
+    @Override
+    public List<PolicyIngestionChunk> findChunksByChecksum(String checksum) {
+        String normalizedChecksum = requireText(checksum, "checksum");
+        return chunks.values().stream()
+                .filter(chunk -> normalizedChecksum.equals(chunk.checksum()))
+                .sorted(Comparator.comparing(PolicyIngestionChunk::ingestionDocumentId)
+                        .thenComparingInt(PolicyIngestionChunk::chunkIndex)
+                        .thenComparing(PolicyIngestionChunk::ingestionChunkId))
+                .toList();
+    }
+
+    @Override
+    public List<PolicyIngestionChunk> findChunksByDocumentIdAndChecksum(
+            String ingestionDocumentId,
+            String checksum) {
+        String normalizedDocumentId = requireText(ingestionDocumentId, "ingestionDocumentId");
+        String normalizedChecksum = requireText(checksum, "checksum");
+        return chunks.values().stream()
+                .filter(chunk -> chunk.ingestionDocumentId().equals(normalizedDocumentId))
+                .filter(chunk -> normalizedChecksum.equals(chunk.checksum()))
                 .sorted(Comparator.comparingInt(PolicyIngestionChunk::chunkIndex)
                         .thenComparing(PolicyIngestionChunk::ingestionChunkId))
                 .toList();
@@ -121,6 +154,15 @@ public class InMemoryPolicyIngestionRepository implements PolicyIngestionReposit
             throw new IllegalArgumentException(
                     "document must be saved before ingestion chunk: " + ingestionDocumentId);
         }
+    }
+
+    private static String requireText(String value, String fieldName) {
+        Objects.requireNonNull(value, fieldName + " must not be null");
+        String normalized = value.trim();
+        if (normalized.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " must not be blank");
+        }
+        return normalized;
     }
 
     private static void rejectDuplicate(boolean duplicate, String entityType, String entityId) {

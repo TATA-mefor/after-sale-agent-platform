@@ -15,11 +15,17 @@ public interface PolicyIngestionRepository {
 
     List<PolicyIngestionDocument> findDocumentsByRunId(String runId);
 
+    Optional<PolicyIngestionDocument> findDocumentByChecksum(String checksum);
+
     PolicyIngestionChunk saveChunk(PolicyIngestionChunk chunk);
 
     List<PolicyIngestionChunk> findChunksByRunId(String runId);
 
     List<PolicyIngestionChunk> findChunksByDocumentId(String ingestionDocumentId);
+
+    List<PolicyIngestionChunk> findChunksByChecksum(String checksum);
+
+    List<PolicyIngestionChunk> findChunksByDocumentIdAndChecksum(String ingestionDocumentId, String checksum);
 
     PolicyIngestionError saveError(PolicyIngestionError error);
 

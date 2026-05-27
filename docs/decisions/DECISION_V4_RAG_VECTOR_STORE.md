@@ -41,6 +41,12 @@ There is still no chunking service, checksum dedup service, embedding pipeline, 
 JdbcPolicyIngestionRepository, ingestion API/tool, HYBRID retrieval, RAG runtime, or `search_aftersale_policy` vector
 wiring.
 
+V4.4.2 implementation status: the chunking / checksum / dedup service boundary is completed. The project now has
+deterministic `PolicyChunkingService`, SHA-256 `PolicyContentChecksumService`, and `PolicyIngestionDedupService`
+backed by checksum queries on `PolicyIngestionRepository`. There is still no embedding pipeline, `EmbeddingClient`
+call, `PolicyVectorRepository` write, JDBC ingestion repository, ingestion API/tool, HYBRID retrieval, RAG runtime, or
+`search_aftersale_policy` vector wiring.
+
 推荐 profile：
 
 ```text
@@ -69,7 +75,8 @@ policy_embeddings
 ```
 
 `policy_ingestion_runs` is not part of the V4.3.2 schema file. V4.4.1 defines the ingestion domain/status/repository
-contract in Java only; database schema and JDBC persistence remain future work.
+contract in Java only. V4.4.2 adds deterministic chunking, checksum, and dedup services in Java only. Database schema,
+JDBC persistence, embedding generation, and vector writes remain future work.
 
 核心领域对象：
 
@@ -83,6 +90,9 @@ VectorSearchMatch
 PolicyVectorRepository
 CosineSimilarityCalculator
 InMemoryPolicyVectorRepository
+PolicyChunkingService
+PolicyContentChecksumService
+PolicyIngestionDedupService
 ```
 
 ## Retrieval Flow
@@ -177,6 +187,9 @@ Costs:
 - 不在 V4.4.1 中实现 chunking service、checksum dedup service、调用 EmbeddingClient、写入 PolicyVectorRepository、
   实现 JdbcPolicyIngestionRepository、实现 ingestion API/tool、实现 RAG / HYBRID retrieval 或修改
   `search_aftersale_policy` 行为；
+- 不在 V4.4.2 中调用 EmbeddingClient、调用 Spring AI、写入 PolicyVectorRepository、实现
+  JdbcPolicyIngestionRepository、实现 JdbcPolicyVectorRepository、实现 Admin Controller、注册 ingestion tool、实现
+  RAG / HYBRID retrieval 或修改 `search_aftersale_policy` 行为；
 - 不把 PGvector compose 写成 production deployment，`docker-compose-rag.yml` 只用于 local development opt-in；
 - 不引入大型分布式向量库；
 - 不做复杂 reranking service；

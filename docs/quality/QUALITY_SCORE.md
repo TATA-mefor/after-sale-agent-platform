@@ -1051,6 +1051,36 @@ V4.4.1 non-regression targets:
 - V4.4.2 must handle chunking and checksum dedup; V4.4.3 must handle embedding pipeline with fake provider; V4.5 must
   connect HYBRID retrieval to `search_aftersale_policy`.
 
+### V4.4.2 Chunking and Checksum Dedup Quality Summary
+
+Status: completed for deterministic chunking, checksum, dedup service, and offline tests only.
+
+Current chunking / checksum / dedup status:
+
+- `PolicyChunkingOptions` validates max chunk size, overlap, max chunks, token estimate divisor, and min chunk size.
+- `PolicyChunkingService` creates deterministic `PolicyIngestionChunk` records from `PolicyIngestionDocument.rawText`
+  with chunk index starting at 0, overlap support, paragraph-boundary preference, token estimates, and chunk checksums.
+- Max chunk overflow fails clearly without echoing complete raw text.
+- `PolicyContentChecksumService` uses Java standard-library SHA-256 with line-ending normalization and trim.
+- `PolicyIngestionDedupService` returns `NEW_CONTENT`, `DUPLICATE_DOCUMENT`, or `DUPLICATE_CHUNK` using checksum
+  queries on `PolicyIngestionRepository`.
+- `InMemoryPolicyIngestionRepository` supports document and chunk checksum lookup without database access.
+- Tests cover chunking options, blank rawText, short/long chunking, overlap, paragraph boundaries, overflow, checksum
+  determinism, dedup decisions, repository checksum queries, and architecture boundaries.
+- Default tests remain independent from real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, and external
+  network.
+
+V4.4.2 non-regression targets:
+
+- No EmbeddingClient call, Spring AI call, PolicyVectorRepository write, JdbcPolicyIngestionRepository,
+  JdbcPolicyVectorRepository, Admin Controller, ingestion tool, RAG / HYBRID retrieval, or
+  `search_aftersale_policy` behavior change is implemented in V4.4.2.
+- Policy Ingestion remains an admin / pipeline capability and is not registered as an Agent runtime tool.
+- `search_aftersale_policy`, AgentRun, Skill runtime, ToolRegistry, ToolCallTrace, Execution Tree, Approval, and
+  Workspace semantics remain unchanged.
+- V4.4.3 must handle embedding pipeline with fake provider; V4.5 must connect HYBRID retrieval to
+  `search_aftersale_policy`.
+
 Planned phases:
 
 ```text
@@ -1062,7 +1092,7 @@ V4.3.2 Vector Schema / Repository Contract (completed)
 V4.3.3 Fake Vector Store / Default Offline Vector Tests (completed)
 V4.3.4 Docker Compose / Opt-in Integration Docs (completed)
 V4.4.1 Policy Ingestion Domain Model (completed)
-V4.4.2 Chunking and Checksum Dedup
+V4.4.2 Chunking and Checksum Dedup (completed)
 V4.4.3 Embedding Pipeline with Fake Provider
 V4.4.4 Policy Ingestion Docs / Completion Record
 V4.5 Hybrid RAG Policy Search Tool

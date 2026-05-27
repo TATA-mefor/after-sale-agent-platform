@@ -19,7 +19,10 @@ class PolicyIngestionRepositoryContractTest {
 
         assertThat(repository.findRunById("run-1")).contains(run);
         assertThat(repository.findDocumentsByRunId("run-1")).isEmpty();
+        assertThat(repository.findDocumentByChecksum("checksum-doc")).isEmpty();
         assertThat(repository.findChunksByRunId("run-1")).isEmpty();
+        assertThat(repository.findChunksByChecksum("checksum-chunk")).isEmpty();
+        assertThat(repository.findChunksByDocumentIdAndChecksum("doc-1", "checksum-chunk")).isEmpty();
         assertThat(repository.findErrorsByRunId("run-1")).isEmpty();
     }
 
@@ -54,6 +57,11 @@ class PolicyIngestionRepositoryContractTest {
         }
 
         @Override
+        public Optional<PolicyIngestionDocument> findDocumentByChecksum(String checksum) {
+            return Optional.empty();
+        }
+
+        @Override
         public PolicyIngestionChunk saveChunk(PolicyIngestionChunk chunk) {
             return chunk;
         }
@@ -65,6 +73,18 @@ class PolicyIngestionRepositoryContractTest {
 
         @Override
         public List<PolicyIngestionChunk> findChunksByDocumentId(String ingestionDocumentId) {
+            return List.of();
+        }
+
+        @Override
+        public List<PolicyIngestionChunk> findChunksByChecksum(String checksum) {
+            return List.of();
+        }
+
+        @Override
+        public List<PolicyIngestionChunk> findChunksByDocumentIdAndChecksum(
+                String ingestionDocumentId,
+                String checksum) {
             return List.of();
         }
 

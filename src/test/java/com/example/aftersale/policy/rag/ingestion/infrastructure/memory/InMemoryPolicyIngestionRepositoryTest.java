@@ -39,10 +39,19 @@ class InMemoryPolicyIngestionRepositoryTest {
         assertThat(repository.findDocumentsByRunId("run-1"))
                 .extracting(PolicyIngestionDocument::ingestionDocumentId)
                 .containsExactly("doc-1");
+        assertThat(repository.findDocumentByChecksum("checksum-doc"))
+                .map(PolicyIngestionDocument::ingestionDocumentId)
+                .contains("doc-1");
         assertThat(repository.findChunksByRunId("run-1"))
                 .extracting(PolicyIngestionChunk::ingestionChunkId)
                 .containsExactly("chunk-1");
         assertThat(repository.findChunksByDocumentId("doc-1"))
+                .extracting(PolicyIngestionChunk::ingestionChunkId)
+                .containsExactly("chunk-1");
+        assertThat(repository.findChunksByChecksum("checksum-chunk"))
+                .extracting(PolicyIngestionChunk::ingestionChunkId)
+                .containsExactly("chunk-1");
+        assertThat(repository.findChunksByDocumentIdAndChecksum("doc-1", "checksum-chunk"))
                 .extracting(PolicyIngestionChunk::ingestionChunkId)
                 .containsExactly("chunk-1");
         assertThat(repository.findErrorsByRunId("run-1"))
@@ -103,6 +112,8 @@ class InMemoryPolicyIngestionRepositoryTest {
         assertThatThrownBy(() -> repository.findDocumentsByRunId("run-1").clear())
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() -> repository.findChunksByRunId("run-1").clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> repository.findChunksByChecksum("checksum-chunk").clear())
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() -> repository.findErrorsByRunId("run-1").clear())
                 .isInstanceOf(UnsupportedOperationException.class);

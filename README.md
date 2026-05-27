@@ -1198,8 +1198,9 @@ V4 focuses on interview-critical AI engineering capabilities:
 
 V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3.1 PostgreSQL / PGvector
 profile boundary, V4.3.2 vector schema / repository contract, V4.3.3 fake vector store / default offline vector
-tests, V4.3.4 Docker Compose / opt-in PGvector integration docs, and V4.4.1 Policy Ingestion domain / status /
-repository foundation are completed. Skill is now a first-class Java contract and registry concept, while the current
+tests, V4.3.4 Docker Compose / opt-in PGvector integration docs, V4.4.1 Policy Ingestion domain / status /
+repository foundation, and V4.4.2 chunking / checksum dedup services are completed. Skill is now a first-class Java
+contract and registry concept, while the current
 AgentRun execution path still uses the existing Specialist Handler dispatch. Spring AI is available as an optional
 provider adapter and is disabled by default.
 
@@ -1441,6 +1442,29 @@ V4.4.1 does not implement chunking, checksum deduplication, embedding pipeline, 
 retrieval, or `search_aftersale_policy` behavior changes. Policy Ingestion remains an admin/pipeline capability, not
 an Agent runtime tool. V4.4.2 handles chunking and checksum dedup, V4.4.3 handles embedding pipeline with fake provider,
 V4.4.4 handles ingestion docs / completion record, and V4.5 wires HYBRID RAG into `search_aftersale_policy`.
+
+### V4.4.2 Chunking and Checksum Dedup
+
+Implemented V4.4.2 ingestion processing boundary:
+
+- `PolicyChunkingOptions`, `PolicyChunkingStrategy`, `PolicyChunkingResult`, and `PolicyChunkingService` provide
+  deterministic chunking for `PolicyIngestionDocument.rawText`;
+- chunk index starts at `0`, overlap is supported, paragraph boundaries are preferred when safe, and token estimate is
+  `ceil(chars / tokenEstimateDivisor)`;
+- `PolicyContentChecksumService` computes SHA-256 checksums for document raw text and chunk content using line-ending
+  normalization plus trim;
+- `PolicyIngestionDedupService` returns `NEW_CONTENT`, `DUPLICATE_DOCUMENT`, or `DUPLICATE_CHUNK` from repository
+  checksum lookups without exposing raw text in reasons;
+- `PolicyIngestionRepository` and `InMemoryPolicyIngestionRepository` now support checksum query methods for default
+  offline dedup tests;
+- architecture tests keep ingestion application services away from Spring Web, JDBC, DataSource, Spring AI,
+  VectorStore, PGvector infrastructure, business repositories, ToolRegistry bypasses, Handler, and Skill packages.
+
+V4.4.2 does not call `EmbeddingClient`, does not call Spring AI, does not write `PolicyVectorRepository`, does not
+implement `JdbcPolicyIngestionRepository` or `JdbcPolicyVectorRepository`, does not add Admin ingestion API or Agent
+ingestion tools, does not implement RAG / HYBRID retrieval, and does not change `search_aftersale_policy`. Policy
+Ingestion remains an admin/pipeline capability. V4.4.3 handles embedding pipeline with fake provider, and V4.5 wires
+HYBRID RAG into `search_aftersale_policy`.
 
 ### V4 Default Test Boundary
 
