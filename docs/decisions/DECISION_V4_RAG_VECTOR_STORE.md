@@ -62,6 +62,13 @@ records the total V4.4 completion. There is still no Admin Controller, `ingest_p
 wiring, real Spring AI embedding default path, JDBC repository, PGvector live write, HYBRID retrieval, RAG runtime, or
 `search_aftersale_policy` vector wiring.
 
+V4.5.1 implementation status: the RAG search contract / retrieval mode / evidence model boundary is completed. The
+project now has `RetrievalMode`, `RagPolicySearchQuery`, `RagPolicyEvidenceSource`, `RagPolicyEvidence`,
+`RagPolicySearchResult`, and keyword/vector result mappers. V4.5.1 is schema preparation only and does not change
+`search_aftersale_policy` runtime, implement keyword + vector merge service, call `EmbeddingClient`, call
+`PolicyVectorRepository.search`, connect PGvector, call Spring AI VectorStore, modify ToolCallTrace output, or modify
+AgentWorkspace writes.
+
 推荐 profile：
 
 ```text
@@ -111,6 +118,12 @@ PolicyChunkingService
 PolicyContentChecksumService
 PolicyIngestionDedupService
 PolicyEmbeddingPipelineService
+RetrievalMode
+RagPolicySearchQuery
+RagPolicyEvidence
+RagPolicySearchResult
+KeywordPolicyEvidenceMapper
+VectorPolicyEvidenceMapper
 ```
 
 ## Retrieval Flow
@@ -133,6 +146,9 @@ Agent、Handler、Skill 不得直接访问 VectorStore。RAG 检索必须通过 
 Policy ingestion does not enter ToolRegistry or Agent runtime in V4.4. It is an admin / offline pipeline foundation
 for preparing future policy evidence data. This keeps ingestion credentials, raw text handling, and vector writes away
 from normal customer-facing AgentRun execution.
+
+V4.5.1 RAG search contracts also do not enter ToolRegistry or Agent runtime. They prepare the future
+`search_aftersale_policy` evidence schema while preserving the current keyword-only runtime behavior until V4.5.3.
 
 ## Ingestion Flow
 
@@ -218,6 +234,9 @@ Costs:
 - 不在 V4.4.4 中新增 ingestion 运行时代码、修改 chunking/checksum/embedding pipeline 行为、调用 EmbeddingClient、
   调用 PolicyVectorRepository、连接 PostgreSQL / PGvector、实现 Admin Controller、注册 ingestion tool、实现 RAG /
   HYBRID retrieval 或修改 `search_aftersale_policy` 行为；
+- 不在 V4.5.1 中实现 keyword + vector merge service、修改 `search_aftersale_policy` runtime、调用
+  EmbeddingClient、调用 PolicyVectorRepository.search、调用 Spring AI VectorStore、连接 PostgreSQL / PGvector、
+  修改 ToolCallTrace output 或修改 AgentWorkspace writes；
 - 不把 PGvector compose 写成 production deployment，`docker-compose-rag.yml` 只用于 local development opt-in；
 - 不引入大型分布式向量库；
 - 不做复杂 reranking service；

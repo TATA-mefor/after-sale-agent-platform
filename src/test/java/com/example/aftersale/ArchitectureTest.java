@@ -295,6 +295,35 @@ class ArchitectureTest {
     }
 
     @Test
+    void ragSearchContractMustStayPureAndRepositoryFree() {
+        noClasses()
+                .that()
+                .resideInAPackage("..policy.rag.search..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure..")
+                .because("RAG search contracts and mappers must stay free of Spring, JDBC, Spring AI, and infra.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAPackage("..policy.rag.search..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("V4.5.1 mappers convert given results and must not access repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void agentHandlerAndSkillMustNotDependOnPolicyVectorRepositoryContract() {
         noClasses()
                 .that()
@@ -313,6 +342,19 @@ class ArchitectureTest {
                 .dependOnClassesThat()
                 .haveSimpleName("InMemoryPolicyVectorRepository")
                 .because("Agent code must not depend on fake vector repository implementations directly.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void agentHandlerAndSkillMustNotDependOnRagSearchPreparationModels() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("..policy.rag.search..")
+                .because("V4.5.1 search contracts are preparation models, not Agent runtime wiring.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }

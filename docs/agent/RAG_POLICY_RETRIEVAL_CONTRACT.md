@@ -68,6 +68,14 @@ not add runtime ingestion code, Admin Controller, `ingest_policy_document` tool,
 embedding default path, JDBC repositories, PGvector live writes, RAG runtime, HYBRID retrieval, or any
 `search_aftersale_policy` behavior change.
 
+V4.5.1 status: schema preparation only. The project now defines `RetrievalMode`, `RagPolicySearchQuery`,
+`RagPolicyEvidenceSource`, `RagPolicyEvidence`, `RagPolicySearchResult`, and keyword/vector result mappers. V4.5.1
+does not change `search_aftersale_policy` runtime, implement keyword + vector merge service, call EmbeddingClient,
+call PolicyVectorRepository.search, connect PostgreSQL / PGvector, call Spring AI VectorStore, modify AgentRun,
+modify ToolCallTrace output, or modify AgentWorkspace writes. V4.5.2 handles keyword + vector merge service, V4.5.3
+handles `search_aftersale_policy` HYBRID mode runtime wiring, and V4.5.4 handles ToolCallTrace / Workspace evidence
+wiring.
+
 允许链路：
 
 ```text
@@ -106,14 +114,17 @@ type: read-only evidence retrieval
 
 ## 4. Input Schema
 
+V4.5.1 defines this future schema but does not wire it into runtime.
+
 ```json
 {
   "query": "质量问题 退货 退款",
-  "categories": ["RETURN", "REFUND"],
-  "productType": "electronics",
   "retrievalMode": "HYBRID",
   "topK": 5,
   "minScore": 0.65,
+  "category": "RETURN",
+  "productType": "electronics",
+  "effectiveAt": "2026-05-27",
   "subtaskId": "S1"
 }
 ```
@@ -122,28 +133,37 @@ type: read-only evidence retrieval
 
 ```text
 query: required, non-blank
-categories: optional, narrows policy category
+retrievalMode: KEYWORD | VECTOR | HYBRID, default KEYWORD in V4.5.1 contracts
+topK: bounded integer, default 5, maximum 20 in V4.5.1 contracts
+minScore: optional threshold between 0.0 and 1.0
+category: optional, narrows policy category
 productType: optional, narrows product type
-retrievalMode: KEYWORD | VECTOR | HYBRID, default HYBRID when vector store is enabled
-topK: bounded integer, default 5, maximum configured by policy
-minScore: optional threshold for vector/hybrid results
+effectiveAt: optional, selects policy effective date
 subtaskId: optional trace attribution field
 ```
 
 ## 5. Output Schema
 
+V4.5.1 defines this future output shape for mappers and tests only. Existing tool output remains unchanged until
+V4.5.3.
+
 ```json
 {
   "results": [
     {
+      "evidenceId": "evidence-001",
+      "policyId": null,
+      "documentId": "policy-doc-001",
       "chunkId": "chunk-001",
-      "documentId": "policy-001",
       "documentTitle": "售后退货退款政策",
       "category": "RETURN",
       "productType": "electronics",
       "snippet": "质量问题在签收后七天内可申请退货退款...",
       "score": 0.82,
+      "keywordScore": 0.73,
+      "vectorScore": 0.82,
       "retrievalMode": "HYBRID",
+      "source": "MERGED_HYBRID",
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "metadata": {
@@ -158,6 +178,9 @@ subtaskId: optional trace attribution field
 ```
 
 ## 6. Retrieval Modes
+
+V4.5.1 introduces `RetrievalMode` as a contract enum only. The current `search_aftersale_policy` behavior remains
+equivalent to KEYWORD and is not wired to vector search yet.
 
 ### KEYWORD
 
@@ -181,21 +204,29 @@ subtaskId: optional trace attribution field
 - 去重规则以 chunkId / documentId + chunkIndex 为准；
 - score 必须可解释；
 - fallbackUsed 必须标明是否退回 keyword-only。
+- V4.5.1 does not implement the merge service; V4.5.2 owns keyword + vector merge behavior.
 
 ## 7. Evidence Rules
 
 每条 evidence 必须包含：
 
 ```text
-chunkId
-documentId
-documentTitle
+evidenceId
+policyId optional
+documentId optional
+chunkId optional
+documentTitle optional
 category
 snippet
 score or deterministic ranking reason
 retrievalMode
+source
 effectiveFrom/effectiveTo when available
 ```
+
+Score is a retrieval evidence score, not business-decision confidence. Evidence may cite policy text, but it must not
+state that refund, exchange, coupon compensation, payment change, logistics change, inventory change, or dispute
+closure has already been completed.
 
 不得返回：
 

@@ -373,7 +373,10 @@ V4.4.1 -> Policy Ingestion domain / status / repository foundation (completed)
 V4.4.2 -> chunking and checksum dedup (completed)
 V4.4.3 -> embedding pipeline with fake provider (completed)
 V4.4.4 -> ingestion docs / completion record (completed)
-V4.5   -> Hybrid RAG Policy Search Tool
+V4.5.1 -> RAG search contract / retrieval mode / evidence model (completed)
+V4.5.2 -> keyword + vector merge service
+V4.5.3 -> search_aftersale_policy HYBRID mode wiring
+V4.5.4 -> ToolCallTrace / Workspace evidence wiring
 ```
 
 ### 7.8 Schema boundary
@@ -572,9 +575,38 @@ PolicyVectorRepository
 
 ## 9. V4.5 Hybrid RAG Policy Search Tool
 
+Status: active. V4.5.1 RAG search contract / retrieval mode / evidence model is completed. V4.5.2 keyword + vector
+merge service, V4.5.3 `search_aftersale_policy` HYBRID runtime wiring, and V4.5.4 ToolCallTrace / Workspace evidence
+wiring remain future work.
+
 ### 9.1 目标
 
 将 `search_aftersale_policy` 从 deterministic keyword retrieval 升级为可配置的 hybrid retrieval，同时保持 LOW-risk、read-only、auditable tool 边界。
+
+### 9.1.1 V4.5.1 已完成边界
+
+V4.5.1 只完成 RAG search contract / retrieval mode / evidence model / mapper preparation:
+
+- 新增 `RetrievalMode`，定义 `KEYWORD`、`VECTOR`、`HYBRID`，未知 mode 解析失败清晰，默认 mode 为
+  `KEYWORD`；
+- 新增 `RagPolicySearchQuery`，约束 query、topK、minScore、category、productType、effectiveAt、
+  embeddingModel 和 evidence include flags；
+- 新增 `RagPolicyEvidenceSource`、`RagPolicyEvidence`、`RagPolicySearchResult`，表达 evidence-only policy
+  retrieval output；
+- 新增 keyword result mapper，将现有 `PolicySearchResult` 转换为 KEYWORD evidence，不编造 chunkId 或
+  documentId；
+- 新增 vector result mapper，将给定 `VectorSearchResult` 转换为 VECTOR evidence，不调用
+  `PolicyVectorRepository.search`；
+- 新增 docs harness 和 ArchUnit 边界，确认 RAG search contract 不依赖 Spring、JDBC、Spring AI、VectorStore、
+  PGvector infrastructure 或 repository implementation。
+
+V4.5.1 不改变 `search_aftersale_policy` runtime，不实现 keyword + vector merge service，不调用
+EmbeddingClient，不调用 PolicyVectorRepository.search，不连接 PostgreSQL / PGvector，不调用 Spring AI
+VectorStore，不修改 AgentRun、ToolCallTrace、AgentWorkspace、Skill runtime、ToolRegistry 或 Execution Tree。
+默认测试仍不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或外部网络。
+
+V4.5.2 才处理 keyword + vector merge service。V4.5.3 才把 `search_aftersale_policy` 接入 HYBRID mode。
+V4.5.4 才处理 ToolCallTrace / Workspace evidence wiring。
 
 ### 9.2 Tool Input
 

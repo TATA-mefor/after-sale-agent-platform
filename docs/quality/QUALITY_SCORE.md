@@ -1149,6 +1149,43 @@ V4.5 follow-up:
 - Connect controlled HYBRID retrieval to `search_aftersale_policy` while preserving LOW-risk read-only evidence
   semantics and ToolRegistry / ToolCallTrace boundaries.
 
+### V4.5.1 RAG Search Contract Quality Summary
+
+Status: completed for RAG search contract, retrieval mode, evidence model, mapper preparation, and offline harness
+coverage.
+
+Current V4.5.1 quality status:
+
+- Retrieval mode quality: `RetrievalMode` defines KEYWORD, VECTOR, and HYBRID, defaults missing values to KEYWORD, and
+  fails unknown modes clearly.
+- Query contract quality: `RagPolicySearchQuery` validates query text, bounded topK, minScore range, optional filters,
+  and default retrieval mode without executing retrieval.
+- Evidence model quality: `RagPolicyEvidence` validates required snippet, score range, retrieval mode, source, and
+  metadata safety. Evidence is evidence only and must not claim completed refunds, exchanges, compensation, or dispute
+  closure.
+- Mapper quality: keyword and vector mappers convert supplied `PolicySearchResult` and `VectorSearchResult` values
+  without repository access, EmbeddingClient calls, Spring AI calls, VectorStore calls, or PGvector connections.
+- Tool contract preparation quality: docs define future `search_aftersale_policy` input/output schema with
+  `retrievalMode`, evidence IDs, scores, and source markers, while explicitly stating V4.5.1 is schema preparation only.
+- Runtime isolation quality: V4.5.1 does not change `search_aftersale_policy` runtime, ToolRegistry execution,
+  ToolCallTrace output, AgentWorkspace writes, AgentRun flow, Skill runtime, or Execution Tree behavior.
+- Default test boundary: default validation does not require PostgreSQL, PGvector, Docker, MySQL, Redis, real LLMs,
+  API keys, real embedding providers, Spring AI provider calls, or external network.
+- Architecture boundary: RAG search contracts stay free of Spring Web, JDBC, `DataSource`, Spring AI, VectorStore,
+  PGvector infrastructure, and repository dependencies. Agent, Handler, and Skill layers do not depend on V4.5.1
+  search-preparation models.
+
+Known limitations:
+
+- No keyword + vector merge service, HYBRID retrieval runtime, `PolicyVectorRepository.search` call, `EmbeddingClient`
+  call, PGvector live search, ToolCallTrace evidence wiring, or Workspace evidence wiring is implemented in V4.5.1.
+
+V4.5 follow-up:
+
+- V4.5.2 implements keyword + vector merge service.
+- V4.5.3 wires `search_aftersale_policy` to HYBRID mode while preserving LOW-risk read-only semantics.
+- V4.5.4 wires ToolCallTrace / Workspace evidence output.
+
 Planned phases:
 
 ```text
@@ -1163,7 +1200,10 @@ V4.4.1 Policy Ingestion Domain Model (completed)
 V4.4.2 Chunking and Checksum Dedup (completed)
 V4.4.3 Embedding Pipeline with Fake Provider (completed)
 V4.4.4 Policy Ingestion Docs / Completion Record (completed)
-V4.5 Hybrid RAG Policy Search Tool
+V4.5.1 RAG Search Contract (completed)
+V4.5.2 Keyword + Vector Merge Service
+V4.5.3 search_aftersale_policy HYBRID Mode Wiring
+V4.5.4 ToolCallTrace / Workspace Evidence Wiring
 V4.6 Skill Layer Integration
 V4.7 Execution Tree / Evaluation / Demo
 V4.8 Spring Boot Completeness

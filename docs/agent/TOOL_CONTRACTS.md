@@ -185,15 +185,22 @@ Execution Tree Skill nodes are a later V4 goal.
 
 `search_aftersale_policy` remains LOW-risk and read-only, but supports RAG retrieval.
 
+V4.5.1 status: schema preparation only. The project defines `RetrievalMode`, RAG search query models, RAG evidence
+models, and keyword/vector result mappers for future KEYWORD / VECTOR / HYBRID output. V4.5.1 does not change
+`search_aftersale_policy` runtime, ToolRegistry execution, ToolCallTrace output, AgentWorkspace writes, or AgentRun
+behavior. V4.5.2 handles keyword + vector merge service, V4.5.3 handles runtime HYBRID wiring, and V4.5.4 handles
+ToolCallTrace / Workspace evidence wiring.
+
 Input:
 
 ```text
 query
-categories optional
-productType optional
 retrievalMode: KEYWORD | VECTOR | HYBRID
 topK
 minScore optional
+category optional
+productType optional
+effectiveAt optional
 subtaskId optional
 ```
 
@@ -201,20 +208,27 @@ Output:
 
 ```text
 results[]
-  chunkId
-  documentId
-  documentTitle
+  evidenceId
+  policyId optional
+  documentId optional
+  chunkId optional
+  documentTitle optional
   category
   productType
   snippet
   score
+  keywordScore optional
+  vectorScore optional
   retrievalMode
-  effectiveFrom
-  effectiveTo
+  source
+  effectiveFrom optional
+  effectiveTo optional
 message
 fallbackUsed
 ```
 
 The tool must not mutate Ticket, Order, Payment, Inventory, Logistics, Coupon, ApprovalRequest, or any external business system.
 
-RAG results are evidence only. They must not claim that refund, exchange, coupon compensation, payment change, logistics change, inventory change, or dispute closure has already been completed.
+RAG results are evidence only. They must not claim that refund, exchange, coupon compensation, payment change,
+logistics change, inventory change, or dispute closure has already been completed. ToolRegistry remains the only Agent
+tool execution entry.

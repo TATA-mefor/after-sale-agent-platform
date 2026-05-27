@@ -1504,6 +1504,23 @@ PGvector live writes, RAG / HYBRID retrieval, AgentRun runtime usage, or `search
 Default tests remain offline and do not require PostgreSQL, PGvector, Docker, MySQL, Redis, API keys, real LLMs, real
 embedding providers, or external network. V4.5 is the phase that wires HYBRID RAG into `search_aftersale_policy`.
 
+### V4.5.1 RAG Search Contract
+
+Implemented V4.5.1 contract preparation:
+
+- `RetrievalMode` defines `KEYWORD`, `VECTOR`, and `HYBRID`, with default mode `KEYWORD`;
+- `RagPolicySearchQuery` defines bounded query options for future RAG policy search;
+- `RagPolicyEvidence`, `RagPolicyEvidenceSource`, and `RagPolicySearchResult` define evidence-only retrieval output;
+- keyword and vector mappers convert existing result models into RAG evidence without repository calls;
+- docs and architecture tests record that this is schema preparation only.
+
+V4.5.1 does not change `search_aftersale_policy` runtime, does not implement keyword + vector merge service, does not
+call `EmbeddingClient`, does not call `PolicyVectorRepository.search`, does not connect PostgreSQL / PGvector, and does
+not modify AgentRun, ToolCallTrace, AgentWorkspace, Skill runtime, ToolRegistry, or Execution Tree. `search_aftersale_policy`
+remains a LOW-risk read-only tool and RAG output remains evidence only. V4.5.2 handles keyword + vector merge service,
+V4.5.3 handles HYBRID mode wiring into `search_aftersale_policy`, and V4.5.4 handles ToolCallTrace / Workspace evidence
+wiring.
+
 ### V4 Default Test Boundary
 
 Default validation remains:
