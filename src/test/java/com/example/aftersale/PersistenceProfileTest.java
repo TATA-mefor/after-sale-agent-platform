@@ -68,7 +68,7 @@ class PersistenceProfileTest {
     @Test
     void pgVectorInfrastructureIsNotActiveByDefault() {
         assertThat(applicationContext.getBeansOfType(PgVectorProfileGuard.class)).isEmpty();
-        assertThat(beanNamesContaining("VectorStore")).isEmpty();
+        assertThat(pgVectorRuntimeBeanNames()).isEmpty();
     }
 
     private void assertThatThrownByDataSourceLookup() {
@@ -79,9 +79,10 @@ class PersistenceProfileTest {
         }
     }
 
-    private String[] beanNamesContaining(String text) {
+    private String[] pgVectorRuntimeBeanNames() {
         return java.util.Arrays.stream(applicationContext.getBeanDefinitionNames())
-                .filter(beanName -> beanName.contains(text))
+                .filter(beanName -> beanName.contains("VectorStore"))
+                .filter(beanName -> !beanName.equals("ragVectorStoreHealthIndicator"))
                 .toArray(String[]::new);
     }
 }

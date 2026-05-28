@@ -111,6 +111,12 @@ AgentWorkspace, Execution Tree, Ticket, or AgentRun state, and does not use LLM-
 real embedding providers, Spring AI, Spring AI VectorStore, PostgreSQL / PGvector, Docker, MySQL, Redis, API keys, raw
 datasets, or external network.
 
+V4.6.3 status: RAG Actuator health indicators completed as offline readiness diagnostics. Health indicators may report
+RAG search, vector-store provider, embedding provider, and ingestion contract readiness, but they do not change this
+retrieval contract, do not execute `search_aftersale_policy`, do not call `EmbeddingClient.embed`, do not call
+`PolicyVectorRepository.search`, do not connect to PostgreSQL / PGvector, and do not call Spring AI `VectorStore` or
+`EmbeddingModel`. Health status is diagnostic metadata, not retrieval evidence and not business decision confidence.
+
 允许链路：
 
 ```text

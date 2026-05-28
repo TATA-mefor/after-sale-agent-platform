@@ -503,6 +503,63 @@ class ArchitectureTest {
     }
 
     @Test
+    void ragHealthIndicatorsMustStayOfflineReadinessOnly() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.health..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework.web..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure.springai..",
+                        "..tool..",
+                        "..agent..",
+                        "..trace..",
+                        "..ticket..",
+                        "..approval..")
+                .because("V4.6.3 health indicators are offline diagnostics, not live runtime or provider checks.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.health..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("ToolRegistry")
+                .because("health indicators must not execute tools or bypass ToolRegistry semantics.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.health..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("DataSource")
+                .because("health indicators must not open JDBC or PGvector connections.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void agentHandlerAndSkillMustNotDependOnRagHealthIndicators() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("..policy.rag.health..")
+                .because("RAG health indicators are diagnostics and must not enter Agent runtime behavior.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void agentHandlerAndSkillMustNotDependOnRagEvaluation() {
         noClasses()
                 .that()

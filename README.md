@@ -1250,6 +1250,8 @@ V4 demo documents:
 - [V4 PGvector Local Setup](docs/demo/V4_PGVECTOR_LOCAL_SETUP.md) documents the optional local PGvector profile.
 - [Evaluation Docs](docs/evaluation/EVALUATION.md) describe V2.9 Agent evaluation and V4.6.1 RAG retrieval
   evaluation.
+- V4 RAG health indicators expose offline readiness through `/actuator/health` without requiring API keys, Docker,
+  PGvector, PostgreSQL, or live embedding providers.
 
 The default V4 RAG demo does not require API keys, Docker, or PGvector. Optional live provider and PGvector paths are
 configured separately and are not part of the default local interview / project review demo. The demo is for local
@@ -1626,8 +1628,29 @@ V4.6.2 only adds demo script / expected output / docs harness coverage. It does 
 modify `search_aftersale_policy`, does not change retrieval algorithms, does not change ToolRegistry semantics, does
 not change ToolCallTrace schema, does not change Workspace writing, and does not change Execution Tree runtime. The
 default demo remains offline and does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real
-embedding providers, or external network. V4.6.3 remains Actuator health indicator work, and V4.6.4 remains OpenAPI /
-API docs polish.
+embedding providers, or external network.
+
+### V4.6.3 Actuator Health Indicators for RAG Components
+
+Implemented V4.6.3 offline readiness diagnostics:
+
+- `/actuator/health` includes RAG search, vector-store, embedding, and ingestion health components when RAG health is
+  enabled.
+- RAG search health reports the configured search service and supported retrieval modes without executing a search.
+- Vector-store health reports `none`, `fake`, or `pgvector` configuration status without opening a database connection
+  and without running vector similarity search.
+- Embedding health reports disabled / fake / Spring AI configuration readiness without calling `EmbeddingClient` or a
+  real Spring AI embedding provider.
+- Ingestion health reports ingestion contract readiness without reading files, chunking content, embedding text, or
+  writing repositories.
+- Health details are disabled by default and, when enabled, report only sanitized configuration signals such as
+  `configured=true/false`; secrets and local paths are not exposed by RAG health details.
+
+V4.6.3 does not add runtime business behavior, does not modify `search_aftersale_policy`, does not change retrieval
+algorithms, does not change the RAG evaluation runner, and does not change ToolCallTrace, Workspace, or Execution Tree
+runtime semantics. Health is an offline readiness signal, not proof of live PGvector or live provider connectivity. The
+default path still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+providers, or external network. V4.6.4 remains OpenAPI / API docs polish.
 
 ### V4 Default Test Boundary
 

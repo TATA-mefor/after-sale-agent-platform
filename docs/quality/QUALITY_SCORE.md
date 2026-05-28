@@ -1360,7 +1360,36 @@ Known limitations:
 
 V4.6 follow-up:
 
-- V4.6.3 handles Actuator health indicators.
+- V4.6.3 completed Actuator health indicators.
+- V4.6.4 handles OpenAPI / API docs polish.
+
+### V4.6.3 Actuator Health Indicators Quality Summary
+
+Status: completed for offline RAG readiness diagnostics.
+
+Current V4.6.3 quality status:
+
+- Health indicator quality: `/actuator/health` includes RAG search, vector-store, embedding, and ingestion indicators
+  when RAG health is enabled.
+- Offline boundary: indicators inspect beans and configuration only. They do not execute RAG search, vector similarity
+  search, embedding calls, ingestion work, ToolRegistry runtime, AgentRun, JDBC, PGvector, Spring AI `EmbeddingModel`, or
+  Spring AI `VectorStore`.
+- Secret safety boundary: details are disabled by default; when enabled, RAG details use sanitized provider/configuration
+  signals and do not expose API keys, passwords, tokens, local paths, prompts, raw text, or full provider URLs with
+  credentials.
+- Actuator exposure boundary: default management exposure remains limited to `health`; sensitive endpoints such as env,
+  configprops, and beans are not exposed by default.
+- Architecture boundary: ArchitectureTest covers health package isolation from Spring Web controllers, JDBC/DataSource,
+  Spring AI concrete clients, VectorStore, ToolRegistry / AgentRun runtime, Agent / Handler / Skill dependencies, and
+  business repository implementations.
+
+Known limitations:
+
+- V4.6.3 health is offline readiness only. It does not prove live PostgreSQL / PGvector connectivity, real provider
+  reachability, embedding latency, vector index freshness, or production monitoring coverage.
+
+V4.6 follow-up:
+
 - V4.6.4 handles OpenAPI / API docs polish.
 
 Planned phases:
@@ -1383,7 +1412,7 @@ V4.5.3 search_aftersale_policy HYBRID Mode Wiring (completed)
 V4.5.4 ToolCallTrace / Workspace Evidence Wiring (completed)
 V4.6.1 RAG Evaluation Cases and Metrics (completed)
 V4.6.2 V4 RAG Demo Script (completed)
-V4.6.3 Actuator Health Indicators
+V4.6.3 Actuator Health Indicators (completed)
 V4.6.4 OpenAPI / API Docs Polish
 V4.7 Skill Layer Integration
 V4.8 Execution Tree / Demo Extensions

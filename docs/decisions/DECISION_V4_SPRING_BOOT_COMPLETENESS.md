@@ -56,3 +56,20 @@ Costs:
 - 需要新增依赖和配置；
 - 需要维护 profile / migration / security 测试；
 - 需要避免默认 test gate 被 integration test 污染。
+
+## V4.6.3 Health Indicator Completion
+
+V4.6.3 implements RAG health indicators as offline readiness diagnostics:
+
+- RAG search health checks whether the RAG search service is present and reports supported KEYWORD / VECTOR / HYBRID
+  modes without executing search.
+- Vector-store health reports provider configuration (`none`, `fake`, or `pgvector`) without opening a PostgreSQL /
+  PGvector connection and without executing vector search.
+- Embedding health reports disabled / fake / Spring AI readiness without calling `EmbeddingClient` or a real Spring AI
+  embedding provider.
+- Ingestion health reports ingestion contract readiness without reading files, chunking content, embedding text, or
+  writing repositories.
+
+Health indicators are not live connectivity checks and do not prove production provider availability. Details are off by
+default; when enabled, they expose sanitized readiness details only and do not expose secrets, local paths, prompts, raw
+text, or full credential-bearing URLs.

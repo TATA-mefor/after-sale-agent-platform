@@ -18,7 +18,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 logging:
   pattern:
@@ -27,6 +30,9 @@ logging:
 agent:
   rag:
     enabled: ${AFTERSALE_RAG_ENABLED:false}
+    health:
+      enabled: ${AFTERSALE_RAG_HEALTH_ENABLED:true}
+      include-details: ${AFTERSALE_RAG_HEALTH_DETAILS:false}
     vector-store:
       provider: ${AFTERSALE_VECTOR_STORE_PROVIDER:none}
       pgvector:

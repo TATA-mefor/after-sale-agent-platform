@@ -725,7 +725,7 @@ evaluation / demo / Spring Boot completeness 后续工作。
 ## 10. V4.6 Evaluation / Demo / Spring Boot Completeness
 
 Status: started. V4.6.1 RAG evaluation cases and metrics are completed. V4.6.2 V4 RAG demo script is completed.
-V4.6.3 Actuator health indicators and V4.6.4 OpenAPI / API docs polish remain follow-ups.
+V4.6.3 Actuator health indicators are completed. V4.6.4 OpenAPI / API docs polish remains a follow-up.
 
 ### 10.1 V4.6.1 已完成边界
 
@@ -765,13 +765,30 @@ V4.6.2 只完成 demo script / expected output / docs harness:
 V4.6.2 不新增 runtime behavior，不修改 `search_aftersale_policy` runtime，不修改 retrieval algorithm，不修改
 ToolRegistry、ToolCallTrace schema、Workspace 写入逻辑、Execution Tree runtime 或 evaluation runner。
 
-### 10.3 V4.6.3 Health Indicator Follow-up
+### 10.3 V4.6.3 已完成边界
 
 ```text
-V4.6.3 -> Actuator health indicators
+V4.6.3 -> Actuator health indicators (Completed)
 ```
 
-V4.6.3 才处理 RAG / embedding / ingestion health indicators，不在 V4.6.2 中实现。
+V4.6.3 只完成 Actuator health indicator / health exposure / tests / docs：
+
+- 新增 RAG search、vector-store、embedding 和 ingestion health indicators；
+- 默认 `/actuator/health` 只暴露 health endpoint，不暴露 env / configprops / beans 等敏感 endpoints；
+- health details 默认关闭，显式开启时只输出 sanitized readiness details；
+- RAG search health 只检查 search service bean 和 KEYWORD / VECTOR / HYBRID supported modes，不执行 search；
+- vector-store health 只检查 `none` / `fake` / `pgvector` provider configuration，不连接 PostgreSQL，不执行
+  `PolicyVectorRepository.search`，不调用 Spring AI `VectorStore`；
+- embedding health 只检查 disabled / fake / Spring AI configuration，不调用 `EmbeddingClient.embed` 或真实 Spring AI
+  `EmbeddingModel`；
+- ingestion health 只检查 ingestion contracts / beans，不读取文件、不 chunk、不 embedding、不写 repository；
+- ArchitectureTest 覆盖 health package 不依赖 Spring Web、JDBC、DataSource、Spring AI concrete clients、VectorStore、
+  ToolRegistry / AgentRun runtime 或业务 repository implementation。
+
+V4.6.3 不新增 runtime business behavior，不修改 `search_aftersale_policy` runtime，不修改 retrieval algorithm，不修改
+RAG evaluation runner，不修改 ToolCallTrace schema、Workspace 写入逻辑或 Execution Tree runtime。Health 是 offline
+readiness / diagnostic signal，不是 live PGvector 或 live provider connectivity check。默认测试仍不依赖真实 LLM、
+API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、真实 embedding provider 或外部网络。
 
 ### 10.4 V4.6.4 API Docs Follow-up
 
