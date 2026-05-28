@@ -1329,7 +1329,37 @@ Known limitations:
 
 V4.6 follow-up:
 
-- V4.6.2 handles the V4 RAG demo script.
+- V4.6.2 completed the V4 RAG demo script.
+- V4.6.3 handles Actuator health indicators.
+- V4.6.4 handles OpenAPI / API docs polish.
+
+### V4.6.2 V4 RAG Demo Script Quality Summary
+
+Status: completed for V4 RAG demo script / expected output / docs harness.
+
+Current V4.6.2 quality status:
+
+- Demo script quality: `docs/demo/V4_RAG_DEMO_SCRIPT.md` documents the local interview / project review demo across
+  startup, HYBRID policy evidence, AgentRun, ToolCallTrace, AgentWorkspace, Execution Tree, and RAG evaluation.
+- Expected output quality: snippets are short and show `retrievalMode`, `evidences`, `source`, retrieval score,
+  keyword/vector scores, fallbackUsed, trace output JSON, workspace evidence, execution tree evidence, and evaluation
+  metrics without long raw text.
+- Offline boundary: the default V4 RAG demo does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL,
+  Redis, real embedding providers, or external network.
+- Evidence-only boundary: the demo states that `search_aftersale_policy` remains LOW-risk read-only and RAG evidence
+  does not execute refund, exchange, compensation, payment, logistics, inventory, coupon issuance, or dispute closure.
+- Evaluation demo boundary: Scenario D links V4.6.1 RAG evaluation, deterministic metrics, fake / in-memory
+  dependencies, and the no LLM-as-judge boundary.
+- Docs harness quality: `RagDemoDocsHarnessTest` verifies demo content, README and evaluation links, completion record,
+  V4.6.2 no-runtime boundary, optional live path references, and secret / local-path safety.
+
+Known limitations:
+
+- V4.6.2 does not add runtime behavior, a direct public tool execution endpoint, Actuator health indicators, OpenAPI
+  docs, live PGvector demo automation, or live provider validation.
+
+V4.6 follow-up:
+
 - V4.6.3 handles Actuator health indicators.
 - V4.6.4 handles OpenAPI / API docs polish.
 
@@ -1352,7 +1382,7 @@ V4.5.2 Keyword + Vector Merge Service (completed)
 V4.5.3 search_aftersale_policy HYBRID Mode Wiring (completed)
 V4.5.4 ToolCallTrace / Workspace Evidence Wiring (completed)
 V4.6.1 RAG Evaluation Cases and Metrics (completed)
-V4.6.2 V4 RAG Demo Script
+V4.6.2 V4 RAG Demo Script (completed)
 V4.6.3 Actuator Health Indicators
 V4.6.4 OpenAPI / API Docs Polish
 V4.7 Skill Layer Integration

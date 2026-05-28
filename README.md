@@ -1241,6 +1241,20 @@ Policy document ingestion
 → final suggestion with policy evidence
 ```
 
+V4 demo documents:
+
+- [V4 RAG Demo Script](docs/demo/V4_RAG_DEMO_SCRIPT.md) is the local interview / project review demo for HYBRID
+  policy evidence, ToolCallTrace, Workspace, Execution Tree, and RAG evaluation.
+- [V4 Policy Ingestion Pipeline](docs/demo/V4_POLICY_INGESTION_PIPELINE.md) explains the offline ingestion foundation
+  and future live-provider path.
+- [V4 PGvector Local Setup](docs/demo/V4_PGVECTOR_LOCAL_SETUP.md) documents the optional local PGvector profile.
+- [Evaluation Docs](docs/evaluation/EVALUATION.md) describe V2.9 Agent evaluation and V4.6.1 RAG retrieval
+  evaluation.
+
+The default V4 RAG demo does not require API keys, Docker, or PGvector. Optional live provider and PGvector paths are
+configured separately and are not part of the default local interview / project review demo. The demo is for local
+development and project explanation, not production deployment.
+
 ### V4.1 Tool / Skill Foundation
 
 Implemented V4.1 foundation:
@@ -1591,8 +1605,29 @@ Implemented V4.6.1 offline retrieval evaluation:
 V4.6.1 does not add runtime features, does not modify `search_aftersale_policy` retrieval logic, does not use
 LLM-as-judge, does not create Ticket / AgentRun / ToolCallTrace / Workspace / Execution Tree state, and does not call
 real LLMs, real embedding providers, Spring AI, PostgreSQL, PGvector, Docker, MySQL, Redis, API keys, raw datasets, or
-external network. V4.6.2 remains the V4 RAG demo script follow-up, V4.6.3 remains Actuator health indicator work, and
-V4.6.4 remains OpenAPI / API docs polish.
+external network.
+
+### V4.6.2 V4 RAG Demo Script
+
+Implemented V4.6.2 demo documentation:
+
+- `docs/demo/V4_RAG_DEMO_SCRIPT.md` provides a curl-oriented walkthrough for app startup, ticket creation, AgentRun,
+  ToolCallTrace, Execution Tree, and RAG evaluation.
+- Scenario A documents the `search_aftersale_policy` HYBRID ToolRegistry input/output shape with short expected
+  evidence snippets.
+- Scenario B shows AgentRun policy evidence visibility in final summary, ToolCallTrace output JSON, and
+  AgentWorkspace policy evidence summary.
+- Scenario C shows the read-only Execution Tree evidence view.
+- Scenario D links V4.6.1 RAG evaluation and expected deterministic metrics.
+- Docs harness tests verify demo script content, README and evaluation links, completion record, offline boundary,
+  evidence-only boundary, and secret / local-path safety.
+
+V4.6.2 only adds demo script / expected output / docs harness coverage. It does not add runtime behavior, does not
+modify `search_aftersale_policy`, does not change retrieval algorithms, does not change ToolRegistry semantics, does
+not change ToolCallTrace schema, does not change Workspace writing, and does not change Execution Tree runtime. The
+default demo remains offline and does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real
+embedding providers, or external network. V4.6.3 remains Actuator health indicator work, and V4.6.4 remains OpenAPI /
+API docs polish.
 
 ### V4 Default Test Boundary
 

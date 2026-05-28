@@ -204,8 +204,28 @@ does not use LLM-as-judge, does not call a real LLM, does not call a real embedd
 does not connect PostgreSQL / PGvector, and does not require Docker, MySQL, Redis, API keys, raw datasets, or external
 network.
 
-V4.6.2 remains the V4 RAG demo script follow-up. V4.6.3 remains Actuator health indicator work. V4.6.4 remains OpenAPI
-/ API documentation polish.
+### V4 RAG Demo Scenario D
+
+V4.6.2 links this retrieval evaluation path from `docs/demo/V4_RAG_DEMO_SCRIPT.md` as Scenario D. Run the demo
+evaluation check with:
+
+```bash
+mvn test -Dtest=RagEvaluationApplicationServiceTest
+```
+
+The expected report highlights:
+
+- `passRate`
+- `evidenceRecallPassRate`
+- `citationCompletenessRate`
+- `safetyPassRate`
+- `fallbackAccuracy`
+
+This is a deterministic retrieval evaluation, not LLM-as-judge. It does not call real providers and does not create
+Ticket, AgentRun, ToolCallTrace, Workspace, or Execution Tree state.
+
+V4.6.2 completed the V4 RAG demo script. V4.6.3 remains Actuator health indicator work. V4.6.4 remains OpenAPI / API
+documentation polish.
 
 ## V4 RAG / Skill Evaluation Extension
 
