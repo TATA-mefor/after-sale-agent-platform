@@ -73,3 +73,19 @@ V4.6.3 implements RAG health indicators as offline readiness diagnostics:
 Health indicators are not live connectivity checks and do not prove production provider availability. Details are off by
 default; when enabled, they expose sanitized readiness details only and do not expose secrets, local paths, prompts, raw
 text, or full credential-bearing URLs.
+
+## V4.6.4 OpenAPI Completion
+
+V4.6.4 implements OpenAPI / Swagger UI documentation polish:
+
+- `springdoc-openapi` exposes `/v3/api-docs` and Swagger UI for local development and review.
+- OpenAPI metadata describes Ticket, AgentRun, Approval, ToolCallTrace, Execution Tree, platform health, ToolRegistry
+  control, approval-gated high-risk actions, RAG policy evidence retrieval, and the default offline demo path.
+- `docs/api/OPENAPI.md` documents local entry points, API groups, RAG evidence-only boundaries, and Actuator health
+  boundaries.
+- `/actuator/health` remains the only default actuator exposure.
+
+V4.6.4 does not add runtime business behavior, does not add authentication, does not add a public policy-search
+controller, does not modify `search_aftersale_policy`, and does not change RAG health, evaluation, ToolCallTrace,
+Workspace, or Execution Tree behavior. OpenAPI docs do not expose secrets, raw prompts, raw datasets, local paths, or
+credential-bearing provider configuration. They are not a production deployment guide.

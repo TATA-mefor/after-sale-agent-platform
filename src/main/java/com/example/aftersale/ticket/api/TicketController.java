@@ -4,6 +4,9 @@ import com.example.aftersale.common.api.ApiResponse;
 import com.example.aftersale.ticket.application.TicketApplicationService;
 import com.example.aftersale.ticket.domain.Ticket;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/tickets")
+@Tag(name = "Tickets", description = "Ticket intake and read APIs for after-sale issues.")
 public class TicketController {
 
     private final TicketApplicationService ticketApplicationService;
@@ -32,13 +36,20 @@ public class TicketController {
     }
 
     @PostMapping
+    @Operation(
+            summary = "Create an after-sale ticket",
+            description = "Creates a local after-sale ticket from demo input. This does not execute refunds, "
+                    + "exchanges, compensation, payment, logistics, or dispute closure.")
     public ResponseEntity<ApiResponse<TicketResponse>> createTicket(@RequestBody TicketCreateRequest request) {
         Ticket ticket = ticketApplicationService.createTicket(request.userId(), request.orderId(), request.message());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(TicketResponse.from(ticket)));
     }
 
     @GetMapping("/{ticketId}")
-    public ApiResponse<TicketResponse> getTicket(@PathVariable String ticketId) {
+    @Operation(summary = "Get a ticket", description = "Returns an existing ticket by id without running the Agent.")
+    public ApiResponse<TicketResponse> getTicket(
+            @Parameter(description = "Ticket id returned by create ticket.", example = "T-DEMO-1001")
+            @PathVariable String ticketId) {
         Ticket ticket = ticketApplicationService.getTicket(ticketId);
         return ApiResponse.success(TicketResponse.from(ticket));
     }

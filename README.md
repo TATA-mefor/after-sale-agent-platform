@@ -70,6 +70,17 @@ curl http://localhost:8080/api/health
 curl http://localhost:8080/actuator/health
 ```
 
+OpenAPI / Swagger UI:
+
+```bash
+curl http://localhost:8080/v3/api-docs
+```
+
+Open `http://localhost:8080/swagger-ui/index.html` or `http://localhost:8080/swagger-ui.html` for interactive API
+docs. See [OpenAPI docs](docs/api/OPENAPI.md) for the API groups, evidence-only boundary, health endpoint boundary,
+and default offline path. V4.6.4 is API docs polish only; it does not add runtime behavior and does not require live
+providers, API keys, Docker, PostgreSQL, PGvector, MySQL, Redis, real LLMs, or real embedding providers.
+
 ## MySQL Profile
 
 V3.1 adds an explicit `mysql` profile for local persistence. The default profile remains in-memory, and default
@@ -644,7 +655,7 @@ DashScope Chat Completions compatible example for PowerShell:
 
 ```powershell
 $env:AFTERSALE_LLM_PROVIDER="dashscope-chat-compatible"
-$env:DASHSCOPE_API_KEY="你的 DashScope API Key"
+# Set DASHSCOPE_API_KEY in your local shell before running.
 $env:DASHSCOPE_BASE_URL="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1"
 $env:AFTERSALE_LLM_MODEL="qwen3.6-plus"
 ```
@@ -653,7 +664,7 @@ DashScope Responses compatible example for PowerShell:
 
 ```powershell
 $env:AFTERSALE_LLM_PROVIDER="dashscope-responses"
-$env:DASHSCOPE_API_KEY="你的 DashScope API Key"
+# Set DASHSCOPE_API_KEY in your local shell before running.
 $env:DASHSCOPE_BASE_URL="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1"
 $env:AFTERSALE_LLM_MODEL="qwen3.6-plus"
 ```
@@ -1250,6 +1261,8 @@ V4 demo documents:
 - [V4 PGvector Local Setup](docs/demo/V4_PGVECTOR_LOCAL_SETUP.md) documents the optional local PGvector profile.
 - [Evaluation Docs](docs/evaluation/EVALUATION.md) describe V2.9 Agent evaluation and V4.6.1 RAG retrieval
   evaluation.
+- [OpenAPI Docs](docs/api/OPENAPI.md) describe Swagger UI, `/v3/api-docs`, core API groups, `/actuator/health`, and
+  the V4.6.4 no-runtime-change boundary.
 - V4 RAG health indicators expose offline readiness through `/actuator/health` without requiring API keys, Docker,
   PGvector, PostgreSQL, or live embedding providers.
 
@@ -1297,7 +1310,7 @@ $env:AFTERSALE_LLM_PROVIDER="spring-ai-chat"
 $env:SPRING_AI_ENABLED="true"
 $env:SPRING_AI_CHAT_ENABLED="true"
 $env:SPRING_AI_MODEL_CHAT="openai"
-$env:SPRING_AI_OPENAI_API_KEY="你的 API Key"
+# Set SPRING_AI_OPENAI_API_KEY in your local shell before running.
 $env:SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL="gpt-4.1-mini"
 mvn test "-Dtest=SpringAiLlmClientLiveSmokeTest" "-Dlive.spring-ai=true" "-Dlive.llm=true"
 ```
@@ -1308,7 +1321,7 @@ Spring AI embedding live example:
 $env:SPRING_AI_ENABLED="true"
 $env:SPRING_AI_EMBEDDING_ENABLED="true"
 $env:SPRING_AI_MODEL_EMBEDDING="openai"
-$env:SPRING_AI_OPENAI_API_KEY="你的 API Key"
+# Set SPRING_AI_OPENAI_API_KEY in your local shell before running.
 mvn test "-Dtest=SpringAiEmbeddingClientLiveSmokeTest" "-Dlive.spring-ai=true" "-Dlive.embedding=true"
 ```
 
@@ -1650,7 +1663,24 @@ V4.6.3 does not add runtime business behavior, does not modify `search_aftersale
 algorithms, does not change the RAG evaluation runner, and does not change ToolCallTrace, Workspace, or Execution Tree
 runtime semantics. Health is an offline readiness signal, not proof of live PGvector or live provider connectivity. The
 default path still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
-providers, or external network. V4.6.4 remains OpenAPI / API docs polish.
+providers, or external network.
+
+### V4.6.4 OpenAPI / API Docs Polish
+
+Implemented V4.6.4 API documentation polish:
+
+- `springdoc-openapi` exposes `/v3/api-docs` and Swagger UI at `/swagger-ui/index.html` / `/swagger-ui.html`.
+- OpenAPI metadata describes the AfterSale-Agent API, ToolRegistry-controlled tools, approval-gated high-risk actions,
+  RAG policy evidence retrieval, evidence-only outputs, and the default offline demo path.
+- Existing Ticket, AgentRun, Approval, ToolCallTrace, Execution Tree, and platform health APIs are annotated for docs.
+- `docs/api/OPENAPI.md` explains local usage, core API groups, RAG evidence boundaries, and actuator health boundaries.
+- `/actuator/health` remains the only actuator endpoint exposed by default.
+
+V4.6.4 does not add business runtime behavior, does not add a public policy-search controller, does not modify
+`search_aftersale_policy`, does not change retrieval algorithms, and does not modify RAG health, evaluation,
+ToolCallTrace, Workspace, or Execution Tree runtime. OpenAPI docs do not require live providers, API keys, Docker,
+PostgreSQL, PGvector, MySQL, Redis, real LLMs, real embedding providers, or external network. OpenAPI docs are for
+local development and review; they are not a production deployment guide.
 
 ### V4 Default Test Boundary
 

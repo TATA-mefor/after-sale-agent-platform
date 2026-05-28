@@ -4,6 +4,9 @@ import com.example.aftersale.agent.application.AgentApplicationService;
 import com.example.aftersale.agent.application.AgentRunResult;
 import com.example.aftersale.common.api.ApiResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/tickets/{ticketId}/agent-runs")
+@Tag(name = "Agent Runs", description = "Run the Agent for a ticket through application-service orchestration.")
 public class AgentRunController {
 
     private final AgentApplicationService agentApplicationService;
@@ -30,7 +34,13 @@ public class AgentRunController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<AgentRunResponse>> createAgentRun(@PathVariable String ticketId) {
+    @Operation(
+            summary = "Create an AgentRun for a ticket",
+            description = "Runs the configured offline planner and handlers through ToolRegistry. RAG evidence is "
+                    + "policy support only and high-risk business actions remain approval-gated.")
+    public ResponseEntity<ApiResponse<AgentRunResponse>> createAgentRun(
+            @Parameter(description = "Ticket id to process.", example = "T-DEMO-1001")
+            @PathVariable String ticketId) {
         AgentRunResult result = agentApplicationService.runForTicket(ticketId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(AgentRunResponse.from(result)));
     }

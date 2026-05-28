@@ -547,6 +547,77 @@ class ArchitectureTest {
     }
 
     @Test
+    void openApiConfigurationMustStayDocumentationOnly() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..common.openapi..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "..ticket.domain..",
+                        "..agent.domain..",
+                        "..approval.domain..",
+                        "..trace.domain..",
+                        "..tool..",
+                        "..policy..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..")
+                .because("OpenAPI config must describe APIs without accessing business or provider runtime.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..common.openapi..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("OpenAPI config must not access repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..common.openapi..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("EmbeddingClient")
+                .because("OpenAPI config must not call or depend on embedding clients.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..common.openapi..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleName("PolicyVectorRepository")
+                .because("OpenAPI config must not access vector repository contracts.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void runtimeLogicMustNotDependOnOpenApiConfigurationPackage() {
+        noClasses()
+                .that()
+                .resideInAnyPackage(
+                        "..domain..",
+                        "..application..",
+                        "..agent.application.handler..",
+                        "..agent.application.skill..",
+                        "..tool..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("..common.openapi..")
+                .because("OpenAPI package is documentation configuration and must not enter runtime logic.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void agentHandlerAndSkillMustNotDependOnRagHealthIndicators() {
         noClasses()
                 .that()

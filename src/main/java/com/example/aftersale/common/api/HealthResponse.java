@@ -1,4 +1,11 @@
 package com.example.aftersale.common.api;
 
-public record HealthResponse(String status, String service) {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Lightweight platform health response.")
+public record HealthResponse(
+        @Schema(description = "Health status.", example = "UP")
+        String status,
+        @Schema(description = "Service name.", example = "after-sale-agent-platform")
+        String service) {
 }

@@ -117,6 +117,11 @@ retrieval contract, do not execute `search_aftersale_policy`, do not call `Embed
 `PolicyVectorRepository.search`, do not connect to PostgreSQL / PGvector, and do not call Spring AI `VectorStore` or
 `EmbeddingModel`. Health status is diagnostic metadata, not retrieval evidence and not business decision confidence.
 
+V4.6.4 status: OpenAPI / API docs polish completed. OpenAPI describes existing HTTP APIs and documents the
+`search_aftersale_policy` evidence-only boundary, but it does not add a policy-search HTTP Controller, does not change
+this retrieval contract, does not modify KEYWORD / VECTOR / HYBRID algorithms, does not execute tools, and does not
+call embedding providers or vector stores. Swagger UI is documentation only and is not production deployment coverage.
+
 允许链路：
 
 ```text

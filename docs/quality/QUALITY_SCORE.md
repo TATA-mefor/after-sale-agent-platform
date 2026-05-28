@@ -1388,9 +1388,32 @@ Known limitations:
 - V4.6.3 health is offline readiness only. It does not prove live PostgreSQL / PGvector connectivity, real provider
   reachability, embedding latency, vector index freshness, or production monitoring coverage.
 
-V4.6 follow-up:
+### V4.6.4 OpenAPI / API Docs Polish (completed)
 
-- V4.6.4 handles OpenAPI / API docs polish.
+Status: completed for OpenAPI / Swagger UI / API documentation polish.
+
+Current V4.6.4 quality status:
+
+- OpenAPI quality: `/v3/api-docs` exposes the existing Spring Boot HTTP API surface with title
+  `AfterSale-Agent API` and V4 metadata.
+- Swagger UI quality: `/swagger-ui/index.html` and `/swagger-ui.html` are available for local review without live
+  providers.
+- API documentation quality: Ticket, AgentRun, Approval, ToolCallTrace, Execution Tree, and platform health APIs have
+  OpenAPI annotations and synthetic examples.
+- Evidence-only documentation boundary: docs explain that `search_aftersale_policy` remains a LOW-risk read-only
+  ToolRegistry tool; RAG evidence is not a business action and retrieval score is not business decision confidence.
+- Exposure boundary: `/actuator/health` remains the only default actuator endpoint; OpenAPI docs do not expose env,
+  configprops, beans, API keys, passwords, tokens, raw prompts, raw datasets, or local paths.
+- Offline boundary: OpenAPI docs and tests do not call real LLMs, real embedding providers, PostgreSQL, PGvector,
+  Docker, MySQL, Redis, API keys, or external network.
+- Architecture boundary: ArchitectureTest covers OpenAPI config isolation from repositories, embedding/vector
+  contracts, PGvector, Spring AI, VectorStore, DataSource, and JdbcTemplate.
+
+Known limitations:
+
+- V4.6.4 does not add authentication, authorization, production deployment guidance, or a public policy-search
+  controller.
+- OpenAPI docs do not prove live provider or PGvector connectivity.
 
 Planned phases:
 
@@ -1413,7 +1436,7 @@ V4.5.4 ToolCallTrace / Workspace Evidence Wiring (completed)
 V4.6.1 RAG Evaluation Cases and Metrics (completed)
 V4.6.2 V4 RAG Demo Script (completed)
 V4.6.3 Actuator Health Indicators (completed)
-V4.6.4 OpenAPI / API Docs Polish
+V4.6.4 OpenAPI / API Docs Polish (completed)
 V4.7 Skill Layer Integration
 V4.8 Execution Tree / Demo Extensions
 V4.9 Spring Boot Completeness
