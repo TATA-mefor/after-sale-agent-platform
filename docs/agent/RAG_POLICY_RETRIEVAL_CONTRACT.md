@@ -102,6 +102,15 @@ exchange, coupon compensation, payment, logistics, or dispute-closure actions. D
 require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, or external network.
 Real PGvector and real embedding providers remain opt-in / future paths.
 
+V4.6.1 status: offline deterministic RAG evaluation cases and metrics completed. The project now includes
+`docs/evaluation/rag_policy_cases.jsonl`, RAG evaluation models, a JSONL loader, deterministic fixture data, and
+`RagEvaluationApplicationService` for KEYWORD / VECTOR / HYBRID policy evidence retrieval evaluation. V4.6.1 does not
+add runtime features, does not change `search_aftersale_policy` retrieval logic, does not write ToolCallTrace,
+AgentWorkspace, Execution Tree, Ticket, or AgentRun state, and does not use LLM-as-judge. The default runner uses
+`FakeEmbeddingClient`, `InMemoryPolicyVectorRepository`, and in-memory keyword policy data. It does not call real LLMs,
+real embedding providers, Spring AI, Spring AI VectorStore, PostgreSQL / PGvector, Docker, MySQL, Redis, API keys, raw
+datasets, or external network.
+
 允许链路：
 
 ```text
@@ -425,6 +434,41 @@ security and execution-boundary decision.
 - no real provider dependency。
 
 Live tests 必须显式 opt-in。
+
+### V4.6.1 RAG Evaluation Contract
+
+RAG evaluation is retrieval evaluation, not Agent flow evaluation. It may call `RagPolicySearchApplicationService`
+directly with deterministic fake / in-memory dependencies. It must not create tickets, create AgentRuns, call
+ToolRegistry for Agent runtime, write ToolCallTrace, write AgentWorkspace, or mutate Execution Tree state.
+
+The versioned dataset is:
+
+```text
+docs/evaluation/rag_policy_cases.jsonl
+```
+
+The evaluation report must expose deterministic metrics:
+
+```text
+totalCases
+passedCases
+failedCases
+passRate
+evidenceRecallPassRate
+evidenceSourcePassRate
+retrievalModePassRate
+fallbackAccuracy
+emptyResultAccuracy
+citationCompletenessRate
+safetyPassRate
+averageEvidenceCount
+failures
+```
+
+Metric checks are exact-field and substring checks. V4.6.1 does not use LLM-as-judge, semantic grading, external
+evaluation frameworks, real provider calls, PGvector, Docker, MySQL, Redis, API keys, raw datasets, or external
+network. Failures must include caseId, field, expected, actual, and a short sanitized message without full evidence
+JSON, full prompt, full chunk content, API keys, passwords, tokens, local paths, or raw dataset paths.
 
 ## 13. Risk Boundary
 

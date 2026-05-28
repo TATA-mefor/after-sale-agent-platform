@@ -468,6 +468,54 @@ class ArchitectureTest {
     }
 
     @Test
+    void ragEvaluationMustStayOfflineAndNotWriteRuntimeState() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.evaluation..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework.web..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure.pgvector..",
+                        "..policy.rag.infrastructure.springai..")
+                .because("V4.6.1 RAG evaluation is an offline deterministic runner, not live RAG infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..policy.rag.evaluation..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "..trace..",
+                        "..agent.application.workspace..",
+                        "..agent.application.executiontree..",
+                        "..ticket..",
+                        "..approval..")
+                .because("RAG evaluation must not create AgentRun runtime state, traces, workspace, or approvals.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void agentHandlerAndSkillMustNotDependOnRagEvaluation() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage("..policy.rag.evaluation..")
+                .because("RAG evaluation is offline quality measurement, not Agent runtime behavior.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void agentHandlerAndSkillMustNotDependOnPolicyVectorRepositoryContract() {
         noClasses()
                 .that()

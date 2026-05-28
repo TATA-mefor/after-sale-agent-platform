@@ -1293,6 +1293,46 @@ V4.6 follow-up:
 - V4.6 can continue evaluation, demo, Spring Boot completeness, or Skill-layer integration work without treating RAG
   evidence as a business action.
 
+### V4.6.1 RAG Evaluation Cases and Metrics Quality Summary
+
+Status: completed for offline deterministic RAG policy evidence evaluation dataset, metrics, runner, tests, docs, and
+architecture boundary coverage.
+
+Current V4.6.1 quality status:
+
+- Dataset quality: `docs/evaluation/rag_policy_cases.jsonl` contains 15 reviewable JSONL cases covering KEYWORD,
+  VECTOR, HYBRID, return, exchange, refund-only, logistics, coupon, special goods, repair / quality, unsupported
+  query, empty evidence, vector-only evidence, keyword fallback, hybrid dedup, low-score filtering, and evidence-only
+  safety.
+- Loader quality: `RagEvaluationDatasetLoader` validates malformed JSONL with line numbers and tests dataset uniqueness,
+  expected-field completeness, legal retrievalMode values, and secret / local-path safety.
+- Fixture quality: `RagEvaluationFixture` builds deterministic fake / in-memory keyword and vector evidence without
+  reading raw datasets or using external providers.
+- Runner quality: `RagEvaluationApplicationService` calls the RAG search application boundary directly and does not
+  create Ticket, AgentRun, ToolCallTrace, AgentWorkspace, or Execution Tree state.
+- Metrics quality: report metrics include passRate, evidenceRecallPassRate, evidenceSourcePassRate,
+  retrievalModePassRate, fallbackAccuracy, emptyResultAccuracy, citationCompletenessRate, safetyPassRate, and
+  averageEvidenceCount.
+- Evaluation boundary: V4.6.1 evaluates policy evidence retrieval, while V2.9 evaluation continues to evaluate Agent
+  planner behavior and plan validity.
+- Default test boundary: default validation uses `FakeEmbeddingClient`, `InMemoryPolicyVectorRepository`, and
+  in-memory keyword policy data. It does not require PostgreSQL, PGvector, Docker, MySQL, Redis, real LLMs, API keys,
+  real embedding providers, Spring AI provider calls, raw datasets, or external network.
+- Architecture boundary: RAG evaluation stays away from Spring Web, JDBC, `DataSource`, PGvector infrastructure,
+  Spring AI `VectorStore`, ToolCallTrace writes, Workspace writes, Execution Tree writes, and Agent / Handler / Skill
+  runtime dependencies.
+
+Known limitations:
+
+- V4.6.1 does not implement a V4 demo script, Actuator health indicators, OpenAPI / API docs polish, live PGvector
+  evaluation, LLM-as-judge, semantic grading, or new runtime retrieval behavior.
+
+V4.6 follow-up:
+
+- V4.6.2 handles the V4 RAG demo script.
+- V4.6.3 handles Actuator health indicators.
+- V4.6.4 handles OpenAPI / API docs polish.
+
 Planned phases:
 
 ```text
@@ -1311,9 +1351,13 @@ V4.5.1 RAG Search Contract (completed)
 V4.5.2 Keyword + Vector Merge Service (completed)
 V4.5.3 search_aftersale_policy HYBRID Mode Wiring (completed)
 V4.5.4 ToolCallTrace / Workspace Evidence Wiring (completed)
-V4.6 Skill Layer Integration
-V4.7 Execution Tree / Evaluation / Demo
-V4.8 Spring Boot Completeness
+V4.6.1 RAG Evaluation Cases and Metrics (completed)
+V4.6.2 V4 RAG Demo Script
+V4.6.3 Actuator Health Indicators
+V4.6.4 OpenAPI / API Docs Polish
+V4.7 Skill Layer Integration
+V4.8 Execution Tree / Demo Extensions
+V4.9 Spring Boot Completeness
 ```
 
 ### V4 不接受的退化

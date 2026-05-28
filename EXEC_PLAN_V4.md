@@ -376,7 +376,8 @@ V4.4.4 -> ingestion docs / completion record (completed)
 V4.5.1 -> RAG search contract / retrieval mode / evidence model (completed)
 V4.5.2 -> keyword + vector merge service (completed)
 V4.5.3 -> search_aftersale_policy HYBRID mode wiring (completed)
-V4.5.4 -> ToolCallTrace / Workspace evidence wiring
+V4.5.4 -> ToolCallTrace / Workspace evidence wiring (completed)
+V4.6.1 -> RAG evaluation cases and metrics (completed)
 ```
 
 ### 7.8 Schema boundary
@@ -721,13 +722,61 @@ evaluation / demo / Spring Boot completeness 后续工作。
 - 默认测试不依赖真实 embedding provider 或 vector store；
 - RAG evidence 不得直接声称退款、换货或补偿已完成。
 
-## 10. V4.6 Skill Layer Integration
+## 10. V4.6 Evaluation / Demo / Spring Boot Completeness
 
-### 10.1 目标
+Status: started. V4.6.1 RAG evaluation cases and metrics are completed. V4.6.2 demo script, V4.6.3 Actuator health
+indicators, and V4.6.4 OpenAPI / API docs polish remain follow-ups.
 
-在现有 SpecialistAgentHandler 基础上引入 Skill 抽象，不一次性大规模重写已有 Handler。
+### 10.1 V4.6.1 已完成边界
 
-### 10.2 迁移策略
+V4.6.1 只完成 offline deterministic RAG evaluation dataset / metrics / runner / tests:
+
+- 新增 `docs/evaluation/rag_policy_cases.jsonl`，覆盖 KEYWORD / VECTOR / HYBRID retrieval、fallback、empty result、
+  citation 和 evidence-only safety cases；
+- 新增 `policy.rag.evaluation` 模型、JSONL loader、deterministic fixture 和 `RagEvaluationApplicationService`；
+- runner 直接调用 RAG policy search application boundary，不创建 Ticket、AgentRun、ToolCallTrace、Workspace 或
+  Execution Tree state；
+- metrics 包含 evidenceRecallPassRate、evidenceSourcePassRate、retrievalModePassRate、fallbackAccuracy、
+  emptyResultAccuracy、citationCompletenessRate、safetyPassRate 和 averageEvidenceCount；
+- 默认 runner 使用 `FakeEmbeddingClient`、`InMemoryPolicyVectorRepository` 和 in-memory keyword policy data；
+- ArchitectureTest 确认 RAG evaluation 不依赖 Spring Web、JDBC、DataSource、PGvector infrastructure、Spring AI
+  VectorStore，也不被 Agent / Handler / Skill runtime 直接依赖。
+
+V4.6.1 不新增 runtime 功能，不修改 `search_aftersale_policy` 检索逻辑，不修改 ToolRegistry、ToolCallTrace、
+Workspace、Execution Tree、AgentRun 或 Skill runtime，不使用 LLM-as-judge，不调用真实 LLM / embedding provider /
+Spring AI，不连接 PostgreSQL / PGvector，也不要求 Docker、MySQL、Redis、API Key 或外部网络。
+
+### 10.2 V4.6.2 Demo Script Follow-up
+
+```text
+V4.6.2 -> V4 RAG demo script
+```
+
+V4.6.2 才补充 demo script，不在 V4.6.1 中实现。
+
+### 10.3 V4.6.3 Health Indicator Follow-up
+
+```text
+V4.6.3 -> Actuator health indicators
+```
+
+V4.6.3 才处理 RAG / embedding / ingestion health indicators，不在 V4.6.1 中实现。
+
+### 10.4 V4.6.4 API Docs Follow-up
+
+```text
+V4.6.4 -> OpenAPI / API docs polish
+```
+
+V4.6.4 才处理 OpenAPI / API docs polish，不在 V4.6.1 中实现。
+
+## 11. V4.7 Skill Layer Integration
+
+### 11.1 目标
+
+在现有 SpecialistAgentHandler 基础上继续 Skill 抽象迁移，不一次性大规模重写已有 Handler。
+
+### 11.2 迁移策略
 
 ```text
 SpecialistAgentHandler
@@ -736,7 +785,7 @@ SpecialistAgentHandler
 → gradual replacement / coexistence
 ```
 
-### 10.3 预期 Skill
+### 11.3 预期 Skill
 
 ```text
 ReturnEligibilityAssessmentSkill
@@ -748,50 +797,25 @@ HumanApprovalRoutingSkill
 RagPolicyEvidenceSkill
 ```
 
-### 10.4 验收标准
+### 11.4 验收标准
 
 - SkillRegistry 能按 skillName 或 subtaskType 找到唯一 Skill；
 - Skill 内部调用 Tool 必须通过 ToolRegistry；
 - Skill 不直接访问 Repository / VectorStore / Spring AI clients；
 - SkillExecutionResult 结构化表达 status、summary、evidence、toolCalls、riskFlags、approvalRequirement；
 - Execution Tree 能展示 Skill node；
-- 现有 V2/V3 demo 不退化。
+- 现有 V2/V3/V4.6.1 evaluation 不退化。
 
-## 11. V4.7 Execution Tree / Evaluation / Demo
+## 12. V4.8 Execution Tree / Demo Extensions
 
-### 11.1 Execution Tree
+### 12.1 Execution Tree
 
-新增 Skill node 与 RAG evidence node：
+后续如新增 Skill node，可继续增强 Execution Tree，只读查询仍不得修改 Ticket、AgentRun、ToolCallTrace、
+ApprovalRequest、Workspace 或 retrieval state。
 
-```text
-AgentRun
-├── Subtask: RETURN
-│   ├── Skill: ReturnEligibilityAssessmentSkill
-│   │   ├── ToolCall: get_order_by_id
-│   │   ├── ToolCall: search_aftersale_policy
-│   │   └── ToolCall: add_ticket_note
-│   └── PolicyEvidence
-│       ├── chunkId
-│       ├── score
-│       └── retrievalMode
-└── ApprovalRequest optional
-```
+### 12.2 Demo
 
-### 11.2 Evaluation
-
-新增指标：
-
-```text
-policyEvidenceRecallAccuracy
-ragCitationCompleteness
-unsupportedQueryNoFabricationRate
-skillSelectionAccuracy
-skillExecutionBoundaryPassRate
-```
-
-### 11.3 Demo
-
-新增 `docs/demo/V4_RAG_SKILL_DEMO_SCRIPT.md`，演示：
+V4.6.2 可新增 `docs/demo/V4_RAG_SKILL_DEMO_SCRIPT.md` 或等价 demo 文档，演示：
 
 1. 导入售后政策文档；
 2. chunk + embedding + vector write；
@@ -802,13 +826,13 @@ skillExecutionBoundaryPassRate
 7. Execution Tree 显示 skill node、tool node、evidence node；
 8. final summary 引用政策证据，但不执行真实高风险动作。
 
-## 12. V4.8 Spring Boot Completeness
+## 13. V4.9 Spring Boot Completeness
 
-### 12.1 目标
+### 13.1 目标
 
 围绕 RAG 和 Skill 能力补齐 Spring Boot 企业级工程完整性。
 
-### 12.2 必做方向
+### 13.2 必做方向
 
 ```text
 ConfigurationProperties
@@ -820,7 +844,7 @@ Opt-in integration tests
 Docker Compose local rag profile
 ```
 
-### 12.3 验收标准
+### 13.3 验收标准
 
 - 所有外部 provider / datasource / vector config 通过 typed properties 管理；
 - migration 不破坏默认 in-memory profile；
@@ -830,7 +854,7 @@ Docker Compose local rag profile
 - integration tests 显式 opt-in；
 - default test gate 不依赖外部服务。
 
-## 13. 验证命令
+## 14. 验证命令
 
 每个 V4 阶段必须至少运行：
 
@@ -851,7 +875,7 @@ mvn test -Dtest=V4RealAgentRagLiveTest -Dlive.llm=true -Dlive.rag=true
 
 默认命令不得触发真实外部依赖。
 
-## 14. Review Packet 要求
+## 15. Review Packet 要求
 
 每个 V4 子阶段完成后必须输出 Review Packet，至少包括：
 
@@ -872,7 +896,7 @@ completion signal
 docs/exec-plans/completed/
 ```
 
-## 15. Completion Signal
+## 16. Completion Signal
 
 ```text
 TASK_COMPLETE

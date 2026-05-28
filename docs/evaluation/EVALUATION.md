@@ -146,6 +146,67 @@ Future LLM evaluation must be explicit opt-in. It must:
 - keep failures structured by `caseId` and field;
 - avoid LLM-as-judge unless a separate decision record defines that boundary.
 
+## V4.6.1 RAG Policy Evidence Evaluation
+
+V4.6.1 adds a separate offline, deterministic evaluation path for RAG policy evidence retrieval. It evaluates
+KEYWORD / VECTOR / HYBRID policy retrieval quality; it does not evaluate Agent planning, does not create tickets, does
+not create AgentRuns, and does not write ToolCallTrace, AgentWorkspace, or Execution Tree state.
+
+The versioned RAG dataset lives at:
+
+```text
+docs/evaluation/rag_policy_cases.jsonl
+```
+
+Each JSONL case expresses:
+
+```text
+caseId
+query
+retrievalMode
+topK
+minScore
+category optional
+productType optional
+expected.requiredRetrievalMode
+expected.requiredEvidenceSources
+expected.requiredCategories
+expected.requiredAnySnippetContains
+expected.forbiddenSnippetContains
+expected.minEvidenceCount
+expected.maxEvidenceCount
+expected.expectFallbackUsed
+expected.expectEmptyResult
+```
+
+The dataset is intentionally small and reviewable. It covers return, exchange, refund-only / not shipped refund,
+logistics issues, coupon consultation, special-goods restrictions, repair / quality issues, unsupported queries, empty
+evidence, vector-only evidence, keyword-only fallback, hybrid dedup, low-score filtering, and evidence-only safety.
+
+RAG metrics are deterministic and rule-based:
+
+- `evidenceRecallPassRate`: required category/source/snippet expectations are satisfied.
+- `evidenceSourcePassRate`: expected evidence source appears, such as KEYWORD_POLICY, VECTOR_CHUNK, or MERGED_HYBRID.
+- `retrievalModePassRate`: returned retrievalMode matches the expected mode.
+- `fallbackAccuracy`: fallbackUsed matches the case expectation.
+- `emptyResultAccuracy`: empty-result behavior matches the case expectation.
+- `citationCompletenessRate`: non-empty evidence includes policyId or documentId/chunkId traceability.
+- `safetyPassRate`: evidence, messages, and failures avoid forbidden completed-action and sensitive text.
+- `averageEvidenceCount`: average number of returned evidence items across all cases.
+
+V2.9 evaluation and V4.6.1 evaluation are deliberately separate:
+
+- V2.9 evaluates Agent planner output, subtask planning, tool planning, risk level, and plan validity.
+- V4.6.1 evaluates policy evidence retrieval quality for the RAG search application boundary.
+
+The V4.6.1 runner uses `FakeEmbeddingClient`, `InMemoryPolicyVectorRepository`, and in-memory keyword policy data. It
+does not use LLM-as-judge, does not call a real LLM, does not call a real embedding provider, does not call Spring AI,
+does not connect PostgreSQL / PGvector, and does not require Docker, MySQL, Redis, API keys, raw datasets, or external
+network.
+
+V4.6.2 remains the V4 RAG demo script follow-up. V4.6.3 remains Actuator health indicator work. V4.6.4 remains OpenAPI
+/ API documentation polish.
+
 ## V4 RAG / Skill Evaluation Extension
 
 V4 evaluation extends the existing deterministic evaluation runner with RAG and Skill checks.

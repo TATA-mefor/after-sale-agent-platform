@@ -1576,6 +1576,24 @@ PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, or externa
 embedding providers remain opt-in / future paths. V4.6 can continue with evaluation, demo, and Spring Boot
 completeness work.
 
+### V4.6.1 RAG Evaluation Cases and Metrics
+
+Implemented V4.6.1 offline retrieval evaluation:
+
+- `docs/evaluation/rag_policy_cases.jsonl` defines 15 deterministic RAG policy cases for KEYWORD / VECTOR / HYBRID
+  retrieval.
+- The RAG evaluation runner measures evidence recall, evidence source coverage, retrieval mode correctness, fallback
+  accuracy, empty-result accuracy, citation completeness, safety, and average evidence count.
+- The runner uses fake / in-memory dependencies: `FakeEmbeddingClient`, `InMemoryPolicyVectorRepository`, and
+  in-memory keyword policy data.
+- V2.9 evaluation still evaluates Agent planning; V4.6.1 evaluates policy evidence retrieval.
+
+V4.6.1 does not add runtime features, does not modify `search_aftersale_policy` retrieval logic, does not use
+LLM-as-judge, does not create Ticket / AgentRun / ToolCallTrace / Workspace / Execution Tree state, and does not call
+real LLMs, real embedding providers, Spring AI, PostgreSQL, PGvector, Docker, MySQL, Redis, API keys, raw datasets, or
+external network. V4.6.2 remains the V4 RAG demo script follow-up, V4.6.3 remains Actuator health indicator work, and
+V4.6.4 remains OpenAPI / API docs polish.
+
 ### V4 Default Test Boundary
 
 Default validation remains:
