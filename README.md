@@ -145,16 +145,8 @@ API keys, tokens, or production configuration.
 V3.5 adds optional demo data enrichment for public local datasets. The default app startup and default `mvn test` path
 do not require these raw files.
 
-Place downloaded raw datasets under:
-
-```text
-data/raw/orders/
-data/raw/chinese_reviews/
-data/raw/clothing_reviews/
-```
-
-Raw CSV, XLSX, JSON, archive, and parquet files under `data/raw` are ignored by Git. Keep only local public downloads
-there; do not commit raw large files, personal paths, credentials, or private customer data.
+Place downloaded raw datasets in your local gitignored raw dataset directory. Keep only local public downloads there;
+do not commit raw large files, personal paths, credentials, or private customer data.
 
 Generate small reviewable seed artifacts:
 
@@ -1107,7 +1099,7 @@ Implemented focus:
 
 - Add `products` and `order_items` MySQL tables for richer local demo data.
 - Keep minimal product and order-item seed in `data-mysql.sql`.
-- Keep raw downloaded datasets out of Git under `data/raw`.
+- Keep raw downloaded datasets out of Git in a local gitignored raw dataset directory.
 - Generate optional enrichment SQL and JSONL cases under `data/generated`.
 - Document mapping from public order, Chinese review, and clothing feedback datasets.
 - Keep default startup and default tests independent from external dataset files.
@@ -1207,13 +1199,13 @@ V4 focuses on interview-critical AI engineering capabilities:
 - Execution Tree evidence visualization;
 - Spring Boot completeness improvements.
 
-V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3.1 PostgreSQL / PGvector
-profile boundary, V4.3.2 vector schema / repository contract, V4.3.3 fake vector store / default offline vector
-tests, V4.3.4 Docker Compose / opt-in PGvector integration docs, V4.4.1 Policy Ingestion domain / status /
-repository foundation, V4.4.2 chunking / checksum dedup services, V4.4.3 fake-provider embedding pipeline, and
-V4.4.4 ingestion docs / completion record are completed. Skill is now a first-class Java contract and registry concept, while the current
-AgentRun execution path still uses the existing Specialist Handler dispatch. Spring AI is available as an optional
-provider adapter and is disabled by default.
+V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3 PGvector profile/schema/fake
+vector/compose docs, V4.4 Policy Ingestion Foundation, V4.5 Hybrid RAG Policy Search Tool, and V4.6 evaluation/demo/
+Actuator/OpenAPI docs are completed. V4.7 is active for documentation, architecture, and final closure tasks. V4.7.1
+documentation consistency / secret safety audit is completed; V4.7.2 architecture boundary / offline validation
+closure, V4.7.3 interview demo / README polish, and V4.7.4 final V4 completion record remain planned. Skill is now a
+first-class Java contract and registry concept, while the current AgentRun execution path still uses the existing
+Specialist Handler dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
 
 V4 preserves the existing Agent safety model:
 
@@ -1235,22 +1227,21 @@ rag-postgres  -> PostgreSQL + PGvector for policy RAG
 spring-ai-live -> explicit live provider validation
 ```
 
-### Planned V4 Demo Flow
+### V4 Demo Flow Boundary
 
 ```text
-Policy document ingestion
-→ chunking
-→ embedding
-→ vector store write
 → ticket creation
 → AgentRun
-→ SkillRegistry
 → search_aftersale_policy with HYBRID retrieval
 → ToolCallTrace
 → AgentWorkspace.PolicyEvidence
-→ Execution Tree evidence node
+→ Execution Tree evidence view
 → final suggestion with policy evidence
+→ RAG evaluation metrics
 ```
+
+Policy ingestion, fake-provider embedding pipeline, and optional PGvector local setup are documented separately. They
+are not Agent runtime tools and do not make real PGvector or real embedding providers part of the default demo path.
 
 V4 demo documents:
 
@@ -1681,6 +1672,24 @@ V4.6.4 does not add business runtime behavior, does not add a public policy-sear
 ToolCallTrace, Workspace, or Execution Tree runtime. OpenAPI docs do not require live providers, API keys, Docker,
 PostgreSQL, PGvector, MySQL, Redis, real LLMs, real embedding providers, or external network. OpenAPI docs are for
 local development and review; they are not a production deployment guide.
+
+### V4.7.1 Documentation Consistency / Secret Safety Audit
+
+Implemented V4.7.1 documentation audit:
+
+- V4 roadmap, active plan, README, quality docs, agent contracts, decision docs, demo docs, evaluation docs, API docs,
+  and V4 completed plans were checked for current implementation boundaries.
+- Documentation keeps future capabilities such as Admin ingestion APIs, production monitoring, production deployment,
+  and live PGvector / live embedding validation separate from the default completed path.
+- V4 docs continue to state that RAG evidence is policy evidence only, `search_aftersale_policy` is LOW-risk
+  read-only, ToolRegistry remains the Agent tool execution boundary, and Skill does not replace ToolRegistry.
+- Docs consistency harness tests check V4 completion records, secret / local-path safety, evidence-only wording,
+  default offline testing, and no completed-action overclaims.
+
+V4.7.1 does not add runtime behavior, does not modify `search_aftersale_policy`, does not change retrieval algorithms,
+does not change ToolRegistry, ToolCallTrace, Workspace, Execution Tree, RAG evaluation, Actuator health, or OpenAPI
+runtime behavior, and does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+providers, or external network.
 
 ### V4 Default Test Boundary
 

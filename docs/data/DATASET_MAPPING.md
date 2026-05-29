@@ -3,7 +3,7 @@
 ## Purpose
 
 V3.5 enriches demo data with public order and review datasets while keeping the default application path deterministic
-and offline. Raw source files stay local under `data/raw`; the repository may commit only small generated demo artifacts
+and offline. Raw source files stay local in a gitignored raw dataset directory; the repository may commit only small generated demo artifacts
 under `data/generated`.
 
 ## Source Datasets
@@ -123,9 +123,9 @@ python scripts/data/build_demo_seed.py \
 The script scans:
 
 ```text
-data/raw/orders/
-data/raw/chinese_reviews/
-data/raw/clothing_reviews/
+local raw dataset directory for orders
+local raw dataset directory for Chinese reviews
+local raw dataset directory for clothing reviews
 ```
 
 It writes:

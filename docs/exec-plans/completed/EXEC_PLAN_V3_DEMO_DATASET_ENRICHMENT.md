@@ -13,8 +13,8 @@ script for three public datasets, without changing Agent execution semantics or 
 
 - Added MySQL `products` and `order_items` tables.
 - Added minimal `products` and `order_items` rows to the base MySQL seed.
-- Added `data/raw` and `data/generated` documentation.
-- Ignored raw public dataset files under `data/raw`.
+- Added local raw dataset and `data/generated` documentation.
+- Ignored raw public dataset files in the local raw dataset directory.
 - Added `scripts/data/build_demo_seed.py` using only the Python standard library.
 - Generated optional `data/generated/demo_seed_extra.sql`.
 - Generated optional `data/generated/demo_evaluation_cases.jsonl`.
@@ -55,7 +55,7 @@ Women's clothing feedback dataset:
 - Default in-memory startup remains available without external data.
 - Explicit MySQL profile can use the base schema and seed without generated files.
 - Optional generated SQL can be imported after base MySQL schema and seed.
-- Default `mvn test` does not require `data/raw`, MySQL, Docker, real LLMs, API keys, or external network.
+- Default `mvn test` does not require local raw datasets, MySQL, Docker, real LLMs, API keys, or external network.
 
 ## Validation Commands
 

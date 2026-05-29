@@ -95,7 +95,7 @@ V4.0 只完成 pre-flight fixes，不包含 Spring AI、RAG、PGvector、VectorS
 1. Planner 可见工具集与 AgentRun 实际可执行工具集一致化；
 2. AgentRun 失败时 Ticket 状态策略明确化；
 3. 工程注释整理为边界说明型注释；
-4. 打包边界清理：不得把 `.git/`、`target/`、`data/raw/`、`.env`、本地密钥或大体积原始数据打进提交包；
+4. 打包边界清理：不得把 `.git/`、`target/`、本地 raw dataset 目录、`.env`、本地密钥或大体积原始数据打进提交包；
 5. 更新 Harness 文档，将 V4 边界写入 AGENTS / ARCHITECTURE / TOOL / SKILL / RISK / LLM / QUALITY 文档。
 
 ### 4.3 验收标准
@@ -277,9 +277,9 @@ agent:
 
 Status: completed for V4.3.1 through V4.3.4. V4.3.1 PostgreSQL / PGvector dependency and profile boundary, V4.3.2 vector schema /
 repository contract, V4.3.3 fake vector store / default offline vector tests, and V4.3.4 Docker Compose /
-opt-in integration docs are completed. V4.4.1 Policy Ingestion domain / status / repository foundation and V4.4.2
-chunking / checksum dedup service are completed. V4.4.3 fake-provider embedding pipeline and V4.4.4 ingestion docs /
-completion record are completed. Hybrid RAG runtime remains planned.
+opt-in integration docs are completed. Later V4.5 work completed the controlled KEYWORD / VECTOR / HYBRID
+`search_aftersale_policy` runtime, so the V4.3 PGvector profile remains an opt-in infrastructure boundary rather than
+the default retrieval path.
 
 ### 7.1 目标
 
@@ -439,7 +439,8 @@ policy_embeddings:
 
 Status: completed. V4.4.1 Policy document / chunk domain and ingestion run model, V4.4.2 chunking / checksum dedup
 service, V4.4.3 fake-provider embedding pipeline, and V4.4.4 ingestion docs / completion record are completed.
-Ingestion API and RAG / HYBRID retrieval remain planned.
+Admin ingestion API and ToolRegistry ingestion tools remain future work. V4.5 completed the controlled RAG /
+HYBRID retrieval runtime for `search_aftersale_policy`.
 
 ### 8.1 目标
 
@@ -813,90 +814,80 @@ runtime，不修改 retrieval algorithm，不修改 RAG health indicator behavio
 ToolRegistry、ToolCallTrace schema、Workspace evidence logic 或 Execution Tree runtime。默认测试仍不依赖真实 LLM、
 API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、真实 embedding provider 或外部网络。
 
-## 11. V4.7 Skill Layer Integration
+## 11. V4.7 Documentation / Architecture / Final Closure
 
-### 11.1 目标
+Status: active. V4.7.1 documentation consistency / secret safety audit is completed by this stage. V4.7.2, V4.7.3,
+and V4.7.4 remain planned and must not be described as completed.
 
-在现有 SpecialistAgentHandler 基础上继续 Skill 抽象迁移，不一次性大规模重写已有 Handler。
+### 11.1 V4.7.1 Documentation Consistency / Secret Safety Audit
 
-### 11.2 迁移策略
+V4.7.1 only completes documentation consistency fixes, secret / local-path safety cleanup, completion-record
+consistency checks, and docs harness coverage.
 
-```text
-SpecialistAgentHandler
-→ AgentSkill adapter
-→ SkillRegistry
-→ gradual replacement / coexistence
-```
+V4.7.1 does not add runtime behavior, does not modify `search_aftersale_policy`, does not change retrieval algorithms,
+does not modify ToolRegistry, ToolCallTrace, Workspace, Execution Tree, RAG evaluation, Actuator health, or OpenAPI
+runtime behavior, and does not connect to real LLMs, embedding providers, PostgreSQL, PGvector, Docker, MySQL, Redis,
+or external network.
 
-### 11.3 预期 Skill
+### 11.2 V4.7.2 Architecture Boundary / Offline Validation Closure
 
-```text
-ReturnEligibilityAssessmentSkill
-ExchangeRecommendationSkill
-CouponConsultationSkill
-LogisticsIssueAnalysisSkill
-GeneralAfterSaleConsultationSkill
-HumanApprovalRoutingSkill
-RagPolicyEvidenceSkill
-```
+Status: planned.
 
-### 11.4 验收标准
+V4.7.2 may review architecture boundaries and validation closure, but it must not be treated as completed by V4.7.1.
 
-- SkillRegistry 能按 skillName 或 subtaskType 找到唯一 Skill；
-- Skill 内部调用 Tool 必须通过 ToolRegistry；
-- Skill 不直接访问 Repository / VectorStore / Spring AI clients；
-- SkillExecutionResult 结构化表达 status、summary、evidence、toolCalls、riskFlags、approvalRequirement；
-- Execution Tree 能展示 Skill node；
-- 现有 V2/V3/V4.6.1 evaluation 和 V4.6.2 demo docs harness 不退化。
+### 11.3 V4.7.3 Interview Demo / README Polish
 
-## 12. V4.8 Execution Tree / Demo Extensions
+Status: planned.
+
+V4.7.3 may polish interview-facing README and demo narrative, but it must not introduce new runtime behavior unless a
+future execution plan explicitly scopes it.
+
+### 11.4 V4.7.4 V4 Final Completion Record
+
+Status: planned.
+
+V4.7.4 is reserved for the final V4 completion record after V4.7.2 and V4.7.3 are handled.
+
+## 12. V4.8 Future Skill / Execution Tree / Demo Extensions
 
 ### 12.1 Execution Tree
 
-后续如新增 Skill node，可继续增强 Execution Tree，只读查询仍不得修改 Ticket、AgentRun、ToolCallTrace、
-ApprovalRequest、Workspace 或 retrieval state。
+Future work may add richer Skill nodes or demo-specific views. Execution Tree must remain read-only and must not modify
+Ticket, AgentRun, ToolCallTrace, ApprovalRequest, Workspace, retrieval state, or evaluation state.
 
 ### 12.2 Demo
 
-V4.6.2 已新增 `docs/demo/V4_RAG_DEMO_SCRIPT.md`，演示：
+V4.6.2 already added `docs/demo/V4_RAG_DEMO_SCRIPT.md` for a local offline walkthrough covering HYBRID policy
+evidence, ToolCallTrace output JSON, AgentWorkspace policy evidence summaries, Execution Tree evidence visibility, and
+V4.6.1 RAG evaluation. It is a documentation walkthrough, not proof of live ingestion, real PGvector connectivity, real
+embedding providers, production monitoring, or Skill runtime migration.
 
-1. 导入售后政策文档；
-2. chunk + embedding + vector write；
-3. 创建售后工单；
-4. AgentRun 调用 Skill；
-5. Skill 通过 ToolRegistry 调 RAG search tool；
-6. ToolCallTrace 显示 RAG evidence；
-7. Execution Tree 显示 skill node、tool node、evidence node；
-8. final summary 引用政策证据，但不执行真实高风险动作。
+Future V4.8 work may extend demos after those capabilities are explicitly scoped and implemented.
 
-## 13. V4.9 Spring Boot Completeness
+## 13. V4.9 Future Spring Boot Completeness
 
 ### 13.1 目标
 
-围绕 RAG 和 Skill 能力补齐 Spring Boot 企业级工程完整性。
+V4.6.3 and V4.6.4 already completed the offline RAG Actuator health indicators and OpenAPI / Swagger UI documentation
+polish. V4.9 is retained only for future Spring Boot hardening that is not yet completed.
 
-### 13.2 必做方向
+### 13.2 Future directions
 
 ```text
-ConfigurationProperties
-Flyway or Liquibase migration
-Actuator HealthIndicator
-OpenAPI / springdoc
 Minimal Security for admin / approval / ingestion APIs
-Opt-in integration tests
-Docker Compose local rag profile
+Opt-in live integration tests
+Migration hardening beyond current schema scripts
+Production deployment documentation if explicitly scoped later
 ```
 
-### 13.3 验收标准
+### 13.3 边界
 
-- 所有外部 provider / datasource / vector config 通过 typed properties 管理；
-- migration 不破坏默认 in-memory profile；
-- health 能显示 vector store / embedding provider / ingestion status；
-- OpenAPI 能覆盖 Ticket、AgentRun、Approval、Execution Tree、ToolCallTrace 和 Health；`search_aftersale_policy`
-  仍作为 ToolRegistry tool 在文档中说明，不新增 public HTTP endpoint；
-- admin ingestion API 有最小权限边界；
-- integration tests 显式 opt-in；
-- default test gate 不依赖外部服务。
+- Existing external provider / datasource / vector config remains typed and opt-in;
+- `/actuator/health` remains offline readiness, not live PGvector / provider connectivity proof;
+- OpenAPI covers existing APIs but does not create a public policy-search endpoint;
+- Admin ingestion API, production monitoring, production deployment, and live integration validation are not completed
+  in V4.7.1;
+- default test gate must not depend on external services.
 
 ## 14. 验证命令
 

@@ -506,7 +506,7 @@ recommendation。
 | Backward compatibility with V2 demo | V2 ticket、AgentRun、approval、execution tree 和 evaluation demo 不退化 | 回归测试 + README demo |
 | No regression of Agent boundaries | Agent/Handler 不访问 Repository，不绕过 ToolRegistry、Approval、Trace 或 Workspace | ArchitectureTest + 单元测试 |
 | Seed reproducibility | generated seed 可由脚本以 bounded 参数复现 | Python script smoke + harness test |
-| Raw data boundary | `data/raw` 原始大文件不入仓 | `.gitignore` + review |
+| Raw data boundary | 本地 raw dataset 原始大文件不入仓 | `.gitignore` + review |
 | Product/item demo support | `products` / `order_items` 支撑多商品售后 demo 数据 | schema / seed harness test |
 | Order item tool traceability | `get_order_by_id` 输出和 AgentRun trace 可看到结构化 `orderItems` | OrderToolTest + AgentRunFlowTest |
 | Item-specific recommendation | Return / Exchange handler 基于 workspace `orderItems` 生成商品明细级建议 | SpecialistAgentHandlerTest + AgentRunFlowTest |
@@ -628,7 +628,7 @@ Current data infrastructure status:
 - `data-mysql.sql` keeps the existing order and policy seed while adding minimal product and order-item rows.
 - `scripts/data/build_demo_seed.py` uses the Python standard library to read UTF-8 / UTF-8-SIG CSV and basic XLSX files.
 - Generated artifacts are small and reviewable under `data/generated`.
-- Raw public datasets remain local under `data/raw` and are ignored by Git.
+- Raw public datasets remain local in the gitignored raw dataset directory and are ignored by Git.
 - `docs/data/DATASET_MAPPING.md` documents source usage, field mapping, status normalization, aftersale deadline rules,
   ignored fields such as `Age`, import steps, and limitations.
 - Default `mvn test` does not require raw datasets, generated files from a fresh local run, MySQL, Docker, real LLMs,
@@ -1415,6 +1415,31 @@ Known limitations:
   controller.
 - OpenAPI docs do not prove live provider or PGvector connectivity.
 
+### V4.7.1 Documentation Consistency / Secret Safety Audit (completed)
+
+Status: completed for documentation consistency, completion-record safety, and docs harness coverage.
+
+Current V4.7.1 quality status:
+
+- Documentation consistency quality: V4 roadmap, active plan, README, quality notes, agent contracts, decision docs,
+  demo docs, evaluation docs, and API docs describe V4.0 through V4.6.4 as completed without turning future opt-in
+  capabilities into default runtime behavior.
+- Completion-record quality: V4 completed plans are checked for completed status, `TASK_COMPLETE`, repository-relative
+  path usage, and no overclaim of later-stage runtime features.
+- Secret / path safety quality: documentation checks reject likely real API keys, passwords, tokens, local absolute
+  paths, raw prompt leaks, raw dataset paths in V4 docs, and completed-action claims.
+- Evidence-only quality: docs continue to state that RAG evidence is policy evidence, not a business decision or
+  business action; `search_aftersale_policy` remains a LOW-risk read-only ToolRegistry tool.
+- Runtime non-change quality: V4.7.1 does not change `search_aftersale_policy`, retrieval algorithms, ToolRegistry,
+  ToolCallTrace, Workspace, Execution Tree, RAG evaluation, Actuator health, OpenAPI runtime, or AgentRun semantics.
+- Default offline boundary: documentation audit tests only read repository files and do not call real LLMs, real
+  embedding providers, PostgreSQL, PGvector, Docker, MySQL, Redis, API keys, or external network.
+
+Known limitations:
+
+- V4.7.1 does not perform new architecture boundary closure, demo polish beyond consistency fixes, or the final V4
+  completion record. Those remain planned for V4.7.2, V4.7.3, and V4.7.4.
+
 Planned phases:
 
 ```text
@@ -1437,9 +1462,13 @@ V4.6.1 RAG Evaluation Cases and Metrics (completed)
 V4.6.2 V4 RAG Demo Script (completed)
 V4.6.3 Actuator Health Indicators (completed)
 V4.6.4 OpenAPI / API Docs Polish (completed)
-V4.7 Skill Layer Integration
-V4.8 Execution Tree / Demo Extensions
-V4.9 Spring Boot Completeness
+V4.7 Documentation / Architecture / Final Closure (active)
+V4.7.1 Documentation Consistency / Secret Safety Audit (completed)
+V4.7.2 Architecture Boundary / Offline Validation Closure (planned)
+V4.7.3 Interview Demo / README Polish (planned)
+V4.7.4 V4 Final Completion Record (planned)
+V4.8 Future Skill / Execution Tree / Demo Extensions (planned)
+V4.9 Future Spring Boot Completeness (planned)
 ```
 
 ### V4 不接受的退化
