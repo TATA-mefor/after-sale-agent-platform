@@ -258,6 +258,33 @@ The default demo is the offline path. Live provider and PGvector work remain opt
 
 Use live paths only when explicitly configured. They are not required for the interview demo or default validation.
 
+## How To Present This Demo In An Interview
+
+- Start with the safety boundary: RAG provides policy evidence only, and `search_aftersale_policy` is a LOW-risk
+  read-only ToolRegistry tool.
+- Show Scenario A to explain KEYWORD / VECTOR / HYBRID retrieval output shape.
+- Show Scenario B to explain how policy evidence becomes ToolCallTrace output and Workspace summary data.
+- Show Scenario C to explain Execution Tree as a read-only interpretation view.
+- Show Scenario D to explain deterministic retrieval metrics without LLM-as-judge.
+- Close by stating that the default path does not require API keys, Docker, PGvector, PostgreSQL, real LLMs, real
+  embedding providers, or external network.
+
+For the broader interview walkthrough and likely follow-up questions, see
+`docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md`.
+
+## If You Only Show Tests
+
+If local app startup is not practical during the interview, use the repository validation path:
+
+```bash
+mvn test
+mvn test -Dtest=ArchitectureTest
+```
+
+Then point to the RAG evaluation tests, docs harness tests, and ArchitectureTest coverage. This still demonstrates the
+default offline boundary, evidence-only contract, ToolRegistry boundary, and deterministic RAG evaluation without
+starting the application or calling live providers.
+
 ## Troubleshooting
 
 - Port occupied: stop the process using port `8080` or configure a different Spring Boot port locally.

@@ -31,6 +31,22 @@ The default validation path must not require:
 
 If any default command requires one of those dependencies, treat it as a regression.
 
+## Interview Safe Validation Commands
+
+Use this command set before or during an interview when the goal is to show the repository can be verified locally
+without live services:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+These commands exercise unit, integration-style offline, docs harness, quality, and architecture checks. They are the
+recommended path for interview demos because they do not require live LLMs, API keys, PostgreSQL, PGvector, Docker,
+MySQL, Redis, real embedding providers, or external network. Live validation remains explicit opt-in only.
+
 ## Architecture Boundary Coverage
 
 `ArchitectureTest` is the mechanical boundary gate for the modular monolith:

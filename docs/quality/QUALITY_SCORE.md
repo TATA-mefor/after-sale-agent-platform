@@ -1437,9 +1437,9 @@ Current V4.7.1 quality status:
 
 Known limitations:
 
-- V4.7.1 does not perform new architecture boundary closure, demo polish beyond consistency fixes, or the final V4
-  completion record. Architecture boundary closure is handled by V4.7.2; demo polish and the final V4 completion
-  record remain planned for V4.7.3 and V4.7.4.
+- V4.7.1 did not perform new architecture boundary closure, demo polish beyond consistency fixes, or the final V4
+  completion record. Architecture boundary closure is handled by V4.7.2; demo polish is handled by V4.7.3; the final
+  V4 completion record remains planned for V4.7.4.
 
 ### V4.7.2 Architecture Boundary / Offline Validation Closure (completed)
 
@@ -1471,6 +1471,31 @@ Known limitations:
 - V4.7.2 does not add broad live PGvector integration validation, production monitoring, production deployment, demo
   polish, or the final V4 completion record. Those remain future scoped work.
 
+### V4.7.3 Interview Demo / README Polish (completed)
+
+Status: completed for interview-facing README polish, demo checklist, project highlights, and docs harness coverage.
+
+Current V4.7.3 quality status:
+
+- README quality: README now gives interview reviewers a short path through project positioning, safety boundaries, V4
+  RAG / Tool / Skill capabilities, and default offline validation commands.
+- Demo quality: `docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md` records the recommended 5 / 10 / 10 / 5 minute walkthrough,
+  pre-demo checks, common questions, suggested answer points, and fallback paths.
+- Highlights quality: `docs/demo/V4_PROJECT_HIGHLIGHTS.md` summarizes the V4 technology stack, key capabilities,
+  engineering quality gates, and future work without presenting future work as completed.
+- Boundary quality: RAG evidence remains evidence-only policy support; `search_aftersale_policy` remains a LOW-risk
+  read-only ToolRegistry tool; the default interview path remains offline.
+- Runtime non-change quality: V4.7.3 does not change `search_aftersale_policy`, retrieval algorithms, ToolRegistry,
+  ToolCallTrace, Workspace, Execution Tree, RAG evaluation, Actuator health behavior, OpenAPI behavior, or AgentRun
+  semantics.
+- Docs harness quality: interview demo docs tests verify links, default validation wording, secret / path safety,
+  evidence-only claims, and no completed-action or production deployment overclaims.
+
+Known limitations:
+
+- V4.7.3 does not create the final V4 completion record, implement production deployment, add production monitoring,
+  validate live PGvector connectivity, or add live provider validation. Those remain future scoped work.
+
 Planned phases:
 
 ```text
@@ -1496,7 +1521,7 @@ V4.6.4 OpenAPI / API Docs Polish (completed)
 V4.7 Documentation / Architecture / Final Closure (active)
 V4.7.1 Documentation Consistency / Secret Safety Audit (completed)
 V4.7.2 Architecture Boundary / Offline Validation Closure (completed)
-V4.7.3 Interview Demo / README Polish (planned)
+V4.7.3 Interview Demo / README Polish (completed)
 V4.7.4 V4 Final Completion Record (planned)
 V4.8 Future Skill / Execution Tree / Demo Extensions (planned)
 V4.9 Future Spring Boot Completeness (planned)

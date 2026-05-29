@@ -816,9 +816,9 @@ API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、真实 embedding prov
 
 ## 11. V4.7 Documentation / Architecture / Final Closure
 
-Status: active. V4.7.1 documentation consistency / secret safety audit and V4.7.2 architecture boundary / offline
-validation closure are completed by this stage. V4.7.3 and V4.7.4 remain planned and must not be described as
-completed.
+Status: active. V4.7.1 documentation consistency / secret safety audit, V4.7.2 architecture boundary / offline
+validation closure, and V4.7.3 interview demo / README polish are completed by this stage. V4.7.4 remains planned and
+must not be described as completed.
 
 ### 11.1 V4.7.1 Documentation Consistency / Secret Safety Audit
 
@@ -853,16 +853,28 @@ Actuator health behavior, OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspa
 
 ### 11.3 V4.7.3 Interview Demo / README Polish
 
-Status: planned.
+Status: completed.
 
-V4.7.3 may polish interview-facing README and demo narrative, but it must not introduce new runtime behavior unless a
-future execution plan explicitly scopes it.
+V4.7.3 completes interview-facing README and demo narrative polish only:
+
+- README now presents the project positioning, core interview talking points, default offline validation commands, and
+  links to the V4 demo, evaluation, OpenAPI, validation, checklist, and highlights docs.
+- `docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md` adds the recommended interview walkthrough, pre-demo checks, likely
+  questions, suggested answer points, and fallback paths.
+- `docs/demo/V4_PROJECT_HIGHLIGHTS.md` summarizes the V4 technology stack, RAG / Tool / Skill capabilities, quality
+  gates, and explicit future work.
+- RAG demo, OpenAPI, and validation command docs include interview-specific guidance without changing demo boundaries.
+- Docs harness tests verify the interview docs, README links, default offline wording, evidence-only boundary, and
+  absence of completed-action / production deployment overclaims.
+
+V4.7.3 does not add runtime behavior, does not modify `search_aftersale_policy`, retrieval algorithms, RAG evaluation,
+Actuator health behavior, OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime.
 
 ### 11.4 V4.7.4 V4 Final Completion Record
 
 Status: planned.
 
-V4.7.4 is reserved for the final V4 completion record after V4.7.2 and V4.7.3 are handled.
+V4.7.4 is reserved for the final V4 completion record after V4.7.3.
 
 ## 12. V4.8 Future Skill / Execution Tree / Demo Extensions
 

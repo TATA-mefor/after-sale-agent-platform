@@ -13,6 +13,47 @@ user after-sale message -> ticket -> rule-based AgentRun -> policy retrieval -> 
 The project is intentionally built as a modular monolith with Harness Engineering documents, architecture tests, lint
 checks, and executable tests as the guardrails.
 
+## Interview Quick Guide
+
+AfterSale-Agent is an enterprise after-sale ticket Agent platform built with Spring Boot. The review path is designed
+to show Agent planning, ToolRegistry-controlled tool execution, risk / approval boundaries, ToolCallTrace audit,
+single-run Workspace memory, read-only Execution Tree explanation, RAG policy evidence retrieval, Spring AI adapter
+foundation, PGvector / vector repository foundation, OpenAPI docs, Actuator health, and default offline validation.
+
+Core interview points:
+
+- LLMs plan only; Java application code validates plans and tools execute through ToolRegistry.
+- Agent does not directly execute high-risk business actions.
+- RiskPolicy and Approval protect high-risk proposed actions.
+- ToolCallTrace is the audit source of truth for tool calls.
+- Workspace is single AgentRun working memory, not long-term memory.
+- Execution Tree is a read-only explanation view.
+- `search_aftersale_policy` supports KEYWORD, VECTOR, and HYBRID policy evidence retrieval.
+- RAG evidence is policy evidence only, not a business action or decision confidence score.
+- Spring AI, DashScope / OpenAI, PGvector, and live embedding providers are opt-in paths.
+- Default validation does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, or external
+  network.
+
+Interview docs:
+
+- [V4 Interview Demo Checklist](docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md)
+- [V4 Project Highlights](docs/demo/V4_PROJECT_HIGHLIGHTS.md)
+- [V4 RAG Demo Script](docs/demo/V4_RAG_DEMO_SCRIPT.md)
+- [V4 Policy Ingestion Pipeline](docs/demo/V4_POLICY_INGESTION_PIPELINE.md)
+- [V4 PGvector Local Setup](docs/demo/V4_PGVECTOR_LOCAL_SETUP.md)
+- [Evaluation Docs](docs/evaluation/EVALUATION.md)
+- [OpenAPI Docs](docs/api/OPENAPI.md)
+- [Validation Commands](docs/quality/VALIDATION_COMMANDS.md)
+
+Fast validation:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
 ## Core Capabilities
 
 - Create and query after-sale tickets.
@@ -1202,8 +1243,8 @@ V4 focuses on interview-critical AI engineering capabilities:
 V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3 PGvector profile/schema/fake
 vector/compose docs, V4.4 Policy Ingestion Foundation, V4.5 Hybrid RAG Policy Search Tool, and V4.6 evaluation/demo/
 Actuator/OpenAPI docs are completed. V4.7 is active for documentation, architecture, and final closure tasks. V4.7.1
-documentation consistency / secret safety audit and V4.7.2 architecture boundary / offline validation closure are
-completed; V4.7.3 interview demo / README polish and V4.7.4 final V4 completion record remain planned. Skill is now a
+documentation consistency / secret safety audit, V4.7.2 architecture boundary / offline validation closure, and V4.7.3
+interview demo / README polish are completed; V4.7.4 final V4 completion record remains planned. Skill is now a
 first-class Java contract and registry concept, while the current AgentRun execution path still uses the existing
 Specialist Handler dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
 
@@ -1245,6 +1286,10 @@ are not Agent runtime tools and do not make real PGvector or real embedding prov
 
 V4 demo documents:
 
+- [V4 Interview Demo Checklist](docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md) gives the 5 / 10 / 10 / 5 minute interview
+  walkthrough, likely questions, answer points, and fallback paths.
+- [V4 Project Highlights](docs/demo/V4_PROJECT_HIGHLIGHTS.md) summarizes the V4 technical stack, quality gates,
+  current capabilities, and future work.
 - [V4 RAG Demo Script](docs/demo/V4_RAG_DEMO_SCRIPT.md) is the local interview / project review demo for HYBRID
   policy evidence, ToolCallTrace, Workspace, Execution Tree, and RAG evaluation.
 - [V4 Policy Ingestion Pipeline](docs/demo/V4_POLICY_INGESTION_PIPELINE.md) explains the offline ingestion foundation
@@ -1710,6 +1755,25 @@ V4.7.2 does not add runtime behavior, does not modify `search_aftersale_policy`,
 does not change RAG evaluation, Actuator health behavior, OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspace, or
 Execution Tree runtime. Default validation remains offline and does not require real LLMs, API keys, PostgreSQL,
 PGvector, Docker, MySQL, Redis, real embedding providers, or external network.
+
+### V4.7.3 Interview Demo / README Polish
+
+Implemented V4.7.3 interview-facing documentation polish:
+
+- [V4 Interview Demo Checklist](docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md) provides the recommended project review
+  sequence, pre-demo checks, common interview questions, suggested answer points, and fallback paths.
+- [V4 Project Highlights](docs/demo/V4_PROJECT_HIGHLIGHTS.md) summarizes the V4 technology stack, RAG / Tool / Skill
+  capabilities, quality gates, and explicit future work.
+- README, RAG demo docs, OpenAPI docs, validation command docs, V4 plans, and quality notes now link the interview
+  materials and keep default offline validation commands visible.
+- Docs harness tests verify interview docs, README links, evidence-only wording, and no completed-action or production
+  deployment overclaims.
+
+V4.7.3 is documentation polish only. It does not add runtime behavior, does not modify `search_aftersale_policy`, does
+not change retrieval algorithms, does not change RAG evaluation, Actuator health behavior, OpenAPI behavior,
+ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime. The interview demo path remains offline by default
+and does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, or
+external network.
 
 ### V4 Default Test Boundary
 

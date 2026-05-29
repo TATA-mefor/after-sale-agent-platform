@@ -34,7 +34,8 @@ class V4DocumentationConsistencyTest {
             "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_ACTUATOR_HEALTH.md",
             "docs/exec-plans/completed/EXEC_PLAN_V4_OPENAPI_API_DOCS.md",
             "docs/exec-plans/completed/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md");
+            "docs/exec-plans/completed/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md",
+            "docs/exec-plans/completed/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md");
 
     private static final List<String> SELECTED_V4_DOCS = List.of(
             "README.md",
@@ -98,13 +99,14 @@ class V4DocumentationConsistencyTest {
                 "V4.6.4");
         assertThat(combined).contains("V4.7.1", "completed");
         assertThat(combined).contains("V4.7.2", "completed");
-        assertThat(combined).contains("V4.7.3", "planned");
+        assertThat(combined).contains("V4.7.3", "completed");
         assertThat(combined).contains("V4.7.4", "planned");
 
         assertThat(execPlan).contains("V4.7 Documentation / Architecture / Final Closure", "Status: active");
         assertThat(activePlan).contains("V4.7 Documentation / Architecture / Final Closure", "Status: active");
         assertThat(quality).contains("V4.7.1 Documentation Consistency / Secret Safety Audit (completed)");
         assertThat(quality).contains("V4.7.2 Architecture Boundary / Offline Validation Closure (completed)");
+        assertThat(quality).contains("V4.7.3 Interview Demo / README Polish (completed)");
     }
 
     @Test

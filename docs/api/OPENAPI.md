@@ -74,6 +74,20 @@ RAG evidence is evidence-only policy support. Evidence score is a retrieval scor
 RAG evidence does not execute refunds, exchanges, coupon compensation, payment changes, logistics changes, or dispute
 closure.
 
+## Interview Swagger UI Walkthrough
+
+Use Swagger UI as an existing API map, not as proof of new runtime behavior:
+
+1. Show Ticket APIs for creating and reading synthetic after-sale tickets.
+2. Show AgentRun APIs for triggering the current Agent orchestration path.
+3. Show Approval APIs to explain high-risk action gating.
+4. Show ToolCallTrace and Execution Tree APIs to explain audit and read-only interpretation.
+5. Mention `/actuator/health` as offline readiness, then use `docs/quality/VALIDATION_COMMANDS.md` for the default
+   validation boundary.
+
+OpenAPI docs cover existing HTTP APIs. They do not add a new public RAG policy-search endpoint. `search_aftersale_policy`
+remains a ToolRegistry tool and RAG evidence remains evidence-only policy support.
+
 ## Actuator Health Boundary
 
 `/actuator/health` remains the only actuator endpoint exposed by default. RAG health indicators are offline readiness
