@@ -816,8 +816,9 @@ API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、真实 embedding prov
 
 ## 11. V4.7 Documentation / Architecture / Final Closure
 
-Status: active. V4.7.1 documentation consistency / secret safety audit is completed by this stage. V4.7.2, V4.7.3,
-and V4.7.4 remain planned and must not be described as completed.
+Status: active. V4.7.1 documentation consistency / secret safety audit and V4.7.2 architecture boundary / offline
+validation closure are completed by this stage. V4.7.3 and V4.7.4 remain planned and must not be described as
+completed.
 
 ### 11.1 V4.7.1 Documentation Consistency / Secret Safety Audit
 
@@ -831,9 +832,24 @@ or external network.
 
 ### 11.2 V4.7.2 Architecture Boundary / Offline Validation Closure
 
-Status: planned.
+Status: completed.
 
-V4.7.2 may review architecture boundaries and validation closure, but it must not be treated as completed by V4.7.1.
+V4.7.2 completes architecture boundary closure and default offline validation closure only:
+
+- ArchitectureTest adds additional checks for Agent / Handler / Skill isolation from diagnostics, OpenAPI, provider
+  infrastructure, RAG evaluation, RAG health, ingestion repositories, embedding clients, vector repositories, JDBC,
+  DataSource, Spring AI, and VectorStore dependencies.
+- Tool executor rules confirm tools call application services instead of provider infrastructure or low-level clients.
+- Default offline validation verifies the default Spring context does not create live datasource, PGvector, Spring AI
+  model, VectorStore, or live provider gateway beans.
+- Actuator validation confirms `/actuator/health` remains available while env / beans / configprops are not broadly
+  exposed by default.
+- Live test skip closure verifies live LLM, Spring AI, embedding, and MySQL validation paths require explicit opt-in
+  flags and credential / environment assumptions.
+- `docs/quality/VALIDATION_COMMANDS.md` records the default offline commands and live opt-in command boundary.
+
+V4.7.2 does not add runtime behavior, does not modify `search_aftersale_policy`, retrieval algorithms, RAG evaluation,
+Actuator health behavior, OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime.
 
 ### 11.3 V4.7.3 Interview Demo / README Polish
 
@@ -885,8 +901,8 @@ Production deployment documentation if explicitly scoped later
 - Existing external provider / datasource / vector config remains typed and opt-in;
 - `/actuator/health` remains offline readiness, not live PGvector / provider connectivity proof;
 - OpenAPI covers existing APIs but does not create a public policy-search endpoint;
-- Admin ingestion API, production monitoring, production deployment, and live integration validation are not completed
-  in V4.7.1;
+- Admin ingestion API, production monitoring, production deployment, and broad live integration validation are not
+  completed in V4.7.2;
 - default test gate must not depend on external services.
 
 ## 14. 验证命令

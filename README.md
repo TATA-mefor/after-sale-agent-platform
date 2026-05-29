@@ -1202,8 +1202,8 @@ V4 focuses on interview-critical AI engineering capabilities:
 V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3 PGvector profile/schema/fake
 vector/compose docs, V4.4 Policy Ingestion Foundation, V4.5 Hybrid RAG Policy Search Tool, and V4.6 evaluation/demo/
 Actuator/OpenAPI docs are completed. V4.7 is active for documentation, architecture, and final closure tasks. V4.7.1
-documentation consistency / secret safety audit is completed; V4.7.2 architecture boundary / offline validation
-closure, V4.7.3 interview demo / README polish, and V4.7.4 final V4 completion record remain planned. Skill is now a
+documentation consistency / secret safety audit and V4.7.2 architecture boundary / offline validation closure are
+completed; V4.7.3 interview demo / README polish and V4.7.4 final V4 completion record remain planned. Skill is now a
 first-class Java contract and registry concept, while the current AgentRun execution path still uses the existing
 Specialist Handler dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
 
@@ -1690,6 +1690,26 @@ V4.7.1 does not add runtime behavior, does not modify `search_aftersale_policy`,
 does not change ToolRegistry, ToolCallTrace, Workspace, Execution Tree, RAG evaluation, Actuator health, or OpenAPI
 runtime behavior, and does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
 providers, or external network.
+
+### V4.7.2 Architecture Boundary / Offline Validation Closure
+
+Implemented V4.7.2 architecture and default offline validation closure:
+
+- ArchitectureTest now closes additional Agent / Handler / Skill, Tool executor, diagnostics, OpenAPI, RAG, ingestion,
+  and provider-infrastructure dependency boundaries.
+- `DefaultOfflineValidationTest` verifies the default Spring context starts without `DataSource`, PGvector profile
+  guard, Spring AI model, VectorStore, or live provider gateway beans.
+- `DefaultOfflineValidationTest` also verifies `/actuator/health` remains available, does not expose broad actuator
+  endpoints, and reports offline-readiness details without live provider checks.
+- `LiveTestSkipClosureTest` checks live smoke tests remain gated by explicit system properties and credential or
+  environment assumptions.
+- [Validation Commands](docs/quality/VALIDATION_COMMANDS.md) records default offline commands, live opt-in examples,
+  and failure handling rules.
+
+V4.7.2 does not add runtime behavior, does not modify `search_aftersale_policy`, does not change retrieval algorithms,
+does not change RAG evaluation, Actuator health behavior, OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspace, or
+Execution Tree runtime. Default validation remains offline and does not require real LLMs, API keys, PostgreSQL,
+PGvector, Docker, MySQL, Redis, real embedding providers, or external network.
 
 ### V4 Default Test Boundary
 

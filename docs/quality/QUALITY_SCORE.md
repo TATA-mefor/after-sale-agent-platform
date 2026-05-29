@@ -1438,7 +1438,38 @@ Current V4.7.1 quality status:
 Known limitations:
 
 - V4.7.1 does not perform new architecture boundary closure, demo polish beyond consistency fixes, or the final V4
-  completion record. Those remain planned for V4.7.2, V4.7.3, and V4.7.4.
+  completion record. Architecture boundary closure is handled by V4.7.2; demo polish and the final V4 completion
+  record remain planned for V4.7.3 and V4.7.4.
+
+### V4.7.2 Architecture Boundary / Offline Validation Closure (completed)
+
+Status: completed for architecture boundary closure, default offline validation closure, live skip closure, and
+validation command documentation.
+
+Current V4.7.2 quality status:
+
+- Architecture boundary quality: ArchitectureTest adds focused rules for Agent / Handler / Skill isolation from RAG
+  evaluation, RAG health, OpenAPI config, provider infrastructure, ingestion repositories, embedding clients, vector
+  repositories, JDBC, DataSource, Spring AI, and VectorStore dependencies.
+- Tool boundary quality: tool executors remain application-service callers and do not bind directly to provider
+  infrastructure or low-level clients.
+- Default offline quality: `DefaultOfflineValidationTest` verifies the default Spring context does not create
+  DataSource, PGvector profile guard, Spring AI ChatModel, Spring AI EmbeddingModel, Spring AI VectorStore, or live
+  provider gateway beans.
+- Actuator exposure quality: default `/actuator/health` remains available, while env / beans / configprops are not
+  broadly exposed by default.
+- Live skip quality: `LiveTestSkipClosureTest` checks live LLM, Spring AI chat, Spring AI embedding, and real Agent
+  validation tests require explicit opt-in flags plus credential / environment assumptions.
+- Validation documentation quality: `docs/quality/VALIDATION_COMMANDS.md` records default offline commands, live
+  opt-in examples, and regression handling.
+- Runtime non-change quality: V4.7.2 does not change `search_aftersale_policy`, retrieval algorithms, ToolRegistry,
+  ToolCallTrace, Workspace, Execution Tree, RAG evaluation, Actuator health behavior, OpenAPI behavior, or AgentRun
+  semantics.
+
+Known limitations:
+
+- V4.7.2 does not add broad live PGvector integration validation, production monitoring, production deployment, demo
+  polish, or the final V4 completion record. Those remain future scoped work.
 
 Planned phases:
 
@@ -1464,7 +1495,7 @@ V4.6.3 Actuator Health Indicators (completed)
 V4.6.4 OpenAPI / API Docs Polish (completed)
 V4.7 Documentation / Architecture / Final Closure (active)
 V4.7.1 Documentation Consistency / Secret Safety Audit (completed)
-V4.7.2 Architecture Boundary / Offline Validation Closure (planned)
+V4.7.2 Architecture Boundary / Offline Validation Closure (completed)
 V4.7.3 Interview Demo / README Polish (planned)
 V4.7.4 V4 Final Completion Record (planned)
 V4.8 Future Skill / Execution Tree / Demo Extensions (planned)

@@ -1089,7 +1089,9 @@ LLM 原始长文本或敏感凭证。
 
 ## V4 RAG / Tool / Skill 架构补充
 
-V4 在现有模块化单体基础上新增 Tool / Skill / RAG 分层，但不改变既有核心原则：LLM 只规划，Java 后端校验和执行，ToolRegistry 是唯一原子工具执行入口，Approval 拦截高风险动作，ToolCallTrace 保留审计记录。
+V4 在现有模块化单体基础上新增 Tool / Skill / RAG 分层，但不改变既有核心原则：Planner 只规划，Java 后端校验和执行，
+ToolRegistry 是 Agent 原子工具执行入口，Skill 是复合任务能力且 does not replace ToolRegistry，Approval 拦截高风险动作，
+ToolCallTrace 保留审计记录。
 
 ### V4 推荐包结构
 
@@ -1128,8 +1130,8 @@ com.example.aftersale
 ```text
 Planner
 → AgentPlan / AgentSubtask
-→ SkillRegistry
-→ AgentSkill
+→ Specialist Handler or SkillRegistry
+→ AgentSkill when selected
 → ToolRegistry
 → ToolExecutor
 → ToolCallTrace
@@ -1140,17 +1142,19 @@ Planner
 ### RAG 政策检索链路
 
 ```text
-AgentSkill / Specialist Handler
+Specialist Handler or AgentSkill
 → ToolRegistry
 → search_aftersale_policy
-→ PolicyApplicationService
-→ PolicyHybridSearchService
-→ KeywordRepository + VectorRepository
-→ PolicySearchResult
+→ RagPolicySearchApplicationService
+→ keyword policy retrieval + EmbeddingClient contract + PolicyVectorRepository contract
+→ RagPolicySearchResult
 → ToolCallTrace
 → AgentWorkspace.PolicyEvidence
 → Execution Tree
 ```
+
+RAG retrieval 是 policy evidence source，不是业务决策或业务动作执行。`search_aftersale_policy` 是 LOW-risk read-only
+tool，不执行真实退款、换货、补偿、支付、物流、库存或争议关闭。
 
 ### 允许依赖
 
@@ -1159,8 +1163,10 @@ AgentApplicationService → AgentPlanner
 AgentApplicationService → SkillRegistry
 AgentSkill → ToolRegistry
 AgentSkill → AgentWorkspace
-PolicyHybridSearchService → PolicyRepository
-PolicyHybridSearchService → PolicyVectorRepository
+RagPolicySearchApplicationService → EmbeddingClient
+RagPolicySearchApplicationService → PolicyVectorRepository
+PolicyEmbeddingPipelineService → EmbeddingClient
+PolicyEmbeddingPipelineService → PolicyVectorRepository
 PolicyEmbeddingService → EmbeddingClient
 SpringAiChatClientAdapter → Spring AI ChatClient
 SpringAiEmbeddingClientAdapter → Spring AI EmbeddingModel
@@ -1180,7 +1186,16 @@ SpecialistAgentHandler → VectorStore
 LLM Planner → ToolRegistry execution
 LLM Planner → VectorStore
 ToolExecutor → direct real refund/payment/logistics APIs
+Agent / Handler / Skill → EmbeddingClient
+Agent / Handler / Skill → PolicyVectorRepository
+Agent / Handler / Skill → PolicyIngestionRepository
+Agent / Handler / Skill → OpenAPI config
+Agent / Handler / Skill → Actuator health indicators
 ```
+
+EmbeddingClient / PolicyVectorRepository 是 application / infrastructure contract，不直接暴露给 Agent、Handler 或 Skill。
+Policy Ingestion 是 admin/offline pipeline，不是 Agent runtime tool。ToolCallTrace 是审计 source of truth；Workspace 是单次
+AgentRun 工作记忆，不是长期记忆；Execution Tree 是只读解释视图，不修改业务状态。
 
 ### V4 架构测试目标
 
@@ -1194,3 +1209,17 @@ ArchitectureTest 应新增或保持以下约束：
 6. RAG infrastructure 不得依赖 Agent application；
 7. default profile 不创建真实 vector datasource；
 8. ToolRegistry 仍是 ToolExecutor 唯一入口。
+9. RAG evaluation 不写 ToolCallTrace / Workspace / Execution Tree；
+10. RAG health 不调用 ToolRegistry / AgentRun / EmbeddingClient.embed / PolicyVectorRepository.search；
+11. OpenAPI config 不访问 Repository、EmbeddingClient、PolicyVectorRepository、PGvector、DataSource 或 JdbcTemplate；
+12. Policy Ingestion 保持 admin/offline pipeline，不成为 Agent runtime tool。
+
+### V4 默认离线验证边界
+
+默认测试和默认 Spring context 必须保持 offline、deterministic：
+
+- 不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或 external network；
+- 不创建真实 DataSource、PGvector live connection、Spring AI ChatModel、Spring AI EmbeddingModel 或 Spring AI VectorStore；
+- RAG Actuator health 是 offline readiness signal，不是 live PGvector / provider connectivity proof；
+- live provider、live embedding、live MySQL、live PGvector 验证必须显式 opt-in，并在缺少配置时 skip 或给出清晰 setup
+  message。

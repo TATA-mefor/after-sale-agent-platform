@@ -33,7 +33,8 @@ class V4DocumentationConsistencyTest {
             "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_DEMO_SCRIPT.md",
             "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_ACTUATOR_HEALTH.md",
             "docs/exec-plans/completed/EXEC_PLAN_V4_OPENAPI_API_DOCS.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md");
+            "docs/exec-plans/completed/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md",
+            "docs/exec-plans/completed/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md");
 
     private static final List<String> SELECTED_V4_DOCS = List.of(
             "README.md",
@@ -49,6 +50,7 @@ class V4DocumentationConsistencyTest {
             "docs/decisions/DECISION_V4_SPRING_AI_ADAPTER.md",
             "docs/decisions/DECISION_V4_RAG_VECTOR_STORE.md",
             "docs/decisions/DECISION_V4_SPRING_BOOT_COMPLETENESS.md",
+            "docs/quality/VALIDATION_COMMANDS.md",
             "docs/evaluation/EVALUATION.md",
             "docs/demo/V4_RAG_DEMO_SCRIPT.md",
             "docs/demo/V4_POLICY_INGESTION_PIPELINE.md",
@@ -95,13 +97,14 @@ class V4DocumentationConsistencyTest {
                 "V4.6.3",
                 "V4.6.4");
         assertThat(combined).contains("V4.7.1", "completed");
-        assertThat(combined).contains("V4.7.2", "planned");
+        assertThat(combined).contains("V4.7.2", "completed");
         assertThat(combined).contains("V4.7.3", "planned");
         assertThat(combined).contains("V4.7.4", "planned");
 
         assertThat(execPlan).contains("V4.7 Documentation / Architecture / Final Closure", "Status: active");
         assertThat(activePlan).contains("V4.7 Documentation / Architecture / Final Closure", "Status: active");
         assertThat(quality).contains("V4.7.1 Documentation Consistency / Secret Safety Audit (completed)");
+        assertThat(quality).contains("V4.7.2 Architecture Boundary / Offline Validation Closure (completed)");
     }
 
     @Test
@@ -152,6 +155,48 @@ class V4DocumentationConsistencyTest {
                 "V4.7.3",
                 "V4.7.4",
                 "TASK_COMPLETE");
+    }
+
+    @Test
+    void v472CompletionRecordDefinesArchitectureAndOfflineValidationBoundary() throws IOException {
+        String completed = projectText(
+                "docs/exec-plans/completed/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md");
+
+        assertThat(completed).contains(
+                "Status: Completed",
+                "Architecture Boundary Closure",
+                "Default Offline Validation Boundary",
+                "Live Test Skip Boundary",
+                "Validation Command Documentation",
+                "Runtime Non-change Boundary",
+                "does not add runtime business behavior",
+                "V4.7.3",
+                "V4.7.4",
+                "TASK_COMPLETE");
+    }
+
+    @Test
+    void validationCommandsDocumentDefaultOfflineAndLiveOptInBoundaries() throws IOException {
+        String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
+
+        assertThat(validation).contains(
+                "mvn test",
+                "mvn checkstyle:check",
+                "mvn spotbugs:check",
+                "mvn test -Dtest=ArchitectureTest",
+                "real LLM",
+                "API Key",
+                "PostgreSQL",
+                "PGvector",
+                "Docker",
+                "MySQL",
+                "Redis",
+                "external network",
+                "-Dlive.llm=true",
+                "-Dlive.spring-ai=true",
+                "-Dlive.embedding=true",
+                "-Dlive.mysql=true",
+                "If any default command requires one of those dependencies, treat it as a regression");
     }
 
     private static String selectedDocsText() throws IOException {

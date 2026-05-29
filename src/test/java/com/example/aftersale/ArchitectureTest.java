@@ -292,6 +292,43 @@ class ArchitectureTest {
     }
 
     @Test
+    void agentHandlerAndSkillMustNotDependOnDiagnosticsOrDocumentationPackages() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..agent.application..", "..agent.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "..common.openapi..",
+                        "..policy.rag.health..",
+                        "org.springframework.boot.actuate..")
+                .because("Agent runtime must not depend on documentation or diagnostic health packages.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void toolExecutorsMustNotDependOnProviderInfrastructureOrLowLevelClients() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..tool.application..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..",
+                        "..policy.rag.infrastructure.pgvector..",
+                        "..policy.rag.infrastructure.springai..",
+                        "..policy.rag.infrastructure.memory..",
+                        "..agent.infrastructure.springai..")
+                .because("Tool executors must call application services and must not bind to provider infrastructure.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
     void ragVectorDomainMustStayPureDomainContract() {
         noClasses()
                 .that()
