@@ -33,8 +33,8 @@ V4.4 does not include:
 - no `JdbcPolicyIngestionRepository`;
 - no `JdbcPolicyVectorRepository`;
 - no PGvector live writes;
-- no RAG / HYBRID retrieval;
-- `search_aftersale_policy` not wired to vector search yet;
+- no RAG / HYBRID retrieval in the V4.4 ingestion stage itself;
+- no Agent runtime vector retrieval in V4.4 itself;
 - no AgentRun runtime usage.
 
 ## Pipeline Flow
@@ -66,16 +66,20 @@ provider, or external network access.
 
 ## Future Real Path
 
-Later phases can add opt-in production-like paths without changing the V4.4 boundary:
+Later phases can add opt-in production-like paths without changing the V4.4 boundary. V4.5 already wires
+`search_aftersale_policy` HYBRID retrieval through ToolRegistry using the default fake / in-memory vector path; the
+remaining future path is live/provider hardening:
 
 - real Spring AI embedding opt-in;
+- `JdbcPolicyIngestionRepository`;
 - `JdbcPolicyVectorRepository`;
-- PGvector compose-backed local validation;
+- live PGvector write/search validation;
+- Spring AI `VectorStore` production path if it preserves the repository and ToolRegistry boundaries;
 - Admin API with explicit security;
-- HYBRID retrieval;
-- ToolRegistry `search_aftersale_policy` integration.
+- production ingestion scheduling / admin operations.
 
-These are future capabilities. V4.4 does not claim live PGvector ingestion or Agent runtime vector retrieval.
+These are future capabilities. V4.4 does not claim live PGvector ingestion. V4.5 adds HYBRID policy search runtime, but
+it does not make PGvector live persistence the default path.
 
 ## Failure Handling
 

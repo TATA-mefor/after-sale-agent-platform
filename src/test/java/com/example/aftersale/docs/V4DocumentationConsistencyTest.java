@@ -35,7 +35,8 @@ class V4DocumentationConsistencyTest {
             "docs/exec-plans/completed/EXEC_PLAN_V4_OPENAPI_API_DOCS.md",
             "docs/exec-plans/completed/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md",
             "docs/exec-plans/completed/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md");
+            "docs/exec-plans/completed/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md",
+            "docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md");
 
     private static final List<String> SELECTED_V4_DOCS = List.of(
             "README.md",
@@ -56,6 +57,9 @@ class V4DocumentationConsistencyTest {
             "docs/demo/V4_RAG_DEMO_SCRIPT.md",
             "docs/demo/V4_POLICY_INGESTION_PIPELINE.md",
             "docs/demo/V4_PGVECTOR_LOCAL_SETUP.md",
+            "docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md",
+            "docs/demo/V4_PROJECT_HIGHLIGHTS.md",
+            "docs/release/V4_RELEASE_SUMMARY.md",
             "docs/api/OPENAPI.md");
 
     @Test
@@ -100,13 +104,16 @@ class V4DocumentationConsistencyTest {
         assertThat(combined).contains("V4.7.1", "completed");
         assertThat(combined).contains("V4.7.2", "completed");
         assertThat(combined).contains("V4.7.3", "completed");
-        assertThat(combined).contains("V4.7.4", "planned");
+        assertThat(combined).contains("V4.7.4", "completed");
+        assertThat(combined).contains("V4 overall status is completed");
 
-        assertThat(execPlan).contains("V4.7 Documentation / Architecture / Final Closure", "Status: active");
-        assertThat(activePlan).contains("V4.7 Documentation / Architecture / Final Closure", "Status: active");
+        assertThat(execPlan).contains("V4.7 Documentation / Architecture / Final Closure", "Status: completed");
+        assertThat(activePlan).contains(
+                "V4.7 Documentation / Architecture / Final Closure", "Status: completed", "historical active V4 plan");
         assertThat(quality).contains("V4.7.1 Documentation Consistency / Secret Safety Audit (completed)");
         assertThat(quality).contains("V4.7.2 Architecture Boundary / Offline Validation Closure (completed)");
         assertThat(quality).contains("V4.7.3 Interview Demo / README Polish (completed)");
+        assertThat(quality).contains("V4.7.4 V4 Final Completion Record (completed)");
     }
 
     @Test

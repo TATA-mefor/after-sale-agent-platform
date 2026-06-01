@@ -13,6 +13,39 @@ user after-sale message -> ticket -> rule-based AgentRun -> policy retrieval -> 
 The project is intentionally built as a modular monolith with Harness Engineering documents, architecture tests, lint
 checks, and executable tests as the guardrails.
 
+V4 status: completed. The final V4 scope delivered enterprise-grade Agent platform foundation work, RAG policy
+evidence, Spring AI / PGvector boundaries, Actuator health, OpenAPI docs, interview demo docs, and default offline
+validation. This does not mean production external integrations are complete. Real refund, exchange, payment,
+logistics, production auth, production monitoring, and production deployment remain future work.
+
+- [V4 Final Completion Record](docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md)
+- [V4 Release Summary](docs/release/V4_RELEASE_SUMMARY.md)
+- [中文项目整改方案](docs/quality/PROJECT_REMEDIATION_PLAN.md)
+- [Project Review Correction Stage 0](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
+
+## V4 事实口径
+
+V4 completed 表示 foundation / demo / interview-grade 阶段完成，不表示生产部署完成。
+
+- 当前项目不是空的 Spring Boot skeleton：Ticket、AgentRun、Approval、ToolCallTrace、Workspace、Execution Tree、
+  RAG evaluation、Actuator health 和 OpenAPI docs 已存在。
+- Ticket 不是纯贫血模型：它有状态流转和 terminal-state guard；Order 当前更薄，更接近只读模型。
+- PGvector 当前是 profile、schema、compose、docs、repository contract、fake / in-memory vector store 和默认离线
+  测试边界；`JdbcPolicyVectorRepository`、默认 live PGvector write/search、Spring AI VectorStore production path
+  和 live PGvector integration validation 仍是 future / opt-in。
+- `docker-compose-rag.yml` 提供本地 PGvector infrastructure，不是完整 app + PGvector 生产部署方案。
+- 当前 HTTP API 是 demo/backend API surface：Ticket create/get、AgentRun create、trace / execution-tree 只读视图、
+  Approval pending/get/approve/reject、Actuator health 和 OpenAPI docs；它不是完整生产 CRUD 平台。
+- Spring AI 当前是 adapter foundation，不代表已经使用 ChatMemory、Advisors、Tool Calling API 或 bulk embedding。
+- RAG 当前支持 KEYWORD / VECTOR / HYBRID policy evidence retrieval，但 reranking、query rewriting、RRF 和 chunk
+  window expansion 仍是 future work。
+- 当前 observability 覆盖 MDC / structured logs、ToolCallTrace、Execution Tree、Actuator health 和 RAG readiness
+  diagnostics；Prometheus registry、metrics dashboard、distributed tracing 和 cross-service trace-id propagation
+  仍是 V5 / future work。
+- RAG evidence 是政策证据，不是业务决策，也不执行退款、换货、补偿、支付、物流或争议关闭。
+- `search_aftersale_policy` 仍是 LOW-risk read-only ToolRegistry tool；ToolRegistry 仍是 Agent tool execution
+  entry；Skill 不替代 ToolRegistry；Policy ingestion 仍是 admin/offline pipeline，不是 Agent runtime tool。
+
 ## Interview Quick Guide
 
 AfterSale-Agent is an enterprise after-sale ticket Agent platform built with Spring Boot. The review path is designed
@@ -44,6 +77,10 @@ Interview docs:
 - [Evaluation Docs](docs/evaluation/EVALUATION.md)
 - [OpenAPI Docs](docs/api/OPENAPI.md)
 - [Validation Commands](docs/quality/VALIDATION_COMMANDS.md)
+- [中文项目整改方案](docs/quality/PROJECT_REMEDIATION_PLAN.md)
+- [V4 Final Completion Record](docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md)
+- [V4 Release Summary](docs/release/V4_RELEASE_SUMMARY.md)
+- [Project Review Correction Stage 0](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
 
 Fast validation:
 
@@ -1241,10 +1278,10 @@ V4 focuses on interview-critical AI engineering capabilities:
 - Spring Boot completeness improvements.
 
 V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3 PGvector profile/schema/fake
-vector/compose docs, V4.4 Policy Ingestion Foundation, V4.5 Hybrid RAG Policy Search Tool, and V4.6 evaluation/demo/
-Actuator/OpenAPI docs are completed. V4.7 is active for documentation, architecture, and final closure tasks. V4.7.1
-documentation consistency / secret safety audit, V4.7.2 architecture boundary / offline validation closure, and V4.7.3
-interview demo / README polish are completed; V4.7.4 final V4 completion record remains planned. Skill is now a
+vector/compose docs, V4.4 Policy Ingestion Foundation, V4.5 Hybrid RAG Policy Search Tool, V4.6 evaluation/demo/
+Actuator/OpenAPI docs, and V4.7 documentation / architecture / final closure are completed. The final V4 completion
+record is [EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md](docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md),
+and the reviewer-facing release summary is [V4_RELEASE_SUMMARY.md](docs/release/V4_RELEASE_SUMMARY.md). Skill is now a
 first-class Java contract and registry concept, while the current AgentRun execution path still uses the existing
 Specialist Handler dispatch. Spring AI is available as an optional provider adapter and is disabled by default.
 
@@ -1299,6 +1336,9 @@ V4 demo documents:
   evaluation.
 - [OpenAPI Docs](docs/api/OPENAPI.md) describe Swagger UI, `/v3/api-docs`, core API groups, `/actuator/health`, and
   the V4.6.4 no-runtime-change boundary.
+- [V4 Final Completion Record](docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md) closes V4.0 through
+  V4.7.4 with architecture boundaries, default offline validation, limitations, and future work.
+- [V4 Release Summary](docs/release/V4_RELEASE_SUMMARY.md) gives the concise reviewer-facing V4 summary.
 - V4 RAG health indicators expose offline readiness through `/actuator/health` without requiring API keys, Docker,
   PGvector, PostgreSQL, or live embedding providers.
 
@@ -1774,6 +1814,26 @@ not change retrieval algorithms, does not change RAG evaluation, Actuator health
 ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime. The interview demo path remains offline by default
 and does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, or
 external network.
+
+### V4.7.4 V4 Final Completion Record
+
+Implemented V4.7.4 final V4 documentation closure:
+
+- [V4 Final Completion Record](docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md) summarizes V4.0
+  through V4.7.4, key capabilities, architecture boundaries, default offline validation, known limitations,
+  recommended demo path, and future work.
+- [V4 Release Summary](docs/release/V4_RELEASE_SUMMARY.md) gives reviewers a concise summary of V4 delivery,
+  validation, demo path, non-production boundaries, and roadmap.
+- V4 roadmap, historical active plan, quality notes, validation commands, interview checklist, and project highlights
+  now point to the final record and release summary.
+- Final docs harness tests verify final status, links, default offline claims, RAG evidence-only wording,
+  ToolRegistry boundary, live opt-in boundary, and no production / real external integration overclaims.
+
+V4.7.4 is documentation closure only. It does not add runtime behavior, does not modify `search_aftersale_policy`, does
+not change retrieval algorithms, does not change RAG evaluation, Actuator health behavior, OpenAPI behavior,
+ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime. V4 completed means the enterprise-grade Agent
+platform foundation, RAG policy evidence path, and Spring Boot completeness documentation are closed; it does not mean
+production external systems are integrated.
 
 ### V4 Default Test Boundary
 

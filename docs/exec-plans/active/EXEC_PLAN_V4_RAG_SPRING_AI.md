@@ -1,7 +1,7 @@
 
 # AfterSale-Agent V4 RAG & Spring AI Integration 执行计划
 
-Status: active
+Status: Completed / Closed
 
 ## 1. V4 总目标
 
@@ -11,7 +11,7 @@ V4 的目标是在不破坏 V1/V2/V3 已建立的 Agent、ToolRegistry、Approva
 Spring Boot enterprise backend
 + Spring AI provider adapter
 + RAG / vectorized policy retrieval
-+ PGvector-backed VectorStore profile
++ PGvector / vector repository foundation and opt-in profile
 + Tool / Skill capability layer
 + auditable Agent evidence chain
 + Spring Boot completeness hardening
@@ -31,7 +31,7 @@ V4 目标链路：
 Policy document ingestion
 → chunking
 → embedding
-→ PGvector / VectorStore persistence
+→ vector repository contract / fake default store / opt-in PGvector boundary
 → hybrid policy retrieval
 → search_aftersale_policy Tool
 → AgentSkill
@@ -40,6 +40,15 @@ Policy document ingestion
 → Execution Tree
 → AgentRun final summary
 ```
+
+V4 completed 的事实边界：本文件是 historical active V4 plan，当前已 Completed / Closed。V4 是 foundation /
+demo / interview-grade completion，不是 production deployment completion。PGvector 当前完成 profile boundary、
+schema、compose docs、repository contract、fake / in-memory vector store 和默认离线测试；`JdbcPolicyVectorRepository`、
+默认 live PGvector write/search、Spring AI VectorStore production path 和 live PGvector integration validation 仍是
+V5 / future / opt-in。当前 HTTP API 是 demo/backend API surface，不是完整生产 CRUD 平台。Spring AI 当前是
+adapter foundation，不代表已使用 ChatMemory、Advisors、Tool Calling API 或 bulk embedding。RAG 当前不包含
+reranking、query rewriting、RRF 或 chunk window expansion。production auth、production monitoring、production
+deployment、真实退款、真实换货、真实支付、真实物流和真实优惠券补偿集成均不属于 V4 已完成范围。
 
 ## 2. V4 核心原则
 
@@ -356,8 +365,9 @@ V4.3.4 只完成 Docker Compose / opt-in PGvector integration docs:
 - 新增 `docs/demo/V4_PGVECTOR_LOCAL_SETUP.md`，说明启动、停止、清理 volume、health check、schema 初始化和
   常见问题；
 - `schema-rag-postgres.sql` 仅通过 opt-in compose 挂载到 initdb 路径，新 volume 初始化时才执行；
-- 新增 compose/docs harness tests，验证 compose 存在、secret safety、默认 compose 未被 PGvector 污染、文档明确
-  no JDBC repository / no Policy Ingestion / no HYBRID retrieval / `search_aftersale_policy` not wired；
+- 新增 compose/docs harness tests，验证 compose 存在、secret safety、默认 compose 未被 PGvector 污染、并明确
+  V4.3.4 当时不包含 JDBC repository、Policy Ingestion、HYBRID retrieval 或 `search_aftersale_policy` vector
+  wiring；后续 V4.4/V4.5 分别完成离线 ingestion foundation 和 HYBRID ToolRegistry runtime；
 - 默认测试仍不启动 Docker，不连接 PostgreSQL、PGvector、MySQL、Redis、真实 LLM、embedding provider 或外部网络。
 
 V4.3.4 不包含 `JdbcPolicyVectorRepository`、PGvector live search、Spring AI `VectorStore` search、
@@ -816,9 +826,10 @@ API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、真实 embedding prov
 
 ## 11. V4.7 Documentation / Architecture / Final Closure
 
-Status: active. V4.7.1 documentation consistency / secret safety audit, V4.7.2 architecture boundary / offline
-validation closure, and V4.7.3 interview demo / README polish are completed by this stage. V4.7.4 remains planned and
-must not be described as completed.
+Status: completed. V4.7.1 documentation consistency / secret safety audit, V4.7.2 architecture boundary / offline
+validation closure, V4.7.3 interview demo / README polish, and V4.7.4 final V4 completion record are completed. This
+file is retained as the historical active V4 plan and is now closed. V4 overall status is completed; future V5 /
+production hardening work is outside this V4 completion scope.
 
 ### 11.1 V4.7.1 Documentation Consistency / Secret Safety Audit
 
@@ -872,9 +883,22 @@ Actuator health behavior, OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspa
 
 ### 11.4 V4.7.4 V4 Final Completion Record
 
-Status: planned.
+Status: completed.
 
-V4.7.4 is reserved for the final V4 completion record after V4.7.3.
+V4.7.4 completes final V4 documentation closure only:
+
+- `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` records the completed V4.0 through V4.7.4 scope,
+  preserved architecture boundaries, default offline validation boundary, evidence-only safety boundary, known
+  limitations, recommended demo path, and future work.
+- `docs/release/V4_RELEASE_SUMMARY.md` gives a concise reviewer-facing summary of what V4 delivered, how to validate,
+  how to demo, and what remains intentionally non-production / opt-in.
+- README, this historical active V4 plan, quality notes, validation commands, interview checklist, and project
+  highlights link the final record and release summary.
+- Final docs harness tests verify final completion links, status wording, offline validation claims, ToolRegistry and
+  evidence-only boundaries, and no production / real external integration overclaims.
+
+V4.7.4 does not add runtime behavior, does not modify `search_aftersale_policy`, retrieval algorithms, RAG evaluation,
+Actuator health behavior, OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime.
 
 ## 12. V4.8 Future Skill / Execution Tree / Demo Extensions
 
@@ -914,10 +938,29 @@ Production deployment documentation if explicitly scoped later
 - `/actuator/health` remains offline readiness, not live PGvector / provider connectivity proof;
 - OpenAPI covers existing APIs but does not create a public policy-search endpoint;
 - Admin ingestion API, production monitoring, production deployment, and broad live integration validation are not
-  completed in V4.7.2;
+  completed in V4;
 - default test gate must not depend on external services.
 
-## 14. 验证命令
+## 14. V4 Final Completion Status
+
+V4 overall status is completed. The final completion record is
+`docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`, and the reviewer-facing release summary is
+`docs/release/V4_RELEASE_SUMMARY.md`. The project review fact wording correction record is
+`docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md`. This active plan is retained as a closed
+historical plan and should not be used to mark new V4.7.4 work as pending.
+
+Future work is not part of the completed V4 scope:
+
+- V5 production hardening;
+- production auth and security;
+- `JdbcPolicyVectorRepository`;
+- live PGvector validation;
+- production ingestion API or admin UI;
+- real payment, logistics, refund, exchange, and coupon compensation integrations;
+- observability and metrics hardening;
+- deployment hardening.
+
+## 15. 验证命令
 
 每个 V4 阶段必须至少运行：
 

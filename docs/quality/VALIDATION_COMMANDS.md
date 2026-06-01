@@ -1,6 +1,6 @@
 # Validation Commands
 
-Status: V4.7.2 default offline validation closure.
+Status: V4 final default offline validation gate.
 
 This file records the repository validation boundary. The default commands are offline, deterministic, and must not
 require real providers or external services.
@@ -30,6 +30,47 @@ The default validation path must not require:
 - Spring AI live provider calls.
 
 If any default command requires one of those dependencies, treat it as a regression.
+
+## V4 Final Validation
+
+The V4 final default validation gate is:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+This gate is the expected final verification set for V4 completion. It covers default offline tests, docs harness
+tests, architecture boundaries, style checks, static analysis, RAG evaluation tests, RAG health tests, OpenAPI docs
+tests, and AgentRun regression tests.
+
+Live checks are explicit opt-in and are not part of this default gate. The final V4 default gate does not require API
+keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real LLMs, real embedding providers, Spring AI VectorStore, or
+external network.
+
+## 项目审查后的事实口径
+
+V4 final default validation gate 证明默认路径离线、确定性、边界可检查；它不证明生产部署、生产认证、生产监控、
+live PGvector、真实 provider 或真实外部业务系统可用。
+
+- 当前 observability 已覆盖 MDC / structured logs、ToolCallTrace、Execution Tree、Actuator health 和 RAG readiness
+  diagnostics。
+- 当前 observability 未覆盖 Prometheus registry、metrics dashboard、distributed tracing 或 cross-service trace-id
+  propagation；这些是 V5 / future work。
+- 当前 Spring AI 是 adapter foundation，不是 ChatMemory、Advisors、Tool Calling API 或 bulk embedding 深度使用。
+- 当前 RAG 支持 KEYWORD / VECTOR / HYBRID policy evidence retrieval，但没有 reranking、query rewriting、RRF 或
+  chunk window expansion。
+- 当前 API 是 demo/backend API surface，不是完整生产 CRUD 平台。
+- PGvector 当前是 foundation / opt-in profile，不是默认 live vector persistence。
+
+中文整改方案见 `docs/quality/PROJECT_REMEDIATION_PLAN.md`。该文档只做项目审查结论的事实核验与阶段化整改路线，
+不改变 runtime 行为。对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=ProjectRemediationPlanDocsTest
+```
 
 ## Interview Safe Validation Commands
 
@@ -97,5 +138,12 @@ must not run during default validation.
 ## V4.7.2 Boundary
 
 V4.7.2 closes architecture and offline validation coverage only. It does not add runtime behavior, does not modify
+`search_aftersale_policy`, does not change retrieval algorithms, does not modify RAG evaluation, Actuator health,
+OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime.
+
+## V4.7.4 Final Closure Boundary
+
+V4.7.4 closes final V4 documentation status only. It adds the final completion record and release summary, then keeps
+the same default validation gate and live opt-in boundary. It does not add runtime behavior, does not modify
 `search_aftersale_policy`, does not change retrieval algorithms, does not modify RAG evaluation, Actuator health,
 OpenAPI behavior, ToolRegistry, ToolCallTrace, Workspace, or Execution Tree runtime.

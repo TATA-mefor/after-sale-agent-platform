@@ -56,9 +56,12 @@ class PolicyIngestionDocsHarnessTest {
         assertThat(docs).contains("no real Spring AI embedding default path");
         assertThat(docs).contains("no `JdbcPolicyVectorRepository`");
         assertThat(docs).contains("no PGvector live writes");
-        assertThat(docs).contains("no RAG / HYBRID retrieval");
-        assertThat(docs).contains("`search_aftersale_policy` not wired to vector search yet");
-        assertThat(docs).contains("V4.5 is the phase that wires HYBRID RAG into `search_aftersale_policy`");
+        assertThat(docs).contains("no RAG / HYBRID retrieval in the V4.4 ingestion stage itself");
+        assertThat(docs).contains("no Agent runtime vector retrieval in V4.4 itself");
+        assertThat(docs)
+                .contains("`search_aftersale_policy` HYBRID retrieval through ToolRegistry using the default fake"
+                        + " / in-memory vector path");
+        assertThat(docs).contains("V4.5 wires HYBRID RAG into `search_aftersale_policy`");
     }
 
     @Test

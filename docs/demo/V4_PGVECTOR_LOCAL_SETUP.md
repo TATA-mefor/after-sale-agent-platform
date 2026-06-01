@@ -2,27 +2,33 @@
 
 ## Purpose
 
-This guide describes the opt-in local PostgreSQL + PGvector development path for future V4 RAG work.
+This guide describes the opt-in local PostgreSQL + PGvector infrastructure path introduced by V4.3.4.
 
-V4.3.4 only adds Docker Compose and integration documentation. It does not add a `JdbcPolicyVectorRepository`, policy
-ingestion, HYBRID retrieval, Spring AI `VectorStore` usage, or any runtime change to `search_aftersale_policy`.
+Read this page as local infrastructure documentation, not as proof that the default application path uses live
+PGvector. Later V4.4 and V4.5 stages added offline policy ingestion foundation and KEYWORD / VECTOR / HYBRID
+`search_aftersale_policy` runtime through ToolRegistry, but the default path still uses fake / in-memory dependencies.
 
 ## Current Boundary
 
-Available in this phase:
+Available as V4 foundation:
 
 - `docker-compose-rag.yml` starts a local PGvector-capable PostgreSQL container.
 - `schema-rag-postgres.sql` defines the future policy vector tables.
 - `application-rag-postgres.yml` defines explicit `rag-postgres` profile properties.
+- `PolicyVectorRepository` defines the application contract.
+- `InMemoryPolicyVectorRepository` and fake vector tests remain the default vector validation path.
+- V4.4 policy ingestion foundation can write through the repository contract in offline tests.
+- V4.5 `search_aftersale_policy` supports KEYWORD / VECTOR / HYBRID retrieval through ToolRegistry using the current
+  default fake / in-memory vector path.
 - Fake vector store tests remain the default offline vector validation path.
 
-Not available in this phase:
+Still not completed:
 
-- No `JdbcPolicyVectorRepository` yet.
-- No Policy Ingestion yet.
-- No HYBRID retrieval yet.
-- `search_aftersale_policy` is not wired to vector search yet.
-- The app cannot execute real vector search through PGvector yet.
+- `JdbcPolicyVectorRepository`.
+- Default live PGvector write/search.
+- Spring AI `VectorStore` production path.
+- Live PGvector integration validation.
+- A production app + PGvector deployment compose file.
 
 ## Start PGvector
 
@@ -31,7 +37,8 @@ docker compose -f docker-compose-rag.yml up -d
 ```
 
 The compose file is opt-in only and local development only. The default `docker-compose.yml` app + MySQL path does not
-depend on PGvector.
+depend on PGvector. `docker-compose-rag.yml` provides PGvector infrastructure only; it is not a production deployment
+guide and not a complete app + PGvector production compose.
 
 ## Stop And Clean Up
 
@@ -123,4 +130,6 @@ volume was initialized with different credentials.
 Vector extension unavailable: use the PGvector image from `docker-compose-rag.yml`; a plain PostgreSQL image may not
 include the `vector` extension.
 
-App cannot execute real vector search: expected in V4.3.4. The JDBC repository and HYBRID RAG wiring are later phases.
+App cannot execute real vector search through PGvector by default: expected. HYBRID `search_aftersale_policy` wiring is
+available through ToolRegistry, but live PGvector persistence/search still requires future `JdbcPolicyVectorRepository`
+or a separately approved Spring AI `VectorStore` integration path.

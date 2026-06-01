@@ -3,6 +3,10 @@
 This page summarizes AfterSale-Agent V4 for project review and interviews. It describes implemented repository
 capabilities and explicit boundaries; it is not a production rollout statement.
 
+V4 status: completed. The final completion record is
+`docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`; the concise release summary is
+`docs/release/V4_RELEASE_SUMMARY.md`.
+
 ## Interview Summary
 
 - Enterprise after-sale ticket Agent platform built on Spring Boot.

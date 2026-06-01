@@ -814,12 +814,11 @@ V4 质量目标聚焦 RAG、Spring AI、Tool / Skill 能力层和 Spring Boot �
 
 ### V4 Current Status
 
-Status: active. V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3.1
-PostgreSQL / PGvector profile boundary, V4.3.2 vector schema / repository contract, V4.3.3 fake vector store /
-default offline vector tests, V4.3.4 Docker Compose / opt-in PGvector integration docs, and V4.4.1 Policy Ingestion
-domain / status / repository foundation, V4.4.2 chunking / checksum dedup, and V4.4.3 fake-provider embedding
-pipeline are completed. RAG / HYBRID retrieval, Skill runtime migration, and Execution Tree skill nodes remain
-planned.
+Status: completed. V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3 PGvector
+profile / schema / fake vector store / compose docs, V4.4 Policy Ingestion Foundation, V4.5 Hybrid RAG Policy Search
+Tool, V4.6 evaluation / demo / Actuator health / OpenAPI docs, and V4.7 documentation / architecture / final closure
+are completed. V4 final closure is recorded in `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` and
+summarized in `docs/release/V4_RELEASE_SUMMARY.md`.
 
 ### V4.0 Pre-flight Fixes Quality Summary
 
@@ -1142,11 +1141,11 @@ Known limitations:
 
 - No Admin Controller, no `ingest_policy_document` tool, no ToolRegistry wiring, no real Spring AI embedding default
   path, no `JdbcPolicyIngestionRepository`, no `JdbcPolicyVectorRepository`, no PGvector live writes, no RAG / HYBRID
-  retrieval, and `search_aftersale_policy` is not wired to vector search yet.
+  retrieval in the V4.4 ingestion stage itself, and no Agent runtime vector retrieval in V4.4 itself.
 
 V4.5 follow-up:
 
-- Connect controlled HYBRID retrieval to `search_aftersale_policy` while preserving LOW-risk read-only evidence
+- V4.5 connects controlled HYBRID retrieval to `search_aftersale_policy` while preserving LOW-risk read-only evidence
   semantics and ToolRegistry / ToolCallTrace boundaries.
 
 ### V4.5.1 RAG Search Contract Quality Summary
@@ -1439,7 +1438,7 @@ Known limitations:
 
 - V4.7.1 did not perform new architecture boundary closure, demo polish beyond consistency fixes, or the final V4
   completion record. Architecture boundary closure is handled by V4.7.2; demo polish is handled by V4.7.3; the final
-  V4 completion record remains planned for V4.7.4.
+  V4 completion record is handled by V4.7.4.
 
 ### V4.7.2 Architecture Boundary / Offline Validation Closure (completed)
 
@@ -1493,8 +1492,64 @@ Current V4.7.3 quality status:
 
 Known limitations:
 
-- V4.7.3 does not create the final V4 completion record, implement production deployment, add production monitoring,
-  validate live PGvector connectivity, or add live provider validation. Those remain future scoped work.
+- V4.7.3 did not create the final V4 completion record. That closure is completed by V4.7.4.
+
+### V4.7.4 V4 Final Completion Record (completed)
+
+Status: completed for V4 final quality closure, release summary, final roadmap status, and docs harness coverage.
+
+Current V4.7.4 quality status:
+
+- Final completion quality: `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` summarizes V4.0
+  through V4.7.4 scope, preserved architecture boundaries, default offline validation, evidence-only safety, known
+  limitations, recommended demo path, and future work.
+- Release summary quality: `docs/release/V4_RELEASE_SUMMARY.md` gives reviewers a concise V4 summary, validation path,
+  demo path, non-production boundaries, and roadmap.
+- Roadmap quality: `EXEC_PLAN_V4.md`, the historical active V4 plan, README, and this quality score now mark V4
+  overall and V4.7.4 as completed while keeping V5 / production hardening as future work.
+- Validation quality: the final default gate remains `mvn test`, `mvn checkstyle:check`, `mvn spotbugs:check`, and
+  `mvn test -Dtest=ArchitectureTest`.
+- Offline quality: default validation remains independent from real LLMs, API keys, PostgreSQL, PGvector, Docker,
+  MySQL, Redis, real embedding providers, Spring AI VectorStore, and external network.
+- Architecture quality: ArchUnit coverage continues to protect Agent / Handler / Skill, ToolRegistry, RAG, ingestion,
+  OpenAPI, Actuator, Spring AI, PGvector, JDBC, DataSource, and VectorStore boundaries.
+- Docs harness quality: final docs tests verify completion records, release summary links, final status wording,
+  default offline validation, ToolRegistry boundary, evidence-only RAG wording, live opt-in wording, and no production
+  / real external integration overclaims.
+- Spring Boot completeness quality: V4 includes OpenAPI / Swagger UI docs and offline Actuator health indicators for
+  current diagnostics; this is not a production monitoring claim.
+- RAG evaluation quality: deterministic RAG evaluation remains part of the default offline quality story and does not
+  require live providers.
+
+Known limitations:
+
+- V4 final quality closure does not implement production auth, production deployment, production monitoring,
+  `JdbcPolicyVectorRepository`, live PGvector validation, production ingestion admin UI, or real payment / logistics /
+  refund / exchange / coupon compensation integrations.
+
+### Project Review Correction Stage 0 (completed)
+
+Status: completed for documentation fact wording and project review correction docs harness coverage.
+
+Current Stage 0 quality status:
+
+- Documentation fact quality: README, V4 plans, release summary, validation docs, PGvector setup docs, and policy
+  ingestion docs now distinguish completed foundation / demo / interview-grade scope from V5 production hardening.
+- PGvector wording quality: docs describe PGvector as profile, schema, compose docs, repository contract, and fake /
+  in-memory default store. They do not present `JdbcPolicyVectorRepository`, default live PGvector write/search, or
+  Spring AI VectorStore production path as completed.
+- API wording quality: docs describe the HTTP surface as demo/backend API surface, not complete production CRUD.
+- Observability wording quality: docs separate current MDC / structured logs, ToolCallTrace, Execution Tree, Actuator
+  health, and RAG readiness diagnostics from future Prometheus, dashboard, distributed tracing, and cross-service
+  trace-id propagation.
+- Runtime non-change quality: Stage 0 changes docs and docs harness tests only; runtime behavior, retrieval
+  algorithms, ToolRegistry, Actuator health, OpenAPI config, ToolCallTrace, Workspace, and Execution Tree are unchanged.
+
+Known limitations:
+
+- Stage 0 does not implement V5 production hardening, production config templates, metrics, distributed tracing,
+  API pagination, async AgentRun, SSE, deeper Spring AI features, RAG reranking, query rewriting, RRF, chunk window
+  expansion, `JdbcPolicyVectorRepository`, or live PGvector validation.
 
 Planned phases:
 
@@ -1518,11 +1573,11 @@ V4.6.1 RAG Evaluation Cases and Metrics (completed)
 V4.6.2 V4 RAG Demo Script (completed)
 V4.6.3 Actuator Health Indicators (completed)
 V4.6.4 OpenAPI / API Docs Polish (completed)
-V4.7 Documentation / Architecture / Final Closure (active)
+V4.7 Documentation / Architecture / Final Closure (completed)
 V4.7.1 Documentation Consistency / Secret Safety Audit (completed)
 V4.7.2 Architecture Boundary / Offline Validation Closure (completed)
 V4.7.3 Interview Demo / README Polish (completed)
-V4.7.4 V4 Final Completion Record (planned)
+V4.7.4 V4 Final Completion Record (completed)
 V4.8 Future Skill / Execution Tree / Demo Extensions (planned)
 V4.9 Future Spring Boot Completeness (planned)
 ```

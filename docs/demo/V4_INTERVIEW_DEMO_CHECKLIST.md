@@ -3,6 +3,11 @@
 This checklist is the interview-facing path for explaining AfterSale-Agent V4. It is a local development and project
 review guide, not a production deployment guide.
 
+V4 status: completed. Use the final record and release summary as the closing references:
+
+- `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`
+- `docs/release/V4_RELEASE_SUMMARY.md`
+
 ## Demo Goal
 
 - 5 minutes: introduce the project purpose and safety model.
