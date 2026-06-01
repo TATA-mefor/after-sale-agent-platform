@@ -33,7 +33,8 @@ Status: Completed
 
 阶段 6 不实现 runtime，不新增 Dockerfile，不新增 CI/CD，不新增 Kubernetes / Helm，不接入 secret manager，
 不接入 production monitoring，不做 live PGvector validation。V5.A.1 后续新增了显式 opt-in
-`JdbcPolicyVectorRepository`，但 live PGvector validation、migration baseline 和 production deployment 仍未完成。
+`JdbcPolicyVectorRepository`，V5.A.2 记录了 schema version baseline `2026-06-01-001`。live PGvector validation、
+Flyway / Liquibase migration framework 和 production deployment 仍未完成。
 
 ## 推荐后续里程碑
 
@@ -85,6 +86,7 @@ Status: Completed
 
 ## database migration checklist
 
+- 使用 V5.A.2 schema version baseline `2026-06-01-001` 作为后续 migration framework 的参考起点。
 - 选择 Flyway 或 Liquibase。
 - 区分 schema migration、demo seed 和 production data migration。
 - 定义 migration rollback strategy。
@@ -94,6 +96,7 @@ Status: Completed
 ## PGvector deployment checklist
 
 - 使用 V5.A.1 opt-in `JdbcPolicyVectorRepository` 作为 JDBC adapter baseline。
+- 使用 V5.A.2 `schema-rag-postgres.sql` baseline 作为当前手动初始化参考。
 - 定义 vector schema migration。
 - 定义 index creation / refresh strategy。
 - 增加 opt-in live PGvector validation。

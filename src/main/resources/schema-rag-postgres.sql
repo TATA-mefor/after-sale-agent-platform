@@ -1,3 +1,8 @@
+-- V5.A.2 schema version: 2026-06-01-001
+-- Intended for: JdbcPolicyVectorRepository / PGvector policy evidence search
+-- Migration framework: pending V5.B.2
+-- Current initialization path: manual SQL import or docker-compose-rag init mount
+-- Default test boundary: not loaded by default mvn test
 -- V4.3.2 opt-in PGvector schema contract.
 -- This file is for the rag-postgres profile only and is not loaded by the default test profile.
 -- The vector column uses 1536 as the default OpenAI-compatible embedding dimension. Runtime dimensions remain

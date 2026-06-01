@@ -1866,6 +1866,29 @@ Known limitations:
 - V5.A.1 does not add live PGvector validation, database migration baseline, Spring AI `VectorStore` production path,
   Admin ingestion API, public RAG HTTP endpoint, reranking, query rewriting, RRF, or chunk window expansion.
 
+### V5.A.2 Schema Init / Version Baseline (completed)
+
+Status: completed for schema version baseline documentation and docs harness validation.
+
+Current V5.A.2 quality status:
+
+- Schema baseline quality: `schema-rag-postgres.sql` declares schema version baseline `2026-06-01-001` for the opt-in
+  `JdbcPolicyVectorRepository` / PGvector policy evidence search path.
+- Initialization documentation quality: docs explain docker-compose-rag fresh-volume init mount, manual SQL import,
+  and future explicit test setup as the supported initialization paths.
+- Migration boundary quality: V5.A.2 does not add Flyway / Liquibase. Migration framework work remains pending V5.B.2.
+- Live validation boundary quality: V5.A.2 does not validate live PGvector connectivity. V5.A.3 remains the planned
+  PGvector connectivity smoke task.
+- Default offline quality: V5.A.2 docs harness tests read files only and do not require real LLMs, API keys,
+  PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI `VectorStore`, or external network.
+- Runtime non-change quality: V5.A.2 does not modify `src/main/java`, retrieval algorithms, ToolRegistry semantics,
+  RAG health, OpenAPI behavior, ingestion runtime, ToolCallTrace, Workspace, Execution Tree, or public API behavior.
+
+Known limitations:
+
+- V5.A.2 does not implement production database migrations, live PGvector validation, Spring AI `VectorStore`
+  production path, Admin ingestion API, public RAG HTTP endpoint, RAG quality improvements, or production deployment.
+
 Planned phases:
 
 ```text

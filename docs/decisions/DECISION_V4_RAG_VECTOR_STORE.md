@@ -100,6 +100,13 @@ V4 scope above: V4 still completed the vector-store foundation, while V5.A.1 add
 separate opt-in infrastructure task. Live PGvector validation, Spring AI `VectorStore` production use, database
 migration baseline, public RAG HTTP endpoints, and retrieval algorithm changes remain outside this addendum.
 
+V5.A.2 schema baseline addendum: `schema-rag-postgres.sql` now carries schema version baseline
+`2026-06-01-001` for the opt-in `JdbcPolicyVectorRepository` / PGvector policy evidence search path. This records the
+current schema initialization contract only. It is not a Flyway / Liquibase migration framework, does not enable Spring
+AI `VectorStore` production use, does not change the default fake / in-memory vector path, does not validate live
+PGvector connectivity, and does not change RAG retrieval quality. Live PGvector smoke validation remains planned for
+V5.A.3. Flyway / Liquibase migration management remains pending V5.B.2. RAG quality improvements remain V6+ work.
+
 推荐 profile：
 
 ```text

@@ -40,6 +40,7 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md)
 - [Project Review Correction Stage 6](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md)
 - [V5.A.1 JdbcPolicyVectorRepository](docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md)
+- [V5.A.2 Schema Init / Version Baseline](docs/exec-plans/completed/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md)
 
 ## V4 事实口径
 
@@ -51,6 +52,9 @@ V4 completed 表示 foundation / demo / interview-grade 阶段完成，不表示
 - PGvector 当前是 profile、schema、compose、docs、repository contract、fake / in-memory vector store、默认离线
   测试边界，以及 V5.A.1 新增的显式 opt-in `JdbcPolicyVectorRepository`；默认 live PGvector write/search、
   Spring AI VectorStore production path 和 live PGvector integration validation 仍是 future / opt-in。
+- V5.A.2 为 `schema-rag-postgres.sql` 增加 schema version baseline `2026-06-01-001`，用于
+  `JdbcPolicyVectorRepository` / PGvector policy evidence search 的初始化口径。它不是 Flyway / Liquibase
+  migration framework，不做 live PGvector validation；V5.A.3 才计划处理 PGvector connectivity smoke。
 - `docker-compose-rag.yml` 提供本地 PGvector infrastructure，不是完整 app + PGvector 生产部署方案。
 - 当前 HTTP API 是 demo/backend API surface：Ticket create/get/list pagination、AgentRun create/status read、
   trace / execution-tree 只读视图、Approval pending/get/approve/reject、Actuator health 和 OpenAPI docs；

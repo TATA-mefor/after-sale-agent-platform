@@ -22,6 +22,7 @@ Available as V4 foundation:
   default fake / in-memory vector path.
 - Fake vector store tests remain the default offline vector validation path.
 - V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile.
+- V5.A.2 records schema version baseline `2026-06-01-001` in `schema-rag-postgres.sql`.
 
 Still not completed:
 
@@ -29,6 +30,26 @@ Still not completed:
 - Spring AI `VectorStore` production path.
 - Live PGvector integration validation.
 - A production app + PGvector deployment compose file.
+
+## Schema Version Baseline
+
+Current schema version baseline: `2026-06-01-001`.
+
+The baseline is intended for `JdbcPolicyVectorRepository` / PGvector policy evidence search. It documents the current
+shape of `policy_documents`, `policy_chunks`, and `policy_embeddings` without changing table, index, constraint, or
+extension semantics.
+
+Supported initialization paths:
+
+- Fresh `docker-compose-rag.yml` volume initialization through the init mount.
+- Manual SQL import of `src/main/resources/schema-rag-postgres.sql`.
+- Test setup that explicitly runs the schema SQL for a future opt-in live PGvector test.
+
+Existing PostgreSQL volumes do not rerun `/docker-entrypoint-initdb.d` scripts. Recreate the local volume or manually
+import the SQL when the baseline needs to be applied to an existing local database.
+
+V5.A.2 does not validate live PGvector connectivity. V5.A.3 is the planned PGvector connectivity smoke test. Flyway /
+Liquibase migration management is pending V5.B.2.
 
 ## Start PGvector
 

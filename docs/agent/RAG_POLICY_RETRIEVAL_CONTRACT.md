@@ -135,6 +135,13 @@ V5.A.1 status: an explicit opt-in `JdbcPolicyVectorRepository` infrastructure ad
 Spring AI `VectorStore`, does not add a public RAG HTTP endpoint, and does not turn policy evidence into a business
 action. Default tests continue to use fake / in-memory dependencies and remain offline.
 
+V5.A.2 status: `schema-rag-postgres.sql` now declares schema version baseline `2026-06-01-001` for the opt-in
+`JdbcPolicyVectorRepository` / PGvector policy evidence search path. The retrieval contract therefore has two explicit
+storage paths: default fake / in-memory dependencies for offline deterministic validation, and an opt-in
+`JdbcPolicyVectorRepository` path for PGvector-backed policy evidence search. The baseline is not a Flyway / Liquibase
+migration framework and does not prove live PGvector connectivity; V5.A.3 is the planned live PGvector smoke test.
+RAG evidence remains evidence-only and never executes business actions.
+
 允许链路：
 
 ```text

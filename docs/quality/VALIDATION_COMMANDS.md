@@ -351,6 +351,27 @@ V5.A.1 default validation must not require real LLMs, API keys, PostgreSQL, PGve
 embedding providers, Spring AI `VectorStore`, or external network access. Live PGvector smoke validation remains a
 separate future / opt-in task.
 
+## V5.A.2 Schema Version Baseline Validation
+
+V5.A.2 adds schema version baseline `2026-06-01-001` to `schema-rag-postgres.sql` and documents how the current schema
+is initialized for the opt-in `JdbcPolicyVectorRepository` / PGvector policy evidence search path.
+
+Default validation for this phase is docs/schema-baseline only:
+
+```bash
+mvn test -Dtest=SchemaVersionBaselineDocsTest,JdbcPolicyVectorRepositoryDocsTest
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+This validation does not connect to PostgreSQL / PGvector, does not start Docker, does not call real LLMs or embedding
+providers, does not use Spring AI `VectorStore`, and does not require API keys, MySQL, Redis, or external network.
+
+V5.A.2 does not add Flyway / Liquibase. Migration framework work remains pending V5.B.2. Live PGvector connectivity
+smoke remains pending V5.A.3. The default fake / in-memory vector path remains unchanged.
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally
