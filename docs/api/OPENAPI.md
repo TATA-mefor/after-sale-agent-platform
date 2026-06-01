@@ -26,7 +26,7 @@ keys, PostgreSQL, PGvector, Docker, MySQL, Redis, a real LLM, a real embedding p
 ## API Groups
 
 - Ticket APIs create, read, and list after-sale tickets with bounded pagination.
-- AgentRun APIs trigger the configured Agent orchestration for an existing ticket.
+- AgentRun APIs trigger the configured Agent orchestration for an existing ticket and expose read-only status polling.
 - Approval APIs expose human review for high-risk proposed actions.
 - Tool Trace APIs expose ToolCallTrace audit JSON for an AgentRun.
 - Execution Tree APIs expose a read-only explanation view with subtasks, tools, approvals, and policy evidence nodes.
@@ -38,7 +38,7 @@ The current OpenAPI document describes the existing demo/backend API surface. It
 and it is not production API hardening.
 
 - Ticket APIs currently cover create/get and bounded list/query pagination.
-- AgentRun APIs currently cover create/start for a ticket. AgentRun get/status polling is future work.
+- AgentRun APIs currently cover create/start for a ticket and read-only get/status polling.
 - Trace and Execution Tree APIs are read-only views. They are not SSE / WebSocket streaming endpoints.
 - Approval APIs currently cover pending/get/approve/reject.
 - Batch APIs, production auth / RBAC, idempotency, rate limiting, and API audit hardening remain future work.
@@ -69,10 +69,16 @@ Trigger an AgentRun with:
 
 ```text
 POST /api/tickets/{ticketId}/agent-runs
+GET /api/agent-runs/{runId}
 ```
 
 The default path uses deterministic local execution unless explicitly configured otherwise. Planner output is validated,
 tools are executed only through ToolRegistry, and high-risk actions remain approval-gated.
+
+`GET /api/agent-runs/{runId}` is a read-only status polling endpoint. It returns `runId`, `ticketId`, `status`,
+`startedAt`, `completedAt`, `finalSummary`, `failureSummary`, `traceAvailable`, `executionTreeAvailable`, `traceUrl`,
+and `executionTreeUrl`. It does not run the planner, execute tools, call ToolRegistry, mutate tickets, write
+ToolCallTrace, inline workspace data, or replace the trace / execution-tree views.
 
 ## Approval Flow
 

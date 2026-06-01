@@ -1631,7 +1631,8 @@ Current Stage 3.1 quality status:
 - API limitation quality: docs state that current APIs are not complete production CRUD. Stage 3.1 recorded Ticket
   list/query pagination, AgentRun get/status polling, production-grade async AgentRun, SSE / WebSocket streaming,
   batch APIs, production auth / RBAC, idempotency, rate limiting, and API audit hardening as follow-up candidates.
-  Ticket list/query pagination is later completed by Project Review Correction Stage 3.2.
+  Ticket list/query pagination is later completed by Project Review Correction Stage 3.2. AgentRun get/status polling
+  is later completed by Project Review Correction Stage 3.3.
 - OpenAPI quality: OpenAPI docs continue to describe existing HTTP APIs only. They do not add a public RAG search
   endpoint and do not claim production API hardening.
 - ToolRegistry boundary quality: `search_aftersale_policy` remains a LOW-risk read-only ToolRegistry tool. LLM output
@@ -1648,7 +1649,8 @@ Known limitations:
 
 - Stage 3.1 does not implement Ticket list/query pagination, AgentRun get/status polling, async AgentRun,
   SSE / WebSocket, batch APIs, production auth / RBAC, idempotency, rate limiting, or production API audit hardening.
-  Ticket list/query pagination is later completed by Project Review Correction Stage 3.2.
+  Ticket list/query pagination is later completed by Project Review Correction Stage 3.2. AgentRun get/status polling
+  is later completed by Project Review Correction Stage 3.3.
 
 ### Project Review Correction Stage 3.2 (completed)
 
@@ -1674,6 +1676,31 @@ Known limitations:
 
 - Stage 3.2 does not add AgentRun get/status polling, production-grade async AgentRun, SSE / WebSocket streaming,
   batch APIs, production auth / RBAC, idempotency, rate limiting, public RAG HTTP APIs, or production API audit
+  hardening.
+
+### Project Review Correction Stage 3.3 (completed)
+
+Status: completed for AgentRun get/status polling read model, OpenAPI documentation, and docs harness coverage.
+
+Current Stage 3.3 quality status:
+
+- AgentRun read quality: `GET /api/agent-runs/{runId}` returns a read-only summary with `runId`, `ticketId`,
+  `status`, time fields, final / failure summary, and trace / execution-tree links.
+- Status polling boundary quality: the status endpoint does not run Planner, execute ToolRegistry, write
+  ToolCallTrace, mutate Ticket, mutate Workspace, or inline Execution Tree details.
+- API compatibility quality: existing `POST /api/tickets/{ticketId}/agent-runs`,
+  `GET /api/agent-runs/{runId}/traces`, and `GET /api/agent-runs/{runId}/execution-tree` paths remain unchanged.
+- OpenAPI quality: AgentRun status read fields are documented in `/v3/api-docs` and `docs/api/OPENAPI.md`.
+- Default offline quality: AgentRun status tests use default in-memory dependencies and do not require real LLMs,
+  API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live calls, or external
+  network.
+- Docs harness quality: `AgentRunStatusDocsTest` verifies Stage 3.3 documentation links, completion status,
+  AgentRun read/status wording, future API boundaries, secret safety, and no production integration overclaims.
+
+Known limitations:
+
+- Stage 3.3 does not add production-grade async AgentRun, SSE / WebSocket streaming, batch APIs,
+  production auth / RBAC, idempotency, rate limiting, public RAG HTTP APIs, cancel/retry APIs, or production API audit
   hardening.
 
 Planned phases:

@@ -10,6 +10,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.aftersale.agent.application.AgentApplicationService;
+import com.example.aftersale.agent.domain.AgentRun;
+import com.example.aftersale.common.exception.ResourceNotFoundException;
 import com.example.aftersale.ticket.application.TicketApplicationService;
 import com.example.aftersale.ticket.domain.Ticket;
 import com.example.aftersale.ticket.domain.TicketStatus;
@@ -39,6 +42,9 @@ class AgentRunFlowTest {
 
     @Autowired
     private TicketApplicationService ticketApplicationService;
+
+    @Autowired
+    private AgentApplicationService agentApplicationService;
 
     @Autowired
     private ToolCallTraceApplicationService traceApplicationService;
@@ -234,6 +240,60 @@ class AgentRunFlowTest {
                 .map(ToolCallTrace::getOutputJson)
                 .forEach(outputJson -> assertThat(outputJson)
                         .doesNotContain("apiKey", "password", "token", "D:\\", "rawText"));
+    }
+
+    @Test
+    void agentRunStatusReadReturnsSafeSummaryWithoutSideEffects() throws Exception {
+        Ticket ticket = ticketApplicationService.createTicket(
+                "U-STATUS-1",
+                "O202605130001",
+                "我买的耳机有质量问题，左耳没声音，想退货退款。");
+
+        MvcResult runResult = mockMvc.perform(post("/api/tickets/{ticketId}/agent-runs", ticket.getTicketId()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
+                .andReturn();
+        String runId = JsonPath.read(runResult.getResponse().getContentAsString(), "$.data.runId");
+        TicketStatus statusBeforeRead = ticketApplicationService.getTicket(ticket.getTicketId()).getStatus();
+        int traceCountBeforeRead = traceApplicationService.findByRunId(runId).size();
+
+        mockMvc.perform(get("/api/agent-runs/{runId}", runId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.runId").value(runId))
+                .andExpect(jsonPath("$.data.ticketId").value(ticket.getTicketId()))
+                .andExpect(jsonPath("$.data.status").value("SUCCEEDED"))
+                .andExpect(jsonPath("$.data.startedAt").exists())
+                .andExpect(jsonPath("$.data.completedAt").exists())
+                .andExpect(jsonPath("$.data.finalSummary", containsString("RETURN_AND_REFUND")))
+                .andExpect(jsonPath("$.data.traceAvailable").value(true))
+                .andExpect(jsonPath("$.data.executionTreeAvailable").value(true))
+                .andExpect(jsonPath("$.data.traceUrl").value("/api/agent-runs/" + runId + "/traces"))
+                .andExpect(jsonPath("$.data.executionTreeUrl")
+                        .value("/api/agent-runs/" + runId + "/execution-tree"))
+                .andExpect(jsonPath("$.data.plan").doesNotExist())
+                .andExpect(jsonPath("$.data.workspace").doesNotExist())
+                .andExpect(jsonPath("$.data.toolCalls").doesNotExist())
+                .andExpect(jsonPath("$.data.executionTree").doesNotExist());
+
+        assertThat(ticketApplicationService.getTicket(ticket.getTicketId()).getStatus()).isEqualTo(statusBeforeRead);
+        assertThat(traceApplicationService.findByRunId(runId)).hasSize(traceCountBeforeRead);
+
+        AgentRun persistedRun = agentApplicationService.getAgentRun(runId);
+        assertThat(persistedRun.getRunId()).isEqualTo(runId);
+        assertThat(persistedRun.getTicketId()).isEqualTo(ticket.getTicketId());
+    }
+
+    @Test
+    void agentRunStatusReadReturnsNotFoundForMissingRun() throws Exception {
+        mockMvc.perform(get("/api/agent-runs/{runId}", "RUN-MISSING-STATUS"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("AGENT_RUN_NOT_FOUND"))
+                .andExpect(jsonPath("$.message", containsString("RUN-MISSING-STATUS")));
+
+        assertThatThrownBy(() -> agentApplicationService.getAgentRun("RUN-MISSING-STATUS"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("RUN-MISSING-STATUS");
     }
 
     @Test

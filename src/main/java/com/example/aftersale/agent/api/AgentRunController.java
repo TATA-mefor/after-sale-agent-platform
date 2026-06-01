@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>边界：Controller 只做 API 编排和响应转换，不能直接访问 Repository、ToolRegistry 或具体 Planner。
  */
 @RestController
-@RequestMapping("/api/tickets/{ticketId}/agent-runs")
+@RequestMapping("/api")
 @Tag(name = "Agent Runs", description = "Run the Agent for a ticket through application-service orchestration.")
 public class AgentRunController {
 
@@ -33,7 +34,7 @@ public class AgentRunController {
         this.agentApplicationService = agentApplicationService;
     }
 
-    @PostMapping
+    @PostMapping("/tickets/{ticketId}/agent-runs")
     @Operation(
             summary = "Create an AgentRun for a ticket",
             description = "Runs the configured offline planner and handlers through ToolRegistry. RAG evidence is "
@@ -43,5 +44,17 @@ public class AgentRunController {
             @PathVariable String ticketId) {
         AgentRunResult result = agentApplicationService.runForTicket(ticketId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(AgentRunResponse.from(result)));
+    }
+
+    @GetMapping("/agent-runs/{runId}")
+    @Operation(
+            summary = "Get AgentRun status",
+            description = "Returns a read-only AgentRun status summary for polling. This endpoint does not start "
+                    + "a planner, execute tools, call ToolRegistry, mutate tickets, write ToolCallTrace records, "
+                    + "or inline execution-tree and workspace details.")
+    public ApiResponse<AgentRunStatusResponse> getAgentRun(
+            @Parameter(description = "AgentRun id.", example = "RUN-DEMO-1001")
+            @PathVariable String runId) {
+        return ApiResponse.success(AgentRunStatusResponse.from(agentApplicationService.getAgentRun(runId)));
     }
 }

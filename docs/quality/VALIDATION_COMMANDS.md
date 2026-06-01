@@ -135,7 +135,7 @@ mvn test -Dtest=ApiCompletenessDecisionDocsTest,ObservabilityHardeningDecisionDo
 
 - 当前 API 明确为 demo/backend API surface，不是完整生产 CRUD；
 - Stage 3.1 记录当时 Ticket 只有 create/get；Stage 3.2 已补 `GET /api/tickets` bounded list/query pagination；
-- AgentRun 当前为 create/start，AgentRun get/status polling 是 future work；
+- Stage 3.3 已补 `GET /api/agent-runs/{runId}` read-only AgentRun get/status polling；
 - ToolCallTrace 和 Execution Tree 是 read-only views；
 - Approval API 为 pending/get/approve/reject；
 - `/actuator/health`、`/v3/api-docs` 和 Swagger UI 已记录；
@@ -166,10 +166,34 @@ mvn test -Dtest=TicketPaginationDocsTest,ApiCompletenessDecisionDocsTest
 - Ticket list/query pagination 明确支持 `page`、`size`、`sort`、`status`、`userId`、`orderId`、`intentType`、
   `createdFrom` 和 `createdTo`；
 - Ticket list endpoint 是只读查询，不创建 AgentRun，不调用 ToolRegistry，不暴露 public RAG HTTP endpoint；
-- AgentRun get/status polling、async AgentRun、SSE / WebSocket、batch API、production auth / RBAC 仍是 planned /
-  future。
+- async AgentRun、SSE / WebSocket、batch API、production auth / RBAC 仍是 planned / future。
 
 阶段 3.2 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
+Spring AI live provider calls 或 external network。如果默认验证需要这些依赖，视为回归。
+
+## AgentRun Status Read Validation
+
+阶段 3.3 新增 `GET /api/agent-runs/{runId}` read-only AgentRun get/status polling endpoint 和完成记录。该阶段
+只补 AgentRun 读取模型，不实现异步 AgentRun、SSE / WebSocket、batch API、production auth / RBAC，也不新增
+public RAG HTTP endpoint。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=AgentRunStatusDocsTest,TicketPaginationDocsTest,ApiCompletenessDecisionDocsTest
+```
+
+该测试只读文档，检查：
+
+- README、OpenAPI docs、API completeness decision、整改方案、quality docs、validation docs 和 active correction plan
+  记录 Stage 3.3 completed；
+- AgentRun API 文档包含 `GET /api/agent-runs/{runId}`；
+- AgentRun status endpoint 明确只返回安全状态摘要和 trace / execution-tree 链接；
+- AgentRun status endpoint 不运行 Planner，不调用 ToolRegistry，不写 ToolCallTrace，不修改 Ticket、Workspace、
+  Approval 或 Execution Tree；
+- async AgentRun、SSE / WebSocket、batch API、production auth / RBAC 仍是 planned / future。
+
+阶段 3.3 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
 Spring AI live provider calls 或 external network。如果默认验证需要这些依赖，视为回归。
 
 ## Interview Safe Validation Commands

@@ -1,4 +1,4 @@
-# 项目整改方案：阶段 0-3.2 文档事实口径、生产配置模板、可观测性与 API 分页
+# 项目整改方案：阶段 0-3.3 文档事实口径、生产配置模板、可观测性、API 分页与 AgentRun 状态读取
 
 Date: 2026-06-01
 
@@ -9,7 +9,7 @@ Status: Completed
 本文件用于回应项目整体审查中的 Spring Boot、Spring AI、RAG / Tool、API 和部署评价，给出中文事实核验与
 阶段化整改路线。阶段 0 完成文档事实口径修正；阶段 1 补充生产配置模板和 secret placeholder 说明；
 阶段 2 完成可观测性加固决策；阶段 3.1 完成 API surface audit / API completeness decision；阶段 3.2 完成
-Ticket list/query pagination foundation。
+Ticket list/query pagination foundation；阶段 3.3 完成 AgentRun get/status polling read model。
 
 ## 总体结论
 
@@ -96,8 +96,8 @@ Ticket list/query pagination foundation。
 
 准确：
 
-- 当前 API 覆盖 demo/backend surface；Ticket 已补最小分页查询，但仍缺少 AgentRun get/status polling、
-  异步 AgentRun、SSE / WebSocket 流式输出和批量操作。
+- 当前 API 覆盖 demo/backend surface；Ticket 已补最小分页查询，AgentRun 已补只读 get/status polling；
+  异步 AgentRun、SSE / WebSocket 流式输出和批量操作仍未实现。
 - OpenAPI 已存在，但不代表新增 public RAG endpoint 或生产 API 完成。
 
 需要修正：
@@ -123,9 +123,17 @@ Ticket list/query pagination foundation。
 - 该 endpoint 不创建 AgentRun，不写 ToolCallTrace / Workspace，不调用 ToolRegistry、RAG、LLM、embedding provider、
   PGvector 或 Spring AI。
 
+阶段 3.3 完成：
+
+- 新增 `GET /api/agent-runs/{runId}`，提供 AgentRun 只读状态摘要。
+- 响应只包含 `runId`、`ticketId`、`status`、时间字段、final / failure summary 和 trace / execution-tree 链接。
+- 该 endpoint 不运行 Planner，不调用 ToolRegistry，不写 ToolCallTrace，不修改 Ticket、Workspace、Approval 或
+  Execution Tree。
+- OpenAPI docs 和 docs harness test 记录 AgentRun get/status 已完成；异步 AgentRun 和 streaming 仍是后续任务。
+
 阶段 3+ 建议：
 
-- 设计异步 AgentRun 和只读执行进度查询。
+- 设计异步 AgentRun 和更完整的执行进度模型。
 - 如需流式输出，先完成事件模型和安全边界。
 
 ### 部署
@@ -161,7 +169,8 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 阶段 3.2：已完成。Ticket list/query pagination foundation。补 `GET /api/tickets`、分页参数、状态和业务字段
 过滤、OpenAPI 文档和 docs harness test。
 
-阶段 3.3：planned。AgentRun get/status polling endpoint。
+阶段 3.3：已完成。AgentRun get/status polling endpoint。补 `GET /api/agent-runs/{runId}` 只读状态摘要，
+不执行 Planner、ToolRegistry、RAG、Approval 或 Execution Tree runtime。
 
 阶段 3.4：planned。异步 AgentRun、SSE / WebSocket 和 batch API 评估。
 
@@ -213,7 +222,7 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 当前 API baseline：
 
 - Ticket create/get/list with bounded pagination；
-- AgentRun create/start；
+- AgentRun create/start/read status；
 - ToolCallTrace read-only view；
 - Execution Tree read-only view；
 - Approval pending/get/approve/reject；
@@ -221,7 +230,6 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 
 当前缺口：
 
-- AgentRun get/status polling；
 - production-grade async AgentRun；
 - SSE / WebSocket trace streaming；
 - batch API；
@@ -229,6 +237,7 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 - idempotency、rate limit 和 API audit hardening。
 
 阶段 3.1 不实现这些 runtime 能力，只定义路线。阶段 3.2 已补 Ticket list/query pagination foundation。
+阶段 3.3 已补 AgentRun get/status polling read model。
 `search_aftersale_policy` 继续是 LOW-risk read-only ToolRegistry tool，不是 public RAG HTTP endpoint。
 OpenAPI docs 继续记录 existing API surface，不代表 production API hardening。
 

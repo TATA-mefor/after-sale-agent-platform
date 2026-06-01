@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-3.2 已完成，阶段 3.3+ planned
+状态：阶段 0-3.3 已完成，阶段 3.4+ planned
 
 ## 1. 目标
 
@@ -25,7 +25,7 @@
 - Spring AI 当前使用停留在 adapter 层：单轮 chat completion 和单文本 embedding。
 - 当前没有使用 Spring AI ChatMemory、Advisors、Tool Calling API 或 bulk embedding。
 - RAG search 已支持 KEYWORD / VECTOR / HYBRID，但还没有 reranking、query rewriting、RRF 或 chunk window expansion。
-- HTTP API 当前已有 Ticket list/query pagination；AgentRun get/status polling、异步 AgentRun、
+- HTTP API 当前已有 Ticket list/query pagination 和 AgentRun get/status polling；异步 AgentRun、
   SSE/WebSocket 流式输出和批量 API 仍未实现。
 - 部署能力偏本地开发：没有 Kubernetes、Helm、CI/CD workflow、生产级 secret 管理、生产监控或部署加固。
 
@@ -182,12 +182,34 @@
 - 不修改 ToolRegistry、RAG runtime、ingestion、health、OpenAPI config、ToolCallTrace、Workspace 或 Execution Tree
   runtime。
 
-#### 阶段 3.3+：API runtime 改进候选
+#### 阶段 3.3：AgentRun get/status polling read model
+
+状态：已完成。
 
 范围：
 
-- 按需要补一个明确的 AgentRun get endpoint。
-- 考虑异步 AgentRun + status polling。
+- 新增 `GET /api/agent-runs/{runId}` 只读状态 endpoint。
+- 响应包含 `runId`、`ticketId`、`status`、时间字段、final / failure summary 和 trace / execution-tree 链接。
+- 补 Controller / OpenAPI / docs harness tests。
+- 更新 README、OpenAPI docs、API completeness decision、整改方案、validation docs 和质量文档。
+- 完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_3_AGENT_RUN_STATUS_READ.md`。
+
+非目标：
+
+- 不实现异步 AgentRun。
+- 不实现 SSE / WebSocket。
+- 不实现 batch API。
+- 不实现 production auth / RBAC。
+- 不新增 public RAG HTTP endpoint。
+- 不修改 ToolRegistry、Planner、RAG runtime、ingestion、health、OpenAPI config、ToolCallTrace、Workspace、
+  Approval 或 Execution Tree runtime。
+
+#### 阶段 3.4+：API runtime 改进候选
+
+范围：
+
+- 考虑异步 AgentRun + progress model。
 - 将 SSE progress / trace streaming 作为后续 opt-in API 评估。
 
 非目标：

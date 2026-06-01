@@ -11,7 +11,8 @@ Status: Completed
 
 本决策记录起始于阶段 3.1：API Surface Audit / API Completeness Decision。阶段 3.2 已按该决策补充
 Ticket list/query pagination foundation。阶段 3.2 只扩展 Ticket 只读 list endpoint，不修改 AgentRun、
-ToolRegistry、RAG、Approval 或 Execution Tree 行为。
+ToolRegistry、RAG、Approval 或 Execution Tree 行为。阶段 3.3 已按该决策补充 AgentRun read/status endpoint，
+只提供只读状态摘要，不修改 AgentRun 执行语义。
 
 ## Current API Surface
 
@@ -20,7 +21,8 @@ ToolRegistry、RAG、Approval 或 Execution Tree 行为。
 - Health: `GET /api/health` 和 `GET /actuator/health`。
 - Ticket: `POST /api/tickets` 创建工单；`GET /api/tickets` 分页查询工单；
   `GET /api/tickets/{ticketId}` 读取单个工单。
-- AgentRun: `POST /api/tickets/{ticketId}/agent-runs` 为已有工单创建并触发当前 AgentRun。
+- AgentRun: `POST /api/tickets/{ticketId}/agent-runs` 为已有工单创建并触发当前 AgentRun；
+  `GET /api/agent-runs/{runId}` 提供只读状态摘要。
 - Trace: `GET /api/agent-runs/{runId}/traces` 提供 ToolCallTrace 只读审计视图。
 - Execution Tree: `GET /api/agent-runs/{runId}/execution-tree` 提供只读执行树视图。
 - Approval: `GET /api/approval-requests/pending`、`GET /api/approval-requests/{approvalRequestId}`、
@@ -34,7 +36,7 @@ evidence 是 policy evidence，不执行业务动作。
 ## Current Limitations
 
 - Ticket 已有最小 list / query / pagination endpoint；它不是完整生产 Ticket CRUD。
-- AgentRun 当前没有独立的 get/status polling endpoint。
+- AgentRun 已有独立的 get/status polling endpoint，但不是生产级异步 job system。
 - AgentRun 当前不是生产级异步 job system。
 - Trace 和 Execution Tree 是查询视图，不是实时流式输出。
 - SSE / WebSocket trace streaming 未实现。
@@ -51,7 +53,7 @@ evidence 是 policy evidence，不执行业务动作。
 后续 API 改进按小阶段推进：
 
 - 阶段 3.2：Ticket list / pagination foundation。已完成。
-- 阶段 3.3：AgentRun get/status polling endpoint。
+- 阶段 3.3：AgentRun get/status polling endpoint。已完成。
 - 阶段 3.4：async AgentRun、SSE / WebSocket streaming 和 batch API 评估。
 
 除非后续产品需求明确，否则不新增 public RAG search HTTP endpoint。Agent runtime 仍通过 ToolRegistry 调用
@@ -87,14 +89,17 @@ Ticket list/query pagination 已在阶段 3.2 完成最小实现。
 
 ## AgentRun Read / Status Strategy
 
-AgentRun get/status polling 是阶段 3.3 的候选范围，不属于阶段 3.1 已实现能力。
+AgentRun get/status polling 已在阶段 3.3 完成最小只读实现。
 
-建议策略：
+当前策略：
 
-- 新增只读 AgentRun get endpoint 时只返回状态、ticketId、runId、intent、final summary 和时间字段等安全摘要。
+- `GET /api/agent-runs/{runId}` 只返回状态、ticketId、runId、final summary、failure summary、时间字段和
+  trace / execution-tree 链接等安全摘要。
 - ToolCallTrace 细节继续通过 trace endpoint 查询。
 - Execution Tree 继续作为解释视图，不替代 AgentRun status。
 - 不在 status endpoint 中暴露 raw prompt、provider secrets、长 raw provider response 或完整内部 workspace。
+- status endpoint 不运行 Planner，不执行 ToolRegistry，不写 ToolCallTrace，不修改 Ticket、Workspace、Approval 或
+  Execution Tree。
 
 ## Async AgentRun Strategy
 
@@ -132,7 +137,7 @@ Batch API 是 future work，不属于阶段 3.1 已实现能力。
 OpenAPI docs 应展示当前 existing HTTP APIs，并清楚标记边界：
 
 - 当前 Ticket API 是 create/get/list pagination，不是完整 Ticket CRUD。
-- 当前 AgentRun API 是 create/start，不是完整异步 job API。
+- 当前 AgentRun API 是 create/start 和 read/status，不是完整异步 job API。
 - Trace 和 Execution Tree 是 read-only views。
 - Approval API 是 pending/get/approve/reject。
 - `search_aftersale_policy` 是 ToolRegistry tool，不是 public RAG HTTP endpoint。
@@ -177,9 +182,9 @@ provider、Spring AI VectorStore、Docker、Redis、MySQL、PostgreSQL、PGvecto
 - 不修改 Controller、DTO runtime 或 OpenAPI runtime config。
 - 不实现分页。
 
-这些是阶段 3.1 的历史非目标。阶段 3.2 已补 Ticket list/query pagination，仍保留以下非目标：
+这些是阶段 3.1 的历史非目标。阶段 3.2 已补 Ticket list/query pagination，阶段 3.3 已补 AgentRun get/status
+polling，仍保留以下非目标：
 
-- 不实现 AgentRun get/status polling。
 - 不实现异步 AgentRun。
 - 不实现 SSE / WebSocket。
 - 不实现 batch API。
@@ -199,12 +204,13 @@ provider、Spring AI VectorStore、Docker、Redis、MySQL、PostgreSQL、PGvecto
 - README、OpenAPI docs、整改方案和质量文档会用同一事实口径描述当前 API。
 - 后续 API 改进可以按阶段拆分，避免一次性把 production API hardening 混入当前 demo/backend surface。
 - Ticket list/query pagination 已有最小 foundation，但仍不是完整生产 API hardening。
+- AgentRun get/status polling 已有最小只读 read model，但仍不是异步 AgentRun 或 streaming API。
 - ToolRegistry、Approval、RAG evidence-only 和默认离线验证边界继续保持。
 
 ## Follow-ups
 
 - 阶段 3.2：Ticket list/query pagination foundation。已完成。
-- 阶段 3.3：AgentRun get/status polling endpoint。
+- 阶段 3.3：AgentRun get/status polling endpoint。已完成。
 - 阶段 3.4：异步 AgentRun、SSE / WebSocket、batch API 评估。
 - 后续安全任务：production auth / RBAC、idempotency、rate limiting、audit hardening。
 

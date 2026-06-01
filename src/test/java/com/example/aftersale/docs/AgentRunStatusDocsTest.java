@@ -10,15 +10,15 @@ import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
-class TicketPaginationDocsTest {
+class AgentRunStatusDocsTest {
 
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
 
     private static final String COMPLETED_PLAN =
             "docs/exec-plans/completed/"
-                    + "EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md";
+                    + "EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_3_AGENT_RUN_STATUS_READ.md";
 
-    private static final List<String> STAGE_THREE_TWO_DOCS = List.of(
+    private static final List<String> STAGE_THREE_THREE_DOCS = List.of(
             "README.md",
             "docs/api/OPENAPI.md",
             "docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md",
@@ -29,90 +29,91 @@ class TicketPaginationDocsTest {
             COMPLETED_PLAN);
 
     @Test
-    void ticketPaginationCompletionRecordExistsAndIsLinked() throws IOException {
+    void agentRunStatusCompletionRecordExistsAndIsLinked() throws IOException {
         String readme = projectText("README.md");
         String completion = projectText(COMPLETED_PLAN);
         String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
         assertThat(completion).contains(
                 "Status: Completed",
-                "Ticket Pagination Boundary",
-                "Query Filter Boundary",
+                "AgentRun Read Boundary",
+                "Status Polling Boundary",
+                "Trace / Execution Tree Boundary",
                 "API Compatibility Boundary",
-                "OpenAPI Documentation Boundary",
-                "ToolRegistry / Agent Boundary",
+                "ToolRegistry / Planner Boundary",
                 "Default Offline Boundary",
                 "TASK_COMPLETE");
         assertThat(readme).contains(COMPLETED_PLAN);
         assertThat(activePlan).contains(
                 "状态：阶段 0-3.3 已完成",
-                "阶段 3.2：Ticket list/query pagination foundation",
+                "阶段 3.3：AgentRun get/status polling read model",
                 "状态：已完成",
                 COMPLETED_PLAN);
     }
 
     @Test
-    void docsRecordTicketListEndpointParametersAndFilters() throws IOException {
-        String docs = combinedStageThreeTwoDocs();
+    void docsRecordAgentRunStatusEndpointAndSafeFields() throws IOException {
+        String docs = combinedStageThreeThreeDocs();
 
         assertThat(docs).contains(
-                "Project Review Correction Stage 3.2 (completed)",
-                "Ticket Pagination Foundation Validation",
-                "Ticket list/query pagination foundation",
-                "`GET /api/tickets`",
-                "GET /api/tickets?page=0&size=20&sort=createdAt,desc",
-                "`page`",
-                "`size`",
-                "`sort`",
+                "Project Review Correction Stage 3.3 (completed)",
+                "AgentRun Status Read Validation",
+                "AgentRun get/status polling",
+                "`GET /api/agent-runs/{runId}`",
+                "read-only status",
+                "`runId`",
+                "`ticketId`",
                 "`status`",
-                "`userId`",
-                "`orderId`",
-                "`intentType`",
-                "`createdFrom`",
-                "`createdTo`",
-                "createdAt",
-                "updatedAt",
-                "ticketId");
+                "`startedAt`",
+                "`completedAt`",
+                "`finalSummary`",
+                "`failureSummary`",
+                "`traceAvailable`",
+                "`executionTreeAvailable`",
+                "`traceUrl`",
+                "`executionTreeUrl`");
     }
 
     @Test
-    void docsPreserveAgentToolRegistryAndRagBoundaries() throws IOException {
-        String docs = combinedStageThreeTwoDocs();
+    void docsPreserveToolRegistryTraceExecutionTreeAndRuntimeBoundaries() throws IOException {
+        String docs = combinedStageThreeThreeDocs();
 
         assertThat(docs).contains(
-                "does not create AgentRun",
-                "不创建 AgentRun",
-                "不调用 ToolRegistry",
-                "不暴露 public RAG HTTP endpoint",
+                "does not run Planner",
+                "does not call ToolRegistry",
+                "does not write ToolCallTrace",
+                "does not modify Ticket",
+                "does not inline",
+                "ToolCallTrace details remain available only through",
+                "Execution Tree details remain available only through",
                 "`search_aftersale_policy`",
                 "LOW-risk read-only ToolRegistry tool",
                 "RAG evidence",
                 "policy evidence");
         assertThat(docs).contains(
-                "does not write",
-                "`ToolCallTrace`",
-                "does not write Workspace",
-                "does not invoke RAG retrieval");
+                "不执行 Planner",
+                "不调用 ToolRegistry",
+                "不写 ToolCallTrace",
+                "不修改 Ticket",
+                "不修改 ToolRegistry、Planner、RAG runtime");
     }
 
     @Test
     void laterApiWorkRemainsFuture() throws IOException {
-        String docs = combinedStageThreeTwoDocs();
+        String docs = combinedStageThreeThreeDocs();
         String lower = docs.toLowerCase(Locale.ROOT);
 
         assertThat(docs).contains(
+                "Stage 3.4",
                 "async AgentRun",
                 "SSE / WebSocket",
                 "batch API",
                 "production auth / RBAC",
                 "planned",
-                "future",
-                "Stage 3.4");
-        assertThat(docs).contains(
-                "AgentRun get/status polling",
-                "Project Review Correction Stage 3.3 (completed)");
+                "future");
         assertThat(lower).doesNotContain(
                 "production-grade async agentrun completed",
+                "async agentrun completed",
                 "sse completed",
                 "websocket completed",
                 "batch api completed",
@@ -124,7 +125,7 @@ class TicketPaginationDocsTest {
 
     @Test
     void docsDoNotContainSecretsLocalPathsOrProductionOverclaims() throws IOException {
-        for (String path : STAGE_THREE_TWO_DOCS) {
+        for (String path : STAGE_THREE_THREE_DOCS) {
             assertSafeText(path, projectText(path));
         }
     }
@@ -159,9 +160,9 @@ class TicketPaginationDocsTest {
                 "真实物流已接入");
     }
 
-    private static String combinedStageThreeTwoDocs() throws IOException {
+    private static String combinedStageThreeThreeDocs() throws IOException {
         StringBuilder builder = new StringBuilder();
-        for (String path : STAGE_THREE_TWO_DOCS) {
+        for (String path : STAGE_THREE_THREE_DOCS) {
             builder.append(projectText(path)).append('\n');
         }
         return builder.toString();
