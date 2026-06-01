@@ -1,4 +1,4 @@
-# 项目整改方案：阶段 0-5 文档事实口径、生产配置、可观测性、API、Spring AI 与 RAG 评估
+# 项目整改方案：阶段 0-6 文档事实口径、生产配置、可观测性、API、Spring AI、RAG 与部署路线
 
 Date: 2026-06-01
 
@@ -11,7 +11,8 @@ Status: Completed
 阶段 2 完成可观测性加固决策；阶段 3.1 完成 API surface audit / API completeness decision；阶段 3.2 完成
 Ticket list/query pagination foundation；阶段 3.3 完成 AgentRun get/status polling read model；阶段 3.4 完成
 async AgentRun / SSE / WebSocket / batch API / cancel / retry / AgentRun list pagination 的决策评估；阶段 4 完成
-Spring AI ChatMemory / Advisors / Tool Calling API / bulk embedding 的深化评估；阶段 5 完成 RAG 检索质量改进评估。
+Spring AI ChatMemory / Advisors / Tool Calling API / bulk embedding 的深化评估；阶段 5 完成 RAG 检索质量改进评估；
+阶段 6 完成部署加固路线决策。
 
 ## 总体结论
 
@@ -209,13 +210,17 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 embedding，但不实现这些 runtime 能力，不改变 provider runtime，不让 Spring AI 绕过 ToolRegistry / Approval /
 AgentPlan validation。
 
-历史状态记录：阶段 4 收口时“阶段 5：planned”；当前阶段 5 已完成，阶段 6 planned。
+历史状态记录：阶段 4 收口时“阶段 5：planned”；阶段 5 收口时“阶段 6 planned”；当前阶段 6 已完成。
 
 阶段 5：已完成。RAG 检索质量改进评估。该阶段只做 decision / evaluation / docs harness，不实现 reranking、
 query rewriting、RRF、chunk window expansion，不修改 retrieval algorithm，不改变 `search_aftersale_policy`
 runtime。
 
-阶段 6：planned。部署工程化。补 Dockerfile hardening、CI/CD、secrets 管理、日志采集和部署文档。
+阶段 6：已完成。部署加固路线。补 deployment hardening decision / roadmap，明确 Dockerfile、CI/CD、
+Kubernetes / Helm、secret manager、database migration、PGvector deployment、readiness/liveness、observability、
+security/auth 和 release/rollback 后续路线；本阶段不实现这些 runtime / deployment 能力。
+
+阶段 0-6 current correction scope completed。后续 production hardening 仍未完成，需要作为 V5 或独立任务继续推进。
 
 ## 可观测性决策边界
 
@@ -335,6 +340,40 @@ read-only ToolRegistry tool，RAG evidence is evidence-only，RAG score is not b
 high-risk actions require Approval，LLM must not directly execute tools，future RAG improvements must not bypass
 ToolRegistry / RiskPolicy / Approval / Trace / Workspace / Execution Tree。
 
+## 部署加固路线边界
+
+阶段 6 新增 `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md` 和
+`docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md`。该阶段用于把项目审查中的“缺少 Dockerfile、CI/CD、Kubernetes /
+Helm、secret manager、生产监控、readiness/liveness 和 release/rollback”转化为可执行路线。
+
+当前 baseline：
+
+- `docker-compose.yml`；
+- `docker-compose-rag.yml`；
+- `.env.rag.example`；
+- `application-prod.example.yml`；
+- `application-mysql.yml`；
+- `application-rag-postgres.yml`；
+- Actuator health；
+- OpenAPI docs；
+- 默认离线验证命令。
+
+当前缺口：
+
+- Dockerfile is not implemented；
+- CI/CD is not implemented；
+- Kubernetes / Helm is not implemented；
+- secret manager is not implemented；
+- production deployment is not completed；
+- live PGvector validation is not completed；
+- JdbcPolicyVectorRepository is not implemented；
+- production auth/RBAC is not completed；
+- production monitoring is not completed。
+
+阶段 6 不实现这些能力，只记录 roadmap 和 checklist。默认测试继续离线，仍不需要 real LLM、API Key、
+PostgreSQL、PGvector、Docker、MySQL、Redis、external network、secret manager、CI runner、Kubernetes / Helm、
+Prometheus、Grafana 或 OpenTelemetry collector。
+
 ## 生产配置模板边界
 
 阶段 1 新增的 `src/main/resources/application-prod.example.yml` 是示例模板，不是默认 `prod` 配置文件。
@@ -391,6 +430,7 @@ mvn test -Dtest=ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateD
 mvn test -Dtest=ApiCompletenessDecisionDocsTest,ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 mvn test -Dtest=SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest,ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 mvn test -Dtest=RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest,ObservabilityHardeningDecisionDocsTest
+mvn test -Dtest=DeploymentHardeningRoadmapDocsTest,RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest
 mvn test -Dtest=ProjectRemediationPlanDocsTest
 mvn test -Dtest=ArchitectureTest
 mvn test

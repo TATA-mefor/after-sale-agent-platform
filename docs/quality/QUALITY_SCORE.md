@@ -1808,6 +1808,38 @@ Known limitations:
   window expansion, `JdbcPolicyVectorRepository`, live PGvector validation, Spring AI VectorStore production path,
   production-scale relevance benchmark, or a public RAG HTTP endpoint.
 
+### Project Review Correction Stage 6 (completed)
+
+Status: completed for deployment hardening roadmap, decision documentation, and docs harness coverage.
+
+Current Stage 6 quality status:
+
+- Deployment baseline quality:
+  `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md` records current `docker-compose.yml`,
+  `docker-compose-rag.yml`, `.env.rag.example`, `application-prod.example.yml`, `application-mysql.yml`,
+  `application-rag-postgres.yml`, Actuator health, OpenAPI docs, default validation commands, and default offline
+  testing boundary.
+- Deployment roadmap quality:
+  `docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md` breaks future hardening into Dockerfile, CI quality gate, profile
+  matrix, secret management, database migration, PGvector deployment, readiness/liveness, observability,
+  security/auth, and release/rollback checklists.
+- Future boundary quality: Dockerfile is not implemented, CI/CD is not implemented, Kubernetes / Helm is not
+  implemented, secret manager is not implemented, production deployment is not completed, live PGvector validation is
+  not completed, `JdbcPolicyVectorRepository` is not implemented, production auth/RBAC is not completed, and
+  production monitoring is not completed.
+- Default offline quality: Stage 6 docs harness tests read files only and do not require real LLMs, API keys,
+  PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live provider calls, secret manager,
+  CI runner, Kubernetes / Helm, Prometheus, Grafana, OpenTelemetry collector, or external network.
+- Runtime non-change quality: Stage 6 does not modify `src/main/java`, `src/main/resources`, `pom.xml`,
+  Docker / Compose files, ToolRegistry, `search_aftersale_policy`, RAG runtime, ingestion pipeline, health indicators,
+  OpenAPI config, ToolCallTrace, Workspace, Execution Tree, or AgentApplicationService.
+
+Known limitations:
+
+- Stage 6 does not implement Dockerfile hardening, CI/CD pipeline, Kubernetes / Helm, secret manager, production
+  deployment, production auth/RBAC, production monitoring, live PGvector validation, `JdbcPolicyVectorRepository`,
+  Flyway / Liquibase, readiness/liveness runtime changes, or production external integrations.
+
 Planned phases:
 
 ```text

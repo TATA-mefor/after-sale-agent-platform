@@ -36,6 +36,9 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 4](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md)
 - [RAG Quality Improvement Decision](docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md)
 - [Project Review Correction Stage 5](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE5_RAG_QUALITY_EVALUATION.md)
+- [Deployment Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md)
+- [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md)
+- [Project Review Correction Stage 6](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md)
 
 ## V4 事实口径
 
@@ -105,6 +108,8 @@ Interview docs:
 - [Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md)
 - [Spring AI Deepening Decision](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)
 - [RAG Quality Improvement Decision](docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md)
+- [Deployment Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md)
+- [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md)
 
 Fast validation:
 
@@ -199,6 +204,12 @@ production monitoring, secret-manager integration, live PGvector validation, or 
 integrations. Do not commit real API keys, database passwords, tokens, private endpoints, local absolute paths, raw
 prompts, or raw datasets. Default validation still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker,
 MySQL, Redis, real embedding providers, Spring AI live calls, or external network.
+
+Stage 6 of the project review correction records the deployment hardening route in
+[Deployment Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md) and
+[Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md). This stage is documentation-only:
+Dockerfile, CI/CD, Kubernetes / Helm, secret manager, production auth/RBAC, production monitoring, live PGvector
+validation, and production deployment remain future work.
 
 ## MySQL Profile
 

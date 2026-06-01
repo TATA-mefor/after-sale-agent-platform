@@ -1,6 +1,8 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-5 已完成，阶段 6 planned
+状态：阶段 0-6 已完成，current correction scope completed
+
+历史状态记录：阶段 5 收口时状态为“状态：阶段 0-5 已完成，阶段 6 planned”；当前状态已推进为阶段 0-6 已完成。
 
 历史状态记录：阶段 4 收口时状态为“状态：阶段 0-4 已完成”；当前状态已推进为阶段 0-5 已完成。
 
@@ -321,19 +323,30 @@
 
 ### 阶段 6：部署加固路线
 
+状态：已完成。
+
 范围：
 
-- 优化 Dockerfile layering 和 runtime image size。
-- 在适合的 compose 中增加 app healthcheck。
-- 增加 CI workflow，运行默认验证命令。
-- 生产部署文档作为 future work 补充。
-- Helm / Kubernetes 只在生产 readiness 需求明确后再评估。
+- 新增 `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md`。
+- 新增 `docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md`。
+- 新增完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md`。
+- 记录 Dockerfile hardening、CI/CD、secret management、database migration、PGvector deployment、
+  readiness/liveness、observability、security/auth 和 release/rollback 后续路线。
+- 更新 README、production config docs、整改方案、quality docs、validation docs 和 release summary。
+- 新增 docs harness test：`DeploymentHardeningRoadmapDocsTest`。
 
 非目标：
 
 - 不把 Docker Compose 写成生产部署方案。
 - 不提交真实生产凭据。
 - 没有实现前，不声明生产监控已完成。
+- 不新增 Dockerfile。
+- 不新增 CI/CD pipeline。
+- 不新增 Kubernetes / Helm。
+- 不实现 secret manager。
+- 不实现 production deployment、production auth/RBAC、production monitoring。
+- 不实现 live PGvector validation 或 `JdbcPolicyVectorRepository`。
 
 验证：
 
@@ -354,7 +367,8 @@
 5. 阶段 4：Spring AI 深化评估。已完成文档决策；runtime 深化仍需独立任务。
 6. 阶段 5：RAG 检索质量改进评估。已完成文档决策；reranking、query rewriting、RRF 和 chunk window expansion
    runtime 仍需独立任务。
-7. 阶段 6：CI 和部署加固。
+7. 阶段 6：部署加固路线。已完成文档决策；Dockerfile、CI/CD、Kubernetes / Helm、secret manager、
+   production auth/RBAC、production monitoring、live PGvector validation 和 `JdbcPolicyVectorRepository` 仍需独立任务。
 
 ## 5. 风险控制
 

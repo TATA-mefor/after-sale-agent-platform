@@ -107,6 +107,18 @@ Actuator health, and OpenAPI docs.
 The project review correction record is
 `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md`.
 
+系统性补丁阶段 0-6 current correction scope completed：阶段 0 修正文档事实口径，阶段 1 补生产配置模板，
+阶段 2 补可观测性加固决策，阶段 3 补 API 完整性路线与最小只读 API 改进，阶段 4 补 Spring AI 深化评估，
+阶段 5 补 RAG 检索质量改进评估，阶段 6 补部署加固路线。阶段 6 只完成 deployment hardening decision /
+roadmap，不表示 Dockerfile、CI/CD、Kubernetes / Helm、secret manager、production auth/RBAC、production
+monitoring、live PGvector validation 或 production deployment 已完成。
+
+Deployment hardening docs:
+
+- `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md`
+- `docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md`
+- `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md`
+
 ## Future Roadmap
 
 - V5 production hardening.

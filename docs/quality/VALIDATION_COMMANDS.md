@@ -290,6 +290,39 @@ mvn test -Dtest=RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,Asy
 real reranker provider、Spring AI VectorStore、RAG runtime server 或 external network。如果默认验证需要这些依赖，
 视为回归。
 
+## Deployment Hardening Decision Validation
+
+阶段 6 新增 `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md`、
+`docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md` 和完成记录。该阶段只做 deployment hardening decision /
+roadmap / docs harness coverage，不新增 Dockerfile、CI/CD、Kubernetes / Helm、secret manager、production
+auth/RBAC、production monitoring、live PGvector validation 或 runtime deployment changes。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=DeploymentHardeningRoadmapDocsTest,RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest
+```
+
+该测试只读文档，检查：
+
+- decision doc 和 roadmap 存在并包含 `TASK_COMPLETE`；
+- 当前 baseline 记录 `docker-compose.yml`、`docker-compose-rag.yml`、`.env.rag.example`、
+  `application-prod.example.yml`、`application-mysql.yml`、`application-rag-postgres.yml`、Actuator health、
+  OpenAPI docs 和 default offline validation；
+- Dockerfile is not implemented，CI/CD is not implemented，Kubernetes / Helm is not implemented，
+  secret manager is not implemented，production deployment is not completed，live PGvector validation is not
+  completed，JdbcPolicyVectorRepository is not implemented，production auth/RBAC is not completed，
+  production monitoring is not completed；
+- roadmap 包含 Dockerfile、CI quality gate、profile matrix、secret management、database migration、PGvector
+  deployment、readiness/liveness、observability、security/auth 和 release/rollback checklist；
+- README、production config docs、整改方案、quality docs、validation docs、release summary 和 active correction
+  plan 记录阶段 6 completed；
+- docs 不包含真实 API Key、数据库密码、token、本地绝对路径、raw prompt 或 raw dataset path。
+
+阶段 6 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
+Spring AI live provider calls、secret manager、CI runner、Kubernetes / Helm、Prometheus、Grafana、OpenTelemetry
+collector 或 external network。如果默认验证需要这些依赖，视为回归。
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

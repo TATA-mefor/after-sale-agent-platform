@@ -12,6 +12,15 @@ Status: Completed
 这是配置模板和文档说明，不是生产部署方案，也不代表生产认证、生产监控、CI/CD、Kubernetes、Helm、
 secret manager、真实退款、真实换货、真实支付或真实物流已经接入。
 
+部署加固路线见：
+
+- `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md`
+- `docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md`
+
+这些文档记录后续 Dockerfile、CI/CD、Kubernetes / Helm、secret manager、database migration、PGvector deployment、
+readiness/liveness、observability、security/auth 和 release/rollback 路线；它们不表示 production deployment
+已完成。
+
 ## 模板文件
 
 模板路径：
@@ -159,6 +168,7 @@ mvn test -Dtest=ArchitectureTest
 - CI/CD pipeline；
 - Kubernetes / Helm；
 - Dockerfile hardening；
+- deployment hardening implementation；
 - `JdbcPolicyVectorRepository`；
 - live PGvector validation；
 - production ingestion API / admin UI；
