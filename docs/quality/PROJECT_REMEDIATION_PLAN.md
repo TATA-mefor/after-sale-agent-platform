@@ -1,4 +1,4 @@
-# 项目整改方案：阶段 0 文档事实口径修正
+# 项目整改方案：阶段 0-1 文档事实口径修正与生产配置模板
 
 Date: 2026-06-01
 
@@ -7,7 +7,8 @@ Status: Completed
 ## 目的
 
 本文件用于回应项目整体审查中的 Spring Boot、Spring AI、RAG / Tool、API 和部署评价，给出中文事实核验与
-阶段化整改路线。阶段 0 只做文档事实口径修正，不修改 runtime 代码。
+阶段化整改路线。阶段 0 完成文档事实口径修正；阶段 1 补充生产配置模板和 secret placeholder 说明。
+两个阶段都不修改 runtime 代码。
 
 ## 总体结论
 
@@ -28,7 +29,8 @@ Status: Completed
 
 准确：
 
-- 缺少 `application-prod.yml` 或生产配置模板。
+- 原先缺少 `application-prod.yml` 或生产配置模板；阶段 1 已新增
+  `src/main/resources/application-prod.example.yml` 作为不会默认加载的安全示例。
 - 生产级 metrics、Prometheus registry、distributed tracing、cross-service trace-id propagation 还未完成。
 - 部分核心模型仍偏薄，业务不变量可以继续向 domain 层下沉。
 
@@ -37,9 +39,14 @@ Status: Completed
 - “所有配置堆在一个 yaml”不准确；当前已有 default、mysql、rag-postgres profile 分离。
 - “工程 skeleton”偏重；当前已经具备可运行、可测试、可审计的模块化单体基础。
 
-阶段 1+ 建议：
+阶段 1 完成：
 
 - 增加生产配置模板和配置说明。
+- 新增 `docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md`，说明环境变量分组、secret safety、默认离线边界和
+  non-production boundary。
+
+阶段 2+ 建议：
+
 - 增加 metrics / tracing 决策文档，再决定是否接 Prometheus 或 OpenTelemetry。
 - 针对 Ticket / Order 梳理业务不变量，逐步减少贫血模型倾向。
 
@@ -118,19 +125,48 @@ Status: Completed
 
 阶段 0：已完成。文档事实口径修正、中文整改方案、docs harness test。
 
-阶段 1：生产配置模板。补 `application-prod.yml` 示例、环境变量表和 secret safety 说明。
+阶段 1：已完成。生产配置模板、环境变量表、secret placeholder safety、docs harness test。
 
-阶段 2：可观测性决策。补 metrics / Prometheus / tracing ADR，决定默认不启用还是 opt-in。
+阶段 2：planned。可观测性决策。补 metrics / Prometheus / tracing ADR，决定默认不启用还是 opt-in。
 
-阶段 3：领域模型强化。梳理 Ticket / Order 业务不变量，避免把状态规则全部留在 application service。
+阶段 3：planned。领域模型强化。梳理 Ticket / Order 业务不变量，避免把状态规则全部留在 application service。
 
-阶段 4：API 完整性。补分页、异步 AgentRun 设计、只读进度模型和 OpenAPI 对应说明。
+阶段 4：planned。API 完整性。补分页、异步 AgentRun 设计、只读进度模型和 OpenAPI 对应说明。
 
-阶段 5：RAG 检索质量。实验 reranking、query rewriting、RRF、chunk window expansion。
+阶段 5：planned。RAG 检索质量。实验 reranking、query rewriting、RRF、chunk window expansion。
 
-阶段 6：Spring AI 深化。评估 ChatMemory、Advisors、Tool Calling API 与 ToolRegistry 边界的兼容性。
+阶段 6：planned。Spring AI 深化。评估 ChatMemory、Advisors、Tool Calling API 与 ToolRegistry 边界的兼容性。
 
-阶段 7：部署工程化。补 Dockerfile hardening、CI/CD、secrets 管理、日志采集和部署文档。
+阶段 7：planned。部署工程化。补 Dockerfile hardening、CI/CD、secrets 管理、日志采集和部署文档。
+
+## 生产配置模板边界
+
+阶段 1 新增的 `src/main/resources/application-prod.example.yml` 是示例模板，不是默认 `prod` 配置文件。
+它不会被默认测试 profile 加载，也不代表生产部署完成。真实环境配置值应由部署系统、外部配置中心、
+未提交的本地配置或环境变量注入。
+
+模板覆盖：
+
+- Spring Boot 基础服务配置；
+- DataSource / Hikari 占位；
+- LLM / Spring AI provider 占位；
+- RAG / PGvector opt-in 占位；
+- Actuator 仅暴露 health 的安全边界；
+- Swagger UI 默认关闭的生产模板边界。
+
+模板不提供：
+
+- production authentication / authorization；
+- secret manager 集成；
+- Prometheus / metrics dashboard；
+- distributed tracing；
+- CI/CD；
+- Kubernetes / Helm；
+- Dockerfile hardening；
+- `JdbcPolicyVectorRepository`；
+- live PGvector validation；
+- production ingestion API / admin UI；
+- 真实退款、换货、优惠券补偿、支付或物流系统接入。
 
 ## 默认离线边界
 
@@ -150,6 +186,7 @@ Status: Completed
 ## 验证命令
 
 ```bash
+mvn test -Dtest=ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 mvn test -Dtest=ProjectRemediationPlanDocsTest
 mvn test -Dtest=ArchitectureTest
 mvn test

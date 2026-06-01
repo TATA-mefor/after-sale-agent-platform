@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：草案
+状态：阶段 0-1 已完成，阶段 2+ planned
 
 ## 1. 目标
 
@@ -82,10 +82,11 @@
 
 范围：
 
-- 新增安全的 `application-prod.yml` 模板或 `application-prod.example.yml`。
+- 已新增安全的 `application-prod.example.yml` 模板。
 - 所有敏感值只使用环境变量 placeholder。
 - 默认 test profile 继续离线。
 - 文档列出生产环境变量，但不提交真实值。
+- 已新增 `docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md` 和 docs harness test。
 
 非目标：
 
@@ -196,7 +197,7 @@
 
 - 不把 Docker Compose 写成生产部署方案。
 - 不提交真实生产凭据。
-- 没有实现前，不声明 production monitoring completed。
+- 没有实现前，不声明生产监控已完成。
 
 验证：
 

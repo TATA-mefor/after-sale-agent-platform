@@ -1551,6 +1551,34 @@ Known limitations:
   API pagination, async AgentRun, SSE, deeper Spring AI features, RAG reranking, query rewriting, RRF, chunk window
   expansion, `JdbcPolicyVectorRepository`, or live PGvector validation.
 
+### Project Review Correction Stage 1 (completed)
+
+Status: completed for production configuration template, secret placeholder documentation, and docs harness coverage.
+
+Current Stage 1 quality status:
+
+- Production config template quality: `src/main/resources/application-prod.example.yml` provides a reviewable template
+  for server, logging, datasource / Hikari, LLM provider, Spring AI, RAG / PGvector, Actuator, and OpenAPI settings.
+- Secret placeholder quality: sensitive values use environment variable placeholders with empty defaults. The template
+  does not contain real API keys, database passwords, tokens, private endpoints, local absolute paths, raw prompts, or
+  raw dataset paths.
+- Documentation quality: `docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md` explains environment variable groups, the default
+  offline boundary, live opt-in boundary, secret safety, and the relationship to future production hardening.
+- README and validation quality: README and `docs/quality/VALIDATION_COMMANDS.md` link the production template docs and
+  state that the template is not loaded by default and is not a production deployment manifest.
+- Docs harness quality: `ProductionConfigTemplateDocsTest` verifies template existence, links, placeholder safety,
+  default offline wording, no production overclaims, and the completion record.
+- Runtime non-change quality: Stage 1 changes template/docs/docs harness only. Runtime services, controllers, tools,
+  RAG retrieval, ingestion, health indicators, OpenAPI config, ToolRegistry, ToolCallTrace, Workspace, Execution Tree,
+  and AgentApplicationService are unchanged.
+
+Known limitations:
+
+- Stage 1 does not implement production auth, secret manager integration, production deployment, production monitoring,
+  metrics, distributed tracing, CI/CD, Kubernetes, Helm, Dockerfile hardening, API pagination, async AgentRun,
+  `JdbcPolicyVectorRepository`, live PGvector validation, production ingestion admin UI, or real payment / logistics /
+  refund / exchange / coupon compensation integrations.
+
 Planned phases:
 
 ```text

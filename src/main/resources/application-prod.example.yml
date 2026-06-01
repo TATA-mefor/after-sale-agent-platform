@@ -1,0 +1,115 @@
+# Production profile template for AfterSale-Agent.
+#
+# Copy this file to an untracked local/provisioned configuration source before use.
+# Do not commit real API keys, database passwords, tokens, private endpoints, or
+# production secret values. This example is not loaded by the default profile and
+# is not a production deployment manifest.
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  application:
+    name: after-sale-agent-platform
+  lifecycle:
+    timeout-per-shutdown-phase: ${AFTERSALE_SHUTDOWN_TIMEOUT:30s}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER:com.mysql.cj.jdbc.Driver}
+    hikari:
+      pool-name: ${AFTERSALE_HIKARI_POOL_NAME:after-sale-agent-prod}
+      maximum-pool-size: ${AFTERSALE_HIKARI_MAX_POOL_SIZE:20}
+      minimum-idle: ${AFTERSALE_HIKARI_MIN_IDLE:5}
+      connection-timeout: ${AFTERSALE_HIKARI_CONNECTION_TIMEOUT_MS:30000}
+      validation-timeout: ${AFTERSALE_HIKARI_VALIDATION_TIMEOUT_MS:5000}
+      idle-timeout: ${AFTERSALE_HIKARI_IDLE_TIMEOUT_MS:600000}
+      max-lifetime: ${AFTERSALE_HIKARI_MAX_LIFETIME_MS:1800000}
+  ai:
+    model:
+      chat: ${SPRING_AI_MODEL_CHAT:none}
+      embedding: ${SPRING_AI_MODEL_EMBEDDING:none}
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: ${AFTERSALE_HEALTH_SHOW_DETAILS:never}
+
+springdoc:
+  api-docs:
+    enabled: ${AFTERSALE_OPENAPI_ENABLED:true}
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: ${AFTERSALE_SWAGGER_UI_ENABLED:false}
+    path: /swagger-ui.html
+  show-actuator: false
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    com.example.aftersale: ${LOG_LEVEL_AFTERSALE:INFO}
+  pattern:
+    level: >-
+      %5p requestId=%X{requestId:-} ticketId=%X{ticketId:-}
+      agentRunId=%X{agentRunId:-} subtaskId=%X{subtaskId:-}
+      toolName=%X{toolName:-} approvalRequestId=%X{approvalRequestId:-}
+
+aftersale:
+  persistence:
+    mysql:
+      url: ${SPRING_DATASOURCE_URL:}
+      username: ${SPRING_DATASOURCE_USERNAME:}
+      password: ${SPRING_DATASOURCE_PASSWORD:}
+      schema-location: classpath:schema-mysql.sql
+      data-location: classpath:data-mysql.sql
+
+agent:
+  rag:
+    enabled: ${AFTERSALE_RAG_ENABLED:false}
+    health:
+      enabled: ${AFTERSALE_RAG_HEALTH_ENABLED:true}
+      include-details: ${AFTERSALE_RAG_HEALTH_DETAILS:false}
+    vector-store:
+      provider: ${AFTERSALE_VECTOR_STORE_PROVIDER:none}
+      pgvector:
+        enabled: ${AFTERSALE_PGVECTOR_ENABLED:false}
+        jdbc-url: ${AFTERSALE_PGVECTOR_URL:}
+        username: ${AFTERSALE_PGVECTOR_USERNAME:}
+        password: ${AFTERSALE_PGVECTOR_PASSWORD:}
+        schema: ${AFTERSALE_PGVECTOR_SCHEMA:public}
+        initialize-schema: ${AFTERSALE_PGVECTOR_INITIALIZE_SCHEMA:false}
+        dimensions: ${AFTERSALE_EMBEDDING_DIMENSION:1536}
+  spring-ai:
+    enabled: ${SPRING_AI_ENABLED:false}
+    chat-enabled: ${SPRING_AI_CHAT_ENABLED:false}
+    embedding-enabled: ${SPRING_AI_EMBEDDING_ENABLED:false}
+    provider-type: ${SPRING_AI_PROVIDER_TYPE:openai}
+    api-key: ${SPRING_AI_OPENAI_API_KEY:}
+    endpoint-host: ${SPRING_AI_ENDPOINT_HOST:}
+  planner:
+    mode: ${AFTERSALE_AGENT_PLANNER_MODE:rule}
+    llm:
+      provider: ${AFTERSALE_LLM_PROVIDER:openai-responses}
+      model: ${AFTERSALE_LLM_MODEL:}
+      api-key: ${OPENAI_API_KEY:}
+      endpoint: ${OPENAI_RESPONSES_ENDPOINT:}
+      timeout-seconds: ${AFTERSALE_LLM_TIMEOUT_SECONDS:30}
+      dashscope:
+        api-key: ${DASHSCOPE_API_KEY:}
+        base-url: ${DASHSCOPE_BASE_URL:}
+        responses-endpoint: ${DASHSCOPE_RESPONSES_ENDPOINT:}
+        chat-completions-endpoint: ${DASHSCOPE_CHAT_COMPLETIONS_ENDPOINT:}
+
+# Future production security should be supplied by a dedicated auth/security plan.
+# This template does not enable production authentication, secret-manager binding,
+# payment, logistics, refund, exchange, or coupon-compensation integrations.

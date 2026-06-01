@@ -22,6 +22,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V4 Release Summary](docs/release/V4_RELEASE_SUMMARY.md)
 - [中文项目整改方案](docs/quality/PROJECT_REMEDIATION_PLAN.md)
 - [Project Review Correction Stage 0](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
+- [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md)
+- [Project Review Correction Stage 1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
 
 ## V4 事实口径
 
@@ -78,9 +80,11 @@ Interview docs:
 - [OpenAPI Docs](docs/api/OPENAPI.md)
 - [Validation Commands](docs/quality/VALIDATION_COMMANDS.md)
 - [中文项目整改方案](docs/quality/PROJECT_REMEDIATION_PLAN.md)
+- [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md)
 - [V4 Final Completion Record](docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md)
 - [V4 Release Summary](docs/release/V4_RELEASE_SUMMARY.md)
 - [Project Review Correction Stage 0](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
+- [Project Review Correction Stage 1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
 
 Fast validation:
 
@@ -158,6 +162,23 @@ Open `http://localhost:8080/swagger-ui/index.html` or `http://localhost:8080/swa
 docs. See [OpenAPI docs](docs/api/OPENAPI.md) for the API groups, evidence-only boundary, health endpoint boundary,
 and default offline path. V4.6.4 is API docs polish only; it does not add runtime behavior and does not require live
 providers, API keys, Docker, PostgreSQL, PGvector, MySQL, Redis, real LLMs, or real embedding providers.
+
+## Production Config Template
+
+Stage 1 of the project review correction adds a safe production configuration example:
+
+```text
+src/main/resources/application-prod.example.yml
+```
+
+See [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md) for the environment variable groups,
+secret placeholder boundary, and default offline validation boundary.
+
+This template is not loaded by default, is not a production deployment manifest, and does not add production auth,
+production monitoring, secret-manager integration, live PGvector validation, or real payment / logistics / refund
+integrations. Do not commit real API keys, database passwords, tokens, private endpoints, local absolute paths, raw
+prompts, or raw datasets. Default validation still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker,
+MySQL, Redis, real embedding providers, Spring AI live calls, or external network.
 
 ## MySQL Profile
 

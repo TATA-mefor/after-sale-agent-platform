@@ -72,6 +72,28 @@ live PGvector、真实 provider 或真实外部业务系统可用。
 mvn test -Dtest=ProjectRemediationPlanDocsTest
 ```
 
+## Production Config Template Validation
+
+阶段 1 新增 `src/main/resources/application-prod.example.yml` 和
+`docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md`。这是生产配置模板与说明，不是生产部署方案，不会被默认
+profile 自动加载，也不改变 runtime 行为。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
+```
+
+该测试只读模板和文档，检查：
+
+- README、整改方案和验证文档链接生产配置模板；
+- 模板使用环境变量 placeholder；
+- 模板和文档不包含真实 API Key、数据库密码、token、本地绝对路径或 raw dataset path；
+- 文档说明默认验证不加载 prod template；
+- 文档说明默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis 或 external network；
+- 文档不把 production auth、production monitoring、secret manager、CI/CD、Kubernetes、Helm 或 live PGvector
+  validation 写成已完成能力。
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally
