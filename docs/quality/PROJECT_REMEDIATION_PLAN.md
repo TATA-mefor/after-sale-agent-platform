@@ -1,4 +1,4 @@
-# 项目整改方案：阶段 0-3.3 文档事实口径、生产配置模板、可观测性、API 分页与 AgentRun 状态读取
+# 项目整改方案：阶段 0-3.4 文档事实口径、生产配置模板、可观测性与 API 改进评估
 
 Date: 2026-06-01
 
@@ -9,7 +9,8 @@ Status: Completed
 本文件用于回应项目整体审查中的 Spring Boot、Spring AI、RAG / Tool、API 和部署评价，给出中文事实核验与
 阶段化整改路线。阶段 0 完成文档事实口径修正；阶段 1 补充生产配置模板和 secret placeholder 说明；
 阶段 2 完成可观测性加固决策；阶段 3.1 完成 API surface audit / API completeness decision；阶段 3.2 完成
-Ticket list/query pagination foundation；阶段 3.3 完成 AgentRun get/status polling read model。
+Ticket list/query pagination foundation；阶段 3.3 完成 AgentRun get/status polling read model；阶段 3.4 完成
+async AgentRun / SSE / WebSocket / batch API / cancel / retry / AgentRun list pagination 的决策评估。
 
 ## 总体结论
 
@@ -131,10 +132,15 @@ Ticket list/query pagination foundation；阶段 3.3 完成 AgentRun get/status 
   Execution Tree。
 - OpenAPI docs 和 docs harness test 记录 AgentRun get/status 已完成；异步 AgentRun 和 streaming 仍是后续任务。
 
-阶段 3+ 建议：
+阶段 3.4 完成：
 
-- 设计异步 AgentRun 和更完整的执行进度模型。
-- 如需流式输出，先完成事件模型和安全边界。
+- 新增 `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md`。
+- 明确当前 synchronous create/start + `GET /api/agent-runs/{runId}` status polling 是当前安全路径。
+- 评估 async AgentRun、SSE / WebSocket、batch API、cancel / retry 和 AgentRun list pagination，但不实现这些
+  runtime 能力。
+- 明确 streaming 不得暴露 raw prompt、raw LLM response、secrets、full tool output 或完整 evidence chunk。
+- 明确 batch API 需要 idempotency、rate limit、partial failure model、approval backlog control 和权限边界。
+- 明确 production auth / RBAC 是 streaming、batch、cancel / retry 和生产 API hardening 的前置项。
 
 ### 部署
 
@@ -172,7 +178,8 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 阶段 3.3：已完成。AgentRun get/status polling endpoint。补 `GET /api/agent-runs/{runId}` 只读状态摘要，
 不执行 Planner、ToolRegistry、RAG、Approval 或 Execution Tree runtime。
 
-阶段 3.4：planned。异步 AgentRun、SSE / WebSocket 和 batch API 评估。
+阶段 3.4：已完成。异步 AgentRun、SSE / WebSocket、batch API、cancel / retry 和 AgentRun list pagination
+评估决策。该阶段不实现 runtime API。
 
 阶段 4：planned。领域模型强化。梳理 Ticket / Order 业务不变量，避免把状态规则全部留在 application service。
 
@@ -233,11 +240,14 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 - production-grade async AgentRun；
 - SSE / WebSocket trace streaming；
 - batch API；
+- cancel / retry API；
+- AgentRun list pagination；
 - production auth / RBAC；
 - idempotency、rate limit 和 API audit hardening。
 
 阶段 3.1 不实现这些 runtime 能力，只定义路线。阶段 3.2 已补 Ticket list/query pagination foundation。
-阶段 3.3 已补 AgentRun get/status polling read model。
+阶段 3.3 已补 AgentRun get/status polling read model。阶段 3.4 已补 async / streaming / batch API evaluation
+decision，并明确这些能力仍未进入 runtime。
 `search_aftersale_policy` 继续是 LOW-risk read-only ToolRegistry tool，不是 public RAG HTTP endpoint。
 OpenAPI docs 继续记录 existing API surface，不代表 production API hardening。
 

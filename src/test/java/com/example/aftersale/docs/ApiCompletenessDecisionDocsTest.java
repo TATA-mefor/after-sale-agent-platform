@@ -47,7 +47,7 @@ class ApiCompletenessDecisionDocsTest {
         assertThat(validation).contains("ApiCompletenessDecisionDocsTest", DECISION_DOC);
         assertThat(remediation).contains("阶段 3.1：已完成", DECISION_DOC);
         assertThat(quality).contains("Project Review Correction Stage 3.1 (completed)", DECISION_DOC);
-        assertThat(activePlan).contains("状态：阶段 0-3.3 已完成", DECISION_DOC, COMPLETED_PLAN);
+        assertThat(activePlan).contains("状态：阶段 0-3.4 已完成", DECISION_DOC, COMPLETED_PLAN);
     }
 
     @Test

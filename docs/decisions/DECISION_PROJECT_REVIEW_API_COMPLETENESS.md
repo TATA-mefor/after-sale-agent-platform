@@ -12,7 +12,8 @@ Status: Completed
 本决策记录起始于阶段 3.1：API Surface Audit / API Completeness Decision。阶段 3.2 已按该决策补充
 Ticket list/query pagination foundation。阶段 3.2 只扩展 Ticket 只读 list endpoint，不修改 AgentRun、
 ToolRegistry、RAG、Approval 或 Execution Tree 行为。阶段 3.3 已按该决策补充 AgentRun read/status endpoint，
-只提供只读状态摘要，不修改 AgentRun 执行语义。
+只提供只读状态摘要，不修改 AgentRun 执行语义。阶段 3.4 已完成 async AgentRun、SSE / WebSocket、batch API、
+cancel / retry 和 AgentRun list pagination 的决策评估，不新增 runtime API。
 
 ## Current API Surface
 
@@ -54,7 +55,8 @@ evidence 是 policy evidence，不执行业务动作。
 
 - 阶段 3.2：Ticket list / pagination foundation。已完成。
 - 阶段 3.3：AgentRun get/status polling endpoint。已完成。
-- 阶段 3.4：async AgentRun、SSE / WebSocket streaming 和 batch API 评估。
+- 阶段 3.4：async AgentRun、SSE / WebSocket streaming、batch API、cancel / retry 和 AgentRun list pagination
+  评估。已完成决策文档，不实现 runtime。
 
 除非后续产品需求明确，否则不新增 public RAG search HTTP endpoint。Agent runtime 仍通过 ToolRegistry 调用
 `search_aftersale_policy`，高风险动作仍由 RiskPolicy / Approval gate 保护。
@@ -103,7 +105,8 @@ AgentRun get/status polling 已在阶段 3.3 完成最小只读实现。
 
 ## Async AgentRun Strategy
 
-生产级异步 AgentRun 是阶段 3.4 或后续任务，不属于阶段 3.1 已实现能力。
+生产级异步 AgentRun 是阶段 3.4 已评估的后续 runtime 候选，不属于阶段 3.1 已实现能力，也不属于阶段 3.4
+已实现 runtime 能力。
 
 建议策略：
 
@@ -114,7 +117,8 @@ AgentRun get/status polling 已在阶段 3.3 完成最小只读实现。
 
 ## Streaming / SSE / WebSocket Strategy
 
-SSE / WebSocket trace streaming 是 future / opt-in API path，不属于阶段 3.1 已实现能力。
+SSE / WebSocket trace streaming 是 future / opt-in API path，不属于阶段 3.1 已实现能力，也不属于阶段 3.4
+已实现 runtime 能力。
 
 建议策略：
 
@@ -124,7 +128,7 @@ SSE / WebSocket trace streaming 是 future / opt-in API path，不属于阶段 3
 
 ## Batch API Strategy
 
-Batch API 是 future work，不属于阶段 3.1 已实现能力。
+Batch API 是 future work，不属于阶段 3.1 已实现能力，也不属于阶段 3.4 已实现 runtime 能力。
 
 建议策略：
 
@@ -142,6 +146,10 @@ OpenAPI docs 应展示当前 existing HTTP APIs，并清楚标记边界：
 - Approval API 是 pending/get/approve/reject。
 - `search_aftersale_policy` 是 ToolRegistry tool，不是 public RAG HTTP endpoint。
 - `/actuator/health` 是默认 health exposure；OpenAPI docs 不代表 production deployment。
+
+阶段 3.4 的详细评估记录在 `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md`。该决策保留
+status polling 作为当前安全进度读取路径，并把 async AgentRun、SSE / WebSocket、batch API、cancel / retry、
+AgentRun list pagination、production auth / RBAC、idempotency 和 rate limiting 留作后续 runtime hardening。
 
 ## Security / Auth Boundary
 
@@ -211,7 +219,7 @@ polling，仍保留以下非目标：
 
 - 阶段 3.2：Ticket list/query pagination foundation。已完成。
 - 阶段 3.3：AgentRun get/status polling endpoint。已完成。
-- 阶段 3.4：异步 AgentRun、SSE / WebSocket、batch API 评估。
+- 阶段 3.4：异步 AgentRun、SSE / WebSocket、batch API、cancel / retry、AgentRun list pagination 评估。已完成。
 - 后续安全任务：production auth / RBAC、idempotency、rate limiting、audit hardening。
 
 ## Completion Signal

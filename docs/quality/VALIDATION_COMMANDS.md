@@ -196,6 +196,36 @@ mvn test -Dtest=AgentRunStatusDocsTest,TicketPaginationDocsTest,ApiCompletenessD
 阶段 3.3 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
 Spring AI live provider calls 或 external network。如果默认验证需要这些依赖，视为回归。
 
+## Async / Streaming / Batch API Decision Validation
+
+阶段 3.4 新增 `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md` 和完成记录。该阶段只做
+async AgentRun、status polling、SSE / WebSocket、batch API、cancel / retry 和 AgentRun list pagination 的决策
+评估，不新增 runtime endpoint。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=AsyncStreamingBatchApiDecisionDocsTest,AgentRunStatusDocsTest,TicketPaginationDocsTest,ApiCompletenessDecisionDocsTest
+```
+
+该测试只读文档，检查：
+
+- Stage 3.4 decision 文档和完成记录存在并包含 `TASK_COMPLETE`；
+- README、OpenAPI docs、API completeness decision、整改方案、quality docs、validation docs 和 active correction plan
+  记录 Stage 3.4 completed as decision / evaluation；
+- 当前 baseline 包含 Ticket list pagination、AgentRun get/status polling、ToolCallTrace read-only view、
+  Execution Tree read-only view、Approval pending/get/approve/reject 和 `search_aftersale_policy` ToolRegistry
+  boundary；
+- async AgentRun runtime、SSE / WebSocket runtime、batch API runtime、cancel / retry 和 AgentRun list pagination
+  仍是 future work；
+- streaming 不得暴露 raw prompt、raw LLM response、secrets、full tool output 或完整 evidence chunk；
+- batch API 需要 idempotency、rate limit、partial failure model 和 permission boundary；
+- production auth / RBAC 是 streaming、batch、cancel / retry 和 production API hardening 前置项；
+- docs 不包含真实 API Key、数据库密码、token、本地绝对路径、raw prompt 或 raw dataset path。
+
+阶段 3.4 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
+Spring AI live provider calls、streaming server、queue 或 external network。如果默认验证需要这些依赖，视为回归。
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

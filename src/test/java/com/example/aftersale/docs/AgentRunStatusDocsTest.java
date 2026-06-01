@@ -45,7 +45,7 @@ class AgentRunStatusDocsTest {
                 "TASK_COMPLETE");
         assertThat(readme).contains(COMPLETED_PLAN);
         assertThat(activePlan).contains(
-                "状态：阶段 0-3.3 已完成",
+                "状态：阶段 0-3.4 已完成",
                 "阶段 3.3：AgentRun get/status polling read model",
                 "状态：已完成",
                 COMPLETED_PLAN);

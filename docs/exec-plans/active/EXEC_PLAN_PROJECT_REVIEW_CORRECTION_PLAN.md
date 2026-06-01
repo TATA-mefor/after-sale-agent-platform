@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-3.3 已完成，阶段 3.4+ planned
+状态：阶段 0-3.4 已完成，阶段 3.5+ / 4+ planned
 
 ## 1. 目标
 
@@ -205,12 +205,39 @@
 - 不修改 ToolRegistry、Planner、RAG runtime、ingestion、health、OpenAPI config、ToolCallTrace、Workspace、
   Approval 或 Execution Tree runtime。
 
-#### 阶段 3.4+：API runtime 改进候选
+#### 阶段 3.4：Async / Streaming / Batch API Evaluation
+
+状态：已完成。
 
 范围：
 
+- 新增 `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md`。
+- 新增完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_4_ASYNC_STREAMING_BATCH_EVALUATION.md`。
+- 评估 async AgentRun、status polling、SSE / WebSocket、batch API、cancel / retry 和 AgentRun list pagination。
+- 明确当前同步 create/start + `GET /api/agent-runs/{runId}` status polling 是当前安全路径。
+- 明确 AgentRun list pagination 是后续 read-only API 候选，优先级高于 streaming 和 batch。
+
+非目标：
+
+- 不实现异步 AgentRun。
+- 不实现 SSE / WebSocket。
+- 不实现 batch API。
+- 不实现 cancel / retry API。
+- 不实现 AgentRun list pagination。
+- 不实现 production auth / RBAC。
+- 不新增 public RAG HTTP endpoint。
+- 不修改 ToolRegistry、Planner、RAG runtime、ingestion、health、OpenAPI config、ToolCallTrace、Workspace、
+  Approval 或 Execution Tree runtime。
+
+#### 阶段 3.5+：API runtime 改进候选
+
+范围：
+
+- 考虑 AgentRun list pagination。
 - 考虑异步 AgentRun + progress model。
-- 将 SSE progress / trace streaming 作为后续 opt-in API 评估。
+- 将 SSE progress / trace streaming 作为后续 opt-in API 设计。
+- 在完成 auth / RBAC、idempotency、rate limit 和 partial failure model 后再考虑 batch API。
 
 非目标：
 

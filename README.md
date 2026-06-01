@@ -30,6 +30,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 3.1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_1_API_COMPLETENESS_DECISION.md)
 - [Project Review Correction Stage 3.2](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md)
 - [Project Review Correction Stage 3.3](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_3_AGENT_RUN_STATUS_READ.md)
+- [Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md)
+- [Project Review Correction Stage 3.4](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_4_ASYNC_STREAMING_BATCH_EVALUATION.md)
 
 ## V4 事实口径
 
@@ -93,6 +95,7 @@ Interview docs:
 - [Project Review Correction Stage 0](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
 - [Project Review Correction Stage 1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
 - [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md)
+- [Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md)
 
 Fast validation:
 
@@ -426,9 +429,11 @@ Default actuator exposure remains limited to `/actuator/health`.
 
 Current HTTP APIs are a demo/backend API surface, not a complete production CRUD platform. Stage 3.1 records this in
 [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md). Stage 3.2 adds bounded
-Ticket list/query pagination. Stage 3.3 adds a read-only AgentRun get/status endpoint. Async AgentRun,
-SSE / WebSocket streaming, batch APIs, and production auth / RBAC remain planned follow-ups; they are not completed
-runtime behavior.
+Ticket list/query pagination. Stage 3.3 adds a read-only AgentRun get/status endpoint. Stage 3.4 records the
+[Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md):
+current synchronous create/start plus status polling remains the safe path, while async AgentRun runtime,
+SSE / WebSocket streaming, batch APIs, cancel / retry, AgentRun list pagination, and production auth / RBAC remain
+future follow-ups; they are not completed runtime behavior.
 
 Health:
 

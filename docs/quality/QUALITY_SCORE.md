@@ -1703,6 +1703,40 @@ Known limitations:
   production auth / RBAC, idempotency, rate limiting, public RAG HTTP APIs, cancel/retry APIs, or production API audit
   hardening.
 
+### Project Review Correction Stage 3.4 (completed)
+
+Status: completed for async AgentRun / SSE / WebSocket / batch API evaluation, decision documentation, and docs harness
+coverage.
+
+Current Stage 3.4 quality status:
+
+- Async evaluation quality:
+  `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md` records that async AgentRun needs a state
+  machine, executor / queue strategy, idempotent run requests, duplicate submission protection, failure recovery,
+  trace ordering, and approval state preservation before runtime implementation.
+- Status polling quality: current `GET /api/agent-runs/{runId}` remains the safe read path and does not run Planner,
+  call ToolRegistry, write ToolCallTrace, mutate Workspace, or modify Ticket / Approval state.
+- Streaming evaluation quality: SSE / WebSocket remain future work; future streams must not expose raw prompts, raw LLM
+  responses, secrets, complete tool output, complete evidence chunks, local paths, or provider configuration.
+- Batch evaluation quality: future batch APIs require idempotency, rate limiting, size limits, partial failure models,
+  per-item audit records, approval backlog control, and permission checks.
+- Cancel / retry quality: cancel and retry remain future work until state-machine, idempotency, side-effect, and trace
+  linkage rules are defined.
+- Security quality: production auth / RBAC is explicitly recorded as a prerequisite for streaming, batch,
+  cancel / retry, trace, execution-tree, and approval hardening.
+- Docs harness quality: `AsyncStreamingBatchApiDecisionDocsTest` verifies Stage 3.4 documentation links, baseline API
+  wording, future runtime boundaries, ToolRegistry / Approval / RAG boundaries, default offline requirements, and
+  secret / local-path safety.
+- Runtime non-change quality: Stage 3.4 changes docs and docs harness tests only. Runtime services, controllers, DTOs,
+  tools, RAG retrieval, ingestion, health indicators, OpenAPI config, ToolRegistry, ToolCallTrace, Workspace,
+  Execution Tree, AgentApplicationService, `pom.xml`, and application resources are unchanged.
+
+Known limitations:
+
+- Stage 3.4 does not implement async AgentRun runtime, SSE / WebSocket runtime, batch APIs, cancel / retry APIs,
+  AgentRun list pagination, production auth / RBAC, idempotency, rate limiting, public RAG HTTP APIs, or production API
+  audit hardening.
+
 Planned phases:
 
 ```text

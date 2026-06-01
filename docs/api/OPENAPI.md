@@ -41,11 +41,15 @@ and it is not production API hardening.
 - AgentRun APIs currently cover create/start for a ticket and read-only get/status polling.
 - Trace and Execution Tree APIs are read-only views. They are not SSE / WebSocket streaming endpoints.
 - Approval APIs currently cover pending/get/approve/reject.
-- Batch APIs, production auth / RBAC, idempotency, rate limiting, and API audit hardening remain future work.
+- Stage 3.4 evaluates async AgentRun, status polling, SSE / WebSocket, batch API, cancel / retry, and AgentRun list
+  pagination without adding runtime endpoints.
+- Async AgentRun runtime, SSE / WebSocket runtime, batch APIs, cancel / retry, AgentRun list pagination,
+  production auth / RBAC, idempotency, rate limiting, and API audit hardening remain future work.
 
 The decision record for this boundary is
-`docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md`. `search_aftersale_policy` remains a LOW-risk read-only
-ToolRegistry tool, not a public RAG HTTP endpoint.
+`docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md`. The Stage 3.4 async / streaming / batch evaluation is
+recorded in `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md`. `search_aftersale_policy` remains a
+LOW-risk read-only ToolRegistry tool, not a public RAG HTTP endpoint.
 
 ## Ticket Flow
 
@@ -79,6 +83,9 @@ tools are executed only through ToolRegistry, and high-risk actions remain appro
 `startedAt`, `completedAt`, `finalSummary`, `failureSummary`, `traceAvailable`, `executionTreeAvailable`, `traceUrl`,
 and `executionTreeUrl`. It does not run the planner, execute tools, call ToolRegistry, mutate tickets, write
 ToolCallTrace, inline workspace data, or replace the trace / execution-tree views.
+
+Stage 3.4 keeps this status polling path as the current safe progress view. It does not implement async AgentRun,
+SSE / WebSocket streaming, batch API, cancel / retry, or AgentRun list pagination.
 
 ## Approval Flow
 
@@ -119,6 +126,11 @@ Use Swagger UI as an existing API map, not as proof of new runtime behavior:
 
 OpenAPI docs cover existing HTTP APIs. They do not add a new public RAG policy-search endpoint. `search_aftersale_policy`
 remains a ToolRegistry tool and RAG evidence remains evidence-only policy support.
+
+If discussing future API hardening, use the Stage 3.4 decision: AgentRun list pagination should come before async
+execution; SSE should be considered before WebSocket for one-way progress; batch APIs require idempotency, rate
+limits, permission checks, and partial-failure semantics; streaming must not expose raw prompts, raw LLM responses,
+secrets, full tool outputs, or full evidence chunks.
 
 ## Actuator Health Boundary
 
