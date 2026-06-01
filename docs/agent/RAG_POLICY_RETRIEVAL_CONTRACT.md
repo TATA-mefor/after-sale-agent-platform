@@ -139,8 +139,18 @@ V5.A.2 status: `schema-rag-postgres.sql` now declares schema version baseline `2
 `JdbcPolicyVectorRepository` / PGvector policy evidence search path. The retrieval contract therefore has two explicit
 storage paths: default fake / in-memory dependencies for offline deterministic validation, and an opt-in
 `JdbcPolicyVectorRepository` path for PGvector-backed policy evidence search. The baseline is not a Flyway / Liquibase
-migration framework and does not prove live PGvector connectivity; V5.A.3 is the planned live PGvector smoke test.
+migration framework and does not prove live PGvector connectivity; V5.A.3 later completes the opt-in live PGvector
+smoke test.
 RAG evidence remains evidence-only and never executes business actions.
+
+V5.A.3 status: PGvector connectivity smoke test completed as an explicit opt-in live validation for the
+`JdbcPolicyVectorRepository` path. The smoke uses the existing `AFTERSALE_PGVECTOR_URL`,
+`AFTERSALE_PGVECTOR_USERNAME`, `AFTERSALE_PGVECTOR_PASSWORD`, and optional `AFTERSALE_PGVECTOR_SCHEMA` variables,
+runs only with `mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true`, and is skipped when required
+configuration is missing. It uses fake / fixed vectors to validate SQL connectivity, schema initialization,
+persistence, lookup, vector ranking, cleanup, and sanitized failures. V5.A.3 does not change `search_aftersale_policy`
+retrieval algorithms, does not validate RAG quality, does not call real LLMs or real embedding providers, does not use
+Spring AI `VectorStore`, and does not make live PGvector part of default `mvn test`.
 
 允许链路：
 

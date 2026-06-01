@@ -23,12 +23,14 @@ Available as V4 foundation:
 - Fake vector store tests remain the default offline vector validation path.
 - V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile.
 - V5.A.2 records schema version baseline `2026-06-01-001` in `schema-rag-postgres.sql`.
+- V5.A.3 adds an explicit opt-in live smoke test for `JdbcPolicyVectorRepository` connectivity and fixed-vector
+  persistence/search behavior.
 
 Still not completed:
 
 - Default live PGvector write/search.
 - Spring AI `VectorStore` production path.
-- Live PGvector integration validation.
+- Default live PGvector integration validation.
 - A production app + PGvector deployment compose file.
 
 ## Schema Version Baseline
@@ -48,8 +50,8 @@ Supported initialization paths:
 Existing PostgreSQL volumes do not rerun `/docker-entrypoint-initdb.d` scripts. Recreate the local volume or manually
 import the SQL when the baseline needs to be applied to an existing local database.
 
-V5.A.2 does not validate live PGvector connectivity. V5.A.3 is the planned PGvector connectivity smoke test. Flyway /
-Liquibase migration management is pending V5.B.2.
+V5.A.3 validates live PGvector connectivity only when explicitly requested. Flyway / Liquibase migration management is
+pending V5.B.2.
 
 ## Start PGvector
 
@@ -126,6 +128,31 @@ policy_chunks
 policy_embeddings
 ```
 
+Optional live JDBC repository smoke:
+
+```bash
+mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true
+```
+
+The smoke uses the existing project environment variable names:
+
+```text
+AFTERSALE_PGVECTOR_URL
+AFTERSALE_PGVECTOR_USERNAME
+AFTERSALE_PGVECTOR_PASSWORD
+AFTERSALE_PGVECTOR_SCHEMA
+```
+
+`AFTERSALE_PGVECTOR_SCHEMA` is optional and defaults to `public`. Missing required configuration skips the smoke. The
+test uses fake / fixed vectors and validates SQL connectivity, schema availability, persistence, lookup, vector search
+ranking, cleanup, and sanitized failures only. It does not call real LLMs, real embedding providers, Spring AI
+`VectorStore`, ToolRegistry, AgentRun, or `search_aftersale_policy`, and it does not validate RAG quality.
+
+`schema-rag-postgres.sql` includes `CREATE EXTENSION IF NOT EXISTS vector`. Fresh `docker-compose-rag.yml` volumes run
+the SQL through the init mount, where extension setup is expected to be available. If you point the smoke at an
+existing PGvector instance, the extension is usually preinstalled. If the configured database user cannot create the
+extension, the smoke skips with a sanitized setup reason instead of exposing credentials.
+
 ## Default Test Isolation
 
 Default validation does not start Docker and does not connect to PostgreSQL, PGvector, MySQL, Redis, a real LLM, a real
@@ -153,5 +180,6 @@ include the `vector` extension.
 
 App cannot execute real vector search through PGvector by default: expected. HYBRID `search_aftersale_policy` wiring is
 available through ToolRegistry, and V5.A.1 adds an explicit opt-in JDBC repository adapter for `rag-postgres` /
-`pgvector`. Default validation still uses fake / in-memory dependencies; live PGvector persistence/search validation
-and any Spring AI `VectorStore` production path require separate future approval.
+`pgvector`. V5.A.3 adds an explicit opt-in smoke test for that adapter. Default validation still uses fake / in-memory
+dependencies; default live PGvector persistence/search and any Spring AI `VectorStore` production path require separate
+future approval.

@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-6 已完成，current correction scope completed，V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 planned
+状态：阶段 0-6 已完成，current correction scope completed，V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 planned
 
 历史状态记录：阶段 5 收口时状态为“状态：阶段 0-5 已完成，阶段 6 planned”；当前状态已推进为阶段 0-6 已完成。
 
@@ -372,7 +372,7 @@
    production auth/RBAC、production monitoring 和 live PGvector validation 仍需独立任务。
 8. V5.A.1：`JdbcPolicyVectorRepository` opt-in adapter 已完成。
 9. V5.A.2：schema init / version baseline `2026-06-01-001` 已完成，仅记录当前 schema 初始化口径。
-10. V5.A.3：PGvector connectivity smoke planned，必须显式 opt-in，不得进入默认验证。
+10. V5.A.3：PGvector connectivity smoke 已完成，必须显式 opt-in，不得进入默认验证。
 11. V5.A.4：PGvector profile / docs closure planned。
 12. V5.B：Flyway / Liquibase migration framework、production hardening 和后续 live validation planned。
 

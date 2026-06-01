@@ -370,7 +370,44 @@ This validation does not connect to PostgreSQL / PGvector, does not start Docker
 providers, does not use Spring AI `VectorStore`, and does not require API keys, MySQL, Redis, or external network.
 
 V5.A.2 does not add Flyway / Liquibase. Migration framework work remains pending V5.B.2. Live PGvector connectivity
-smoke remains pending V5.A.3. The default fake / in-memory vector path remains unchanged.
+smoke is handled by V5.A.3 as an explicit opt-in test. The default fake / in-memory vector path remains unchanged.
+
+## V5.A.3 PGvector Connectivity Smoke Validation
+
+V5.A.3 adds a live PGvector smoke test for the explicit opt-in `JdbcPolicyVectorRepository` path. It is not part of
+default validation and must be requested directly:
+
+```bash
+mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true
+```
+
+Required environment variables use the existing project convention:
+
+```text
+AFTERSALE_PGVECTOR_URL
+AFTERSALE_PGVECTOR_USERNAME
+AFTERSALE_PGVECTOR_PASSWORD
+AFTERSALE_PGVECTOR_SCHEMA
+```
+
+`AFTERSALE_PGVECTOR_SCHEMA` is optional and defaults to `public`. If required configuration is missing, the smoke test
+is skipped through JUnit assumptions. Default `mvn test` does not run live PGvector smoke and does not connect to
+PostgreSQL / PGvector.
+
+The smoke test executes the current `schema-rag-postgres.sql` against the configured database, writes temporary
+`v5a3-smoke-` records, verifies document/chunk/embedding lookup, verifies fixed-vector search ranking, checks duplicate
+and invalid-vector error safety, and cleans up only its temporary records. It uses fake / fixed vectors and does not
+call real LLMs, real embedding providers, Spring AI `VectorStore`, ToolRegistry, AgentRun, or
+`search_aftersale_policy`.
+
+`schema-rag-postgres.sql` starts with `CREATE EXTENSION IF NOT EXISTS vector`. Fresh `docker-compose-rag.yml`
+initialization runs this through the PostgreSQL init mount, and many existing PGvector databases already have the
+extension installed. If a manually configured database user cannot create the extension, the smoke test skips with a
+sanitized setup reason. Flyway / Liquibase migration management remains pending V5.B.2.
+
+V5.A.3 validates SQL connectivity and persistence/search plumbing only. It does not validate RAG quality, real
+embedding recall, reranking, query rewriting, RRF, chunk window expansion, Spring AI `VectorStore` production use,
+production deployment, or public RAG HTTP endpoints.
 
 ## Interview Safe Validation Commands
 
@@ -422,10 +459,11 @@ mvn test -Dtest=LlmPlannerLiveSmokeTest -Dlive.llm=true
 mvn test -Dtest=SpringAiLlmClientLiveSmokeTest -Dlive.spring-ai=true -Dlive.llm=true
 mvn test -Dtest=SpringAiEmbeddingClientLiveSmokeTest -Dlive.spring-ai=true -Dlive.embedding=true
 mvn test -Dtest=RealAgentValidationLiveTest -Dlive.llm=true -Dlive.mysql=true
+mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true
 ```
 
-PGvector validation remains an optional live path and must use an explicit opt-in flag if added or expanded later. It
-must not run during default validation.
+PGvector validation remains an optional live path and must use the explicit `live.rag` opt-in flag. It must not run
+during default validation.
 
 ## Failure Handling
 

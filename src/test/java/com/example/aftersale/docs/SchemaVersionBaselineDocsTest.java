@@ -72,8 +72,8 @@ class SchemaVersionBaselineDocsTest {
 
         assertThat(docs).contains(
                 "Flyway / Liquibase migration management remains pending V5.B.2",
-                "Live PGvector smoke validation remains planned for",
-                "V5.A.3 is the planned live PGvector smoke test",
+                "Live PGvector smoke validation is later completed by",
+                "V5.A.3 later completes the opt-in live PGvector",
                 "default fake / in-memory",
                 "Spring AI `VectorStore` production path is not enabled",
                 "production deployment is not completed");
@@ -85,7 +85,7 @@ class SchemaVersionBaselineDocsTest {
 
         assertThat(activePlan).contains(
                 "V5.A.2 schema init / version baseline 已完成",
-                "V5.A.3 planned",
+                "V5.A.3 PGvector connectivity smoke 已完成",
                 "V5.A.4",
                 "V5.B");
     }

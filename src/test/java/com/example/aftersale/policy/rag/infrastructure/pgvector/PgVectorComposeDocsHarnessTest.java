@@ -77,7 +77,8 @@ class PgVectorComposeDocsHarnessTest {
                 .contains("V4.5 `search_aftersale_policy` supports KEYWORD / VECTOR / HYBRID retrieval"
                         + " through ToolRegistry");
         assertThat(docs).contains("Default live PGvector write/search");
-        assertThat(docs).contains("live PGvector persistence/search validation");
+        assertThat(docs).contains("Default live PGvector integration validation");
+        assertThat(docs).contains("V5.A.3 adds an explicit opt-in live smoke test");
         assertThat(docs).contains("docker compose -f docker-compose-rag.yml up -d");
         assertThat(docs).contains("docker compose -f docker-compose-rag.yml down");
         assertThat(docs).contains("docker compose -f docker-compose-rag.yml down -v");

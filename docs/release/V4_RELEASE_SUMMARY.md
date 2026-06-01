@@ -48,6 +48,9 @@ production auth、production monitoring、live PGvector validation 或真实外�
 - Current addendum: V5.A.1 later adds an explicit opt-in `JdbcPolicyVectorRepository` infrastructure adapter. This
   does not change the V4 release boundary, does not add live PGvector validation to default tests, and does not enable
   Spring AI VectorStore production use.
+- Current addendum: V5.A.3 later adds an explicit opt-in PGvector connectivity smoke test for the JDBC adapter. This
+  smoke uses fake / fixed vectors and existing `AFTERSALE_PGVECTOR_*` environment variables, runs only with
+  `-Dlive.rag=true`, and does not validate RAG quality or make live PGvector part of default validation.
 - Spring AI delivery means adapter foundation. It does not mean ChatMemory, Advisors, Tool Calling API, or bulk
   embedding are used in the default runtime.
 - RAG retrieval does not yet include reranking, query rewriting, RRF, or chunk window expansion.
@@ -100,9 +103,10 @@ MySQL, Redis, real LLMs, real embedding providers, Spring AI VectorStore, or ext
 ## What Is Intentionally Not Production / Live
 
 V4 does not complete production auth, production deployment, production monitoring, real refund, real exchange, real
-payment, real logistics, real inventory, real coupon compensation, live PGvector validation, or production ingestion
-admin UI. Those remain future or explicit opt-in work. V5.A.1 later adds an opt-in JDBC vector repository adapter, but
-does not turn live PGvector validation into a default gate.
+payment, real logistics, real inventory, real coupon compensation, default live PGvector validation, or production
+ingestion admin UI. Those remain future or explicit opt-in work. V5.A.1 later adds an opt-in JDBC vector repository
+adapter, and V5.A.3 later adds an opt-in live PGvector connectivity smoke test, but neither turns live PGvector
+validation into a default gate.
 
 The current HTTP surface is a demo/backend API surface, not a complete production CRUD platform. It covers ticket
 create/get, AgentRun create, ToolCallTrace and Execution Tree read-only views, Approval pending/get/approve/reject,

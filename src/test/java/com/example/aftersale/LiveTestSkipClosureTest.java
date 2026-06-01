@@ -65,6 +65,22 @@ class LiveTestSkipClosureTest {
                 "SPRING_AI_OPENAI_API_KEY");
     }
 
+    @Test
+    void pgVectorSmokeTestRequiresExplicitRagFlagAndEnvironmentGates() throws IOException {
+        String source = source(
+                "src/test/java/com/example/aftersale/policy/rag/infrastructure/pgvector/"
+                        + "JdbcPolicyVectorRepositorySmokeTest.java");
+
+        assertThat(source).contains(
+                "@Tag(\"live\")",
+                "@EnabledIfSystemProperty(named = \"live.rag\", matches = \"true\")",
+                "assumeTrue",
+                "AFTERSALE_PGVECTOR_URL",
+                "AFTERSALE_PGVECTOR_USERNAME",
+                "AFTERSALE_PGVECTOR_PASSWORD",
+                "AFTERSALE_PGVECTOR_SCHEMA");
+    }
+
     private static String source(String path) throws IOException {
         Path file = PROJECT_ROOT.resolve(path);
         assertThat(Files.exists(file)).as(path + " should exist").isTrue();

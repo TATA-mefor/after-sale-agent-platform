@@ -41,6 +41,7 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 6](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md)
 - [V5.A.1 JdbcPolicyVectorRepository](docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md)
 - [V5.A.2 Schema Init / Version Baseline](docs/exec-plans/completed/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md)
+- [V5.A.3 PGvector Connectivity Smoke Test](docs/exec-plans/completed/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md)
 
 ## V4 事实口径
 
@@ -54,7 +55,11 @@ V4 completed 表示 foundation / demo / interview-grade 阶段完成，不表示
   Spring AI VectorStore production path 和 live PGvector integration validation 仍是 future / opt-in。
 - V5.A.2 为 `schema-rag-postgres.sql` 增加 schema version baseline `2026-06-01-001`，用于
   `JdbcPolicyVectorRepository` / PGvector policy evidence search 的初始化口径。它不是 Flyway / Liquibase
-  migration framework，不做 live PGvector validation；V5.A.3 才计划处理 PGvector connectivity smoke。
+  migration framework。
+- V5.A.3 adds an explicit opt-in PGvector connectivity smoke test for `JdbcPolicyVectorRepository`. It only runs with
+  `mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true` and the existing
+  `AFTERSALE_PGVECTOR_URL`, `AFTERSALE_PGVECTOR_USERNAME`, `AFTERSALE_PGVECTOR_PASSWORD`, and optional
+  `AFTERSALE_PGVECTOR_SCHEMA` variables. Default `mvn test` does not run live PGvector smoke.
 - `docker-compose-rag.yml` 提供本地 PGvector infrastructure，不是完整 app + PGvector 生产部署方案。
 - 当前 HTTP API 是 demo/backend API surface：Ticket create/get/list pagination、AgentRun create/status read、
   trace / execution-tree 只读视图、Approval pending/get/approve/reject、Actuator health 和 OpenAPI docs；
@@ -116,6 +121,7 @@ Interview docs:
 - [Deployment Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md)
 - [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md)
 - [V5.A.1 JdbcPolicyVectorRepository](docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md)
+- [V5.A.3 PGvector Connectivity Smoke Test](docs/exec-plans/completed/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md)
 
 Fast validation:
 
@@ -222,6 +228,18 @@ infrastructure adapter behind `PolicyVectorRepository`, not a new Agent tool, no
 retrieval algorithm change. Default validation still uses fake / in-memory dependencies and does not connect to
 PostgreSQL / PGvector. See
 [V5.A.1 JdbcPolicyVectorRepository](docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md).
+
+V5.A.3 adds an explicit opt-in live PGvector smoke test for the JDBC adapter:
+
+```bash
+mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true
+```
+
+The smoke uses `AFTERSALE_PGVECTOR_URL`, `AFTERSALE_PGVECTOR_USERNAME`, `AFTERSALE_PGVECTOR_PASSWORD`, and optional
+`AFTERSALE_PGVECTOR_SCHEMA`. Missing environment configuration skips the test through assumptions. The smoke uses
+fake / fixed vectors and validates SQL connectivity, persistence, lookup, vector search ranking, cleanup, and sanitized
+failure messages only. It does not call real LLMs, real embedding providers, Spring AI `VectorStore`, ToolRegistry, or
+`search_aftersale_policy`, and it does not validate RAG quality.
 
 ## MySQL Profile
 

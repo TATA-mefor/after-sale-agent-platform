@@ -1787,9 +1787,10 @@ Current Stage 5 quality status:
   future scoring change must be proven against deterministic evaluation cases.
 - Chunk window expansion quality: chunk window expansion is not implemented in Stage 5. Future expansion must define
   max window, max chars, source citation, and dedup rules without returning full source documents.
-- Provider / PGvector quality: `JdbcPolicyVectorRepository` is not implemented, live PGvector validation is not
-  completed, and Spring AI VectorStore production path is not enabled. Real reranker/embedding provider must be
-  opt-in.
+- Provider / PGvector quality at Stage 5 time: `JdbcPolicyVectorRepository` and live PGvector validation were not
+  implemented in that stage, and Spring AI VectorStore production path was not enabled. V5.A.1 later adds the opt-in
+  JDBC adapter and V5.A.3 later adds the opt-in live connectivity smoke, while real reranker/embedding providers must
+  remain opt-in.
 - Evidence-only quality: `search_aftersale_policy` remains LOW-risk read-only ToolRegistry tool. RAG evidence is
   evidence-only, RAG score is not business decision confidence, high-risk actions require Approval, LLM must not
   directly execute tools, and future RAG improvements must not bypass ToolRegistry / RiskPolicy / Approval / Trace /
@@ -1806,7 +1807,8 @@ Known limitations:
 - Stage 5 does not improve runtime retrieval quality directly.
 - Stage 5 does not implement reranking runtime, query rewriting runtime, RRF, hybrid scoring runtime changes, chunk
   window expansion, `JdbcPolicyVectorRepository`, live PGvector validation, Spring AI VectorStore production path,
-  production-scale relevance benchmark, or a public RAG HTTP endpoint.
+  production-scale relevance benchmark, or a public RAG HTTP endpoint. The `JdbcPolicyVectorRepository` adapter is
+  later completed in V5.A.1 and the opt-in live PGvector connectivity smoke is later completed in V5.A.3.
 
 ### Project Review Correction Stage 6 (completed)
 
@@ -1877,8 +1879,8 @@ Current V5.A.2 quality status:
 - Initialization documentation quality: docs explain docker-compose-rag fresh-volume init mount, manual SQL import,
   and future explicit test setup as the supported initialization paths.
 - Migration boundary quality: V5.A.2 does not add Flyway / Liquibase. Migration framework work remains pending V5.B.2.
-- Live validation boundary quality: V5.A.2 does not validate live PGvector connectivity. V5.A.3 remains the planned
-  PGvector connectivity smoke task.
+- Live validation boundary quality: V5.A.2 does not validate live PGvector connectivity. V5.A.3 later completes the
+  explicit opt-in PGvector connectivity smoke task.
 - Default offline quality: V5.A.2 docs harness tests read files only and do not require real LLMs, API keys,
   PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI `VectorStore`, or external network.
 - Runtime non-change quality: V5.A.2 does not modify `src/main/java`, retrieval algorithms, ToolRegistry semantics,
@@ -1888,6 +1890,35 @@ Known limitations:
 
 - V5.A.2 does not implement production database migrations, live PGvector validation, Spring AI `VectorStore`
   production path, Admin ingestion API, public RAG HTTP endpoint, RAG quality improvements, or production deployment.
+
+### V5.A.3 PGvector Connectivity Smoke Test (completed)
+
+Status: completed for the explicit opt-in live PGvector connectivity smoke test.
+
+Current V5.A.3 quality status:
+
+- Smoke opt-in quality: `JdbcPolicyVectorRepositorySmokeTest` is tagged `live`, requires
+  `-Dlive.rag=true`, and is not part of default `mvn test`.
+- Environment boundary quality: the smoke uses existing project variables `AFTERSALE_PGVECTOR_URL`,
+  `AFTERSALE_PGVECTOR_USERNAME`, `AFTERSALE_PGVECTOR_PASSWORD`, and optional `AFTERSALE_PGVECTOR_SCHEMA`. Missing
+  required configuration skips through JUnit assumptions.
+- Connectivity quality: the smoke executes `schema-rag-postgres.sql`, writes temporary `v5a3-smoke-` records, verifies
+  document/chunk/embedding lookup, verifies fake / fixed-vector ranking, checks duplicate and invalid-vector failure
+  sanitization, and cleans up its temporary rows.
+- Schema setup quality: `CREATE EXTENSION IF NOT EXISTS vector` failures from insufficient privileges skip with a
+  sanitized setup reason. Fresh `docker-compose-rag.yml` initialization and preinstalled PGvector instances remain the
+  recommended live setup paths.
+- Default offline quality: default validation still does not require real LLMs, API keys, PostgreSQL, PGvector,
+  Docker, MySQL, Redis, real embedding providers, Spring AI `VectorStore`, or external network.
+- Runtime non-change quality: V5.A.3 does not modify `src/main/java`, does not change `search_aftersale_policy`
+  retrieval algorithms, does not call ToolRegistry, does not write AgentRun / ToolCallTrace / Workspace / Execution
+  Tree state, and does not change RAG evaluation, Actuator health, OpenAPI, or ingestion runtime.
+
+Known limitations:
+
+- V5.A.3 does not validate RAG quality, real embedding recall, reranking, query rewriting, RRF, chunk window expansion,
+  Spring AI `VectorStore` production path, Flyway / Liquibase migration management, Admin ingestion API, public RAG
+  HTTP endpoints, production deployment, or production monitoring.
 
 Planned phases:
 

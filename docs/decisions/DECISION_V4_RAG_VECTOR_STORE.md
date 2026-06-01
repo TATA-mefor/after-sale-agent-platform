@@ -104,8 +104,20 @@ V5.A.2 schema baseline addendum: `schema-rag-postgres.sql` now carries schema ve
 `2026-06-01-001` for the opt-in `JdbcPolicyVectorRepository` / PGvector policy evidence search path. This records the
 current schema initialization contract only. It is not a Flyway / Liquibase migration framework, does not enable Spring
 AI `VectorStore` production use, does not change the default fake / in-memory vector path, does not validate live
-PGvector connectivity, and does not change RAG retrieval quality. Live PGvector smoke validation remains planned for
-V5.A.3. Flyway / Liquibase migration management remains pending V5.B.2. RAG quality improvements remain V6+ work.
+PGvector connectivity, and does not change RAG retrieval quality. Live PGvector smoke validation is later completed by
+V5.A.3 as an explicit opt-in test. Flyway / Liquibase migration management remains pending V5.B.2. RAG quality
+improvements remain V6+ work.
+
+V5.A.3 PGvector connectivity smoke addendum: the project now has an explicit opt-in live smoke test for
+`JdbcPolicyVectorRepository` connectivity. The test uses the existing `AFTERSALE_PGVECTOR_URL`,
+`AFTERSALE_PGVECTOR_USERNAME`, `AFTERSALE_PGVECTOR_PASSWORD`, and optional `AFTERSALE_PGVECTOR_SCHEMA` variables and
+only runs with `mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true`. Missing configuration skips via
+JUnit assumptions. The smoke executes `schema-rag-postgres.sql`, writes fake / fixed-vector records, verifies lookup
+and ranking, checks sanitized failures, and cleans up temporary rows. If `CREATE EXTENSION IF NOT EXISTS vector` is not
+allowed for the configured user, the smoke skips with a sanitized setup reason. This is connectivity validation only:
+it does not enable live PGvector in default tests, does not change `search_aftersale_policy` retrieval algorithms, does
+not validate RAG quality, does not enable Spring AI `VectorStore` production use, and does not complete Flyway /
+Liquibase migration management.
 
 推荐 profile：
 
