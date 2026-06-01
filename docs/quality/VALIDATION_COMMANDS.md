@@ -226,6 +226,35 @@ mvn test -Dtest=AsyncStreamingBatchApiDecisionDocsTest,AgentRunStatusDocsTest,Ti
 阶段 3.4 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
 Spring AI live provider calls、streaming server、queue 或 external network。如果默认验证需要这些依赖，视为回归。
 
+## Spring AI Deepening Decision Validation
+
+阶段 4 新增 `docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md` 和完成记录。该阶段只做
+ChatMemory、Advisors、Spring AI Tool Calling API 和 bulk embedding 的深化评估，不修改 runtime provider 行为。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest,ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
+```
+
+该测试只读文档，检查：
+
+- Stage 4 decision 文档和完成记录存在并包含 `TASK_COMPLETE`；
+- README、V4 Spring AI adapter decision、整改方案、quality docs、validation docs 和 active correction plan 记录
+  Stage 4 completed as decision / evaluation；
+- 当前 baseline 是 Spring AI Chat adapter foundation、Spring AI embedding adapter foundation、`LlmClient`
+  abstraction、`EmbeddingClient` abstraction、`FakeEmbeddingClient` 和 opt-in live smoke tests；
+- ChatMemory is not implemented，Advisors are not implemented，Spring AI Tool Calling API is not enabled，
+  bulk embedding runtime is not implemented；
+- Spring AI Tool Calling API cannot replace ToolRegistry，LLM must not directly execute tools，
+  `AgentPlanParser` and `AgentPlanValidator` must not be bypassed，high-risk actions still require Approval；
+- bulk embedding must stay behind EmbeddingClient abstraction；
+- docs 不包含真实 API Key、数据库密码、token、本地绝对路径、raw prompt 或 raw dataset path。
+
+阶段 4 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
+Spring AI live provider calls、Spring AI VectorStore、ChatMemory store、streaming server、queue 或 external network。
+如果默认验证需要这些依赖，视为回归。
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

@@ -32,6 +32,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 3.3](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_3_AGENT_RUN_STATUS_READ.md)
 - [Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md)
 - [Project Review Correction Stage 3.4](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_4_ASYNC_STREAMING_BATCH_EVALUATION.md)
+- [Spring AI Deepening Decision](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)
+- [Project Review Correction Stage 4](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md)
 
 ## V4 事实口径
 
@@ -47,7 +49,9 @@ V4 completed 表示 foundation / demo / interview-grade 阶段完成，不表示
 - 当前 HTTP API 是 demo/backend API surface：Ticket create/get/list pagination、AgentRun create/status read、
   trace / execution-tree 只读视图、Approval pending/get/approve/reject、Actuator health 和 OpenAPI docs；
   它不是完整生产 CRUD 平台。
-- Spring AI 当前是 adapter foundation，不代表已经使用 ChatMemory、Advisors、Tool Calling API 或 bulk embedding。
+- Spring AI 当前是 adapter foundation；阶段 4 已完成
+  [Spring AI 深化评估](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)，不代表已经实现
+  ChatMemory、Advisors、Tool Calling API 或 bulk embedding runtime。
 - RAG 当前支持 KEYWORD / VECTOR / HYBRID policy evidence retrieval，但 reranking、query rewriting、RRF 和 chunk
   window expansion 仍是 future work。
 - 当前 observability 覆盖 MDC / structured logs、ToolCallTrace、Execution Tree、Actuator health 和 RAG readiness
@@ -96,6 +100,7 @@ Interview docs:
 - [Project Review Correction Stage 1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
 - [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md)
 - [Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md)
+- [Spring AI Deepening Decision](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)
 
 Fast validation:
 

@@ -1737,6 +1737,37 @@ Known limitations:
   AgentRun list pagination, production auth / RBAC, idempotency, rate limiting, public RAG HTTP APIs, or production API
   audit hardening.
 
+### Project Review Correction Stage 4 (completed)
+
+Status: completed for Spring AI deepening evaluation, decision documentation, and docs harness coverage.
+
+Current Stage 4 quality status:
+
+- Baseline quality:
+  `docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md` records the current Spring AI Chat adapter
+  foundation and Spring AI embedding adapter foundation behind `LlmClient` and `EmbeddingClient`.
+- ChatMemory evaluation quality: ChatMemory is not implemented in Stage 4 and must not replace `AgentWorkspace`,
+  ToolCallTrace, Execution Tree, or business state if evaluated later.
+- Advisor evaluation quality: Advisors are not implemented in Stage 4 and must not bypass `search_aftersale_policy`,
+  RAG evidence merge logic, ToolRegistry, raw prompt safety, or evidence-only rules.
+- Tool Calling API evaluation quality: Spring AI Tool Calling API is not enabled in Stage 4. Spring AI Tool Calling
+  API cannot replace ToolRegistry, and LLM must not directly execute tools.
+- Bulk embedding evaluation quality: bulk embedding runtime is not implemented in Stage 4. Bulk embedding must stay
+  behind `EmbeddingClient` abstraction.
+- Agent boundary quality: `AgentPlanParser` and `AgentPlanValidator` must not be bypassed, and high-risk actions still
+  require Approval.
+- Default offline quality: Stage 4 docs harness tests read files only and do not require real LLMs, API keys,
+  PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live calls, Spring AI VectorStore, or
+  external network.
+- Runtime non-change quality: Stage 4 does not modify Spring AI clients, provider clients, Planner, ToolRegistry, RAG
+  runtime, ingestion pipeline, health indicators, OpenAPI config, ToolCallTrace, Workspace, Execution Tree,
+  `src/main/java`, `src/main/resources`, or `pom.xml`.
+
+Known limitations:
+
+- Stage 4 does not implement ChatMemory runtime, Advisors runtime, Spring AI Tool Calling API, bulk embedding runtime,
+  provider runtime changes, public RAG HTTP endpoints, RAG reranking, query rewriting, RRF, or chunk window expansion.
+
 Planned phases:
 
 ```text

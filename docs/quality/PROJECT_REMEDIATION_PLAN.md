@@ -1,4 +1,4 @@
-# 项目整改方案：阶段 0-3.4 文档事实口径、生产配置模板、可观测性与 API 改进评估
+# 项目整改方案：阶段 0-4 文档事实口径、生产配置、可观测性、API 与 Spring AI 评估
 
 Date: 2026-06-01
 
@@ -10,7 +10,8 @@ Status: Completed
 阶段化整改路线。阶段 0 完成文档事实口径修正；阶段 1 补充生产配置模板和 secret placeholder 说明；
 阶段 2 完成可观测性加固决策；阶段 3.1 完成 API surface audit / API completeness decision；阶段 3.2 完成
 Ticket list/query pagination foundation；阶段 3.3 完成 AgentRun get/status polling read model；阶段 3.4 完成
-async AgentRun / SSE / WebSocket / batch API / cancel / retry / AgentRun list pagination 的决策评估。
+async AgentRun / SSE / WebSocket / batch API / cancel / retry / AgentRun list pagination 的决策评估；阶段 4 完成
+Spring AI ChatMemory / Advisors / Tool Calling API / bulk embedding 的深化评估。
 
 ## 总体结论
 
@@ -22,7 +23,8 @@ async AgentRun / SSE / WebSocket / batch API / cancel / retry / AgentRun list pa
   支付、物流和补偿系统接入仍是 future work。
 - PGvector 当前是 profile、schema、compose、repository contract、fake / in-memory 默认路径和 opt-in boundary；
   `JdbcPolicyVectorRepository`、默认 live PGvector write/search、Spring AI `VectorStore` production path 仍未完成。
-- Spring AI 当前是 adapter foundation；ChatMemory、Advisors、Tool Calling API、bulk embedding 是后续增强方向。
+- Spring AI 当前是 adapter foundation；阶段 4 已完成深化评估，但 ChatMemory、Advisors、Tool Calling API、
+  bulk embedding runtime 仍是后续增强方向。
 - RAG evidence 是政策证据，不是业务决策，也不执行任何业务动作。
 
 ## 审查结论核验
@@ -70,9 +72,19 @@ async AgentRun / SSE / WebSocket / batch API / cancel / retry / AgentRun list pa
 - 未使用深层 Spring AI 能力是 V4 的有意边界，不是默认路径缺陷。
 - 当前没有完成 Spring AI `VectorStore` production path，也没有默认调用真实 embedding provider。
 
-阶段 1+ 建议：
+阶段 4 完成：
 
-- 先补生产配置与可观测性，再评估 ChatMemory / Advisors 是否适合本项目的 ToolRegistry 边界。
+- 新增 `docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md`。
+- 明确当前 Spring AI 是 Spring AI Chat adapter foundation 和 Spring AI embedding adapter foundation。
+- 明确 ChatMemory is not implemented、Advisors are not implemented、Spring AI Tool Calling API is not enabled、
+  bulk embedding runtime is not implemented。
+- 明确 Spring AI Tool Calling API cannot replace ToolRegistry，LLM must not directly execute tools，
+  `AgentPlanParser` and `AgentPlanValidator` must not be bypassed，high-risk actions still require Approval。
+- 明确 bulk embedding must stay behind EmbeddingClient abstraction。
+
+阶段 5+ 建议：
+
+- 在不破坏 ToolRegistry / Approval / Trace 边界的前提下，按独立任务评估 ChatMemory / Advisors runtime。
 - 对 bulk embedding、provider retry、rate limit 和 token budget 单独做设计。
 
 ### RAG 与 Tool
@@ -181,13 +193,13 @@ OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 阶段 3.4：已完成。异步 AgentRun、SSE / WebSocket、batch API、cancel / retry 和 AgentRun list pagination
 评估决策。该阶段不实现 runtime API。
 
-阶段 4：planned。领域模型强化。梳理 Ticket / Order 业务不变量，避免把状态规则全部留在 application service。
+阶段 4：已完成。Spring AI 深化使用评估。评估 ChatMemory、Advisors、Spring AI Tool Calling API 和 bulk
+embedding，但不实现这些 runtime 能力，不改变 provider runtime，不让 Spring AI 绕过 ToolRegistry / Approval /
+AgentPlan validation。
 
 阶段 5：planned。RAG 检索质量。实验 reranking、query rewriting、RRF、chunk window expansion。
 
-阶段 6：planned。Spring AI 深化。评估 ChatMemory、Advisors、Tool Calling API 与 ToolRegistry 边界的兼容性。
-
-阶段 7：planned。部署工程化。补 Dockerfile hardening、CI/CD、secrets 管理、日志采集和部署文档。
+阶段 6：planned。部署工程化。补 Dockerfile hardening、CI/CD、secrets 管理、日志采集和部署文档。
 
 ## 可观测性决策边界
 
@@ -251,6 +263,31 @@ decision，并明确这些能力仍未进入 runtime。
 `search_aftersale_policy` 继续是 LOW-risk read-only ToolRegistry tool，不是 public RAG HTTP endpoint。
 OpenAPI docs 继续记录 existing API surface，不代表 production API hardening。
 
+## Spring AI 深化评估边界
+
+阶段 4 新增 `docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md`。该文档用于把项目审查中的
+“Spring AI 只用了浅层能力”转化为可执行路线。
+
+当前 baseline：
+
+- Spring AI Chat adapter foundation；
+- Spring AI embedding adapter foundation；
+- `LlmClient` abstraction；
+- `EmbeddingClient` abstraction；
+- `FakeEmbeddingClient`；
+- live Spring AI smoke tests are opt-in。
+
+当前缺口：
+
+- ChatMemory is not implemented；
+- Advisors are not implemented；
+- Spring AI Tool Calling API is not enabled；
+- bulk embedding runtime is not implemented。
+
+阶段 4 不实现这些 runtime 能力，只定义 future / opt-in 策略。Spring AI Tool Calling API cannot replace
+ToolRegistry，LLM must not directly execute tools，`AgentPlanParser` and `AgentPlanValidator` must not be bypassed，
+high-risk actions still require Approval，bulk embedding must stay behind EmbeddingClient abstraction。
+
 ## 生产配置模板边界
 
 阶段 1 新增的 `src/main/resources/application-prod.example.yml` 是示例模板，不是默认 `prod` 配置文件。
@@ -305,6 +342,7 @@ OpenAPI docs 继续记录 existing API surface，不代表 production API harden
 mvn test -Dtest=ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 mvn test -Dtest=ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 mvn test -Dtest=ApiCompletenessDecisionDocsTest,ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
+mvn test -Dtest=SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest,ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 mvn test -Dtest=ProjectRemediationPlanDocsTest
 mvn test -Dtest=ArchitectureTest
 mvn test

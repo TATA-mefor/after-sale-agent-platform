@@ -1,6 +1,8 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-3.4 已完成，阶段 3.5+ / 4+ planned
+状态：阶段 0-4 已完成，阶段 5+ planned
+
+历史状态记录：阶段 3.4 收口时状态为“状态：阶段 0-3.4 已完成”；当前状态已推进为阶段 0-4 已完成。
 
 ## 1. 目标
 
@@ -251,22 +253,32 @@
 - OpenAPI docs tests。
 - 现有 AgentRun happy path regression tests。
 
-### 阶段 4：Spring AI 深化使用
+### 阶段 4：Spring AI 深化使用评估
+
+状态：已完成。
 
 范围：
 
-- 评估 ChatMemory / Advisor 是否适合当前 Agent boundary。
-- 只在受控 adapter 中评估 Spring AI Tool Calling，不能替代 ToolRegistry。
-- 如 ingestion 规模需要，在现有 EmbeddingClient abstraction 后增加 bulk embedding。
+- 已新增 `docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md`。
+- 已新增完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md`。
+- 已评估 ChatMemory / Advisors 是否适合当前 Agent boundary。
+- 已评估 Spring AI Tool Calling API 与 ToolRegistry / Approval / Trace 边界的冲突风险。
+- 已评估 bulk embedding 必须保留在 `EmbeddingClient` abstraction 后。
 
 非目标：
 
+- 不实现 ChatMemory runtime。
+- 不实现 Advisors runtime。
+- 不启用 Spring AI Tool Calling API。
+- 不实现 bulk embedding runtime。
 - 不让 Spring AI 绕过 AgentPlan validation。
 - 不让 Spring AI 直接调用项目工具。
 - 不让默认测试调用真实 provider。
 
 验证：
 
+- `SpringAiDeepeningDecisionDocsTest`。
 - Fake provider tests 继续确定性。
 - Live provider tests 继续显式 opt-in。
 - ArchitectureTest 继续约束 Agent / Handler / Skill 边界。
@@ -325,9 +337,9 @@
 2. 阶段 1：生产配置模板。
 3. 阶段 3：API 分页和 AgentRun 读取模型。
 4. 阶段 2：可观测性指标决策。已完成文档决策；最小 Micrometer 集成仍是后续实现任务。
-5. 阶段 5：由评估失败项驱动的 RAG 质量改进。
-6. 阶段 6：CI 和部署加固。
-7. 阶段 4：更深的 Spring AI 能力，只在不破坏当前 Agent 安全边界时推进。
+5. 阶段 4：Spring AI 深化评估。已完成文档决策；runtime 深化仍需独立任务。
+6. 阶段 5：由评估失败项驱动的 RAG 质量改进。
+7. 阶段 6：CI 和部署加固。
 
 ## 5. 风险控制
 

@@ -108,3 +108,21 @@ Costs:
 - 不让 Spring AI 替代 ToolRegistry、Approval、Trace 或 Workspace；
 - 不删除既有 OpenAI / DashScope provider；
 - 不让默认 test gate 依赖真实 provider。
+
+## Project Review Stage 4 Deepening Evaluation
+
+Project review correction Stage 4 is completed as a decision/evaluation only:
+`docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md`.
+
+The evaluation confirms the current baseline remains Spring AI Chat adapter foundation and Spring AI embedding adapter
+foundation behind `LlmClient` and `EmbeddingClient`. ChatMemory is not implemented, Advisors are not implemented,
+Spring AI Tool Calling API is not enabled, and bulk embedding runtime is not implemented.
+
+Future Spring AI deepening must preserve these boundaries:
+
+- Spring AI Tool Calling API cannot replace ToolRegistry;
+- LLM must not directly execute tools;
+- `AgentPlanParser` and `AgentPlanValidator` must not be bypassed;
+- high-risk actions still require Approval;
+- bulk embedding must stay behind `EmbeddingClient` abstraction;
+- live Spring AI smoke tests remain opt-in.
