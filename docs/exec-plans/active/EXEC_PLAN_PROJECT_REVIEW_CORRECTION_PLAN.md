@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-3.1 已完成，阶段 3.2+ planned
+状态：阶段 0-3.2 已完成，阶段 3.3+ planned
 
 ## 1. 目标
 
@@ -25,7 +25,8 @@
 - Spring AI 当前使用停留在 adapter 层：单轮 chat completion 和单文本 embedding。
 - 当前没有使用 Spring AI ChatMemory、Advisors、Tool Calling API 或 bulk embedding。
 - RAG search 已支持 KEYWORD / VECTOR / HYBRID，但还没有 reranking、query rewriting、RRF 或 chunk window expansion。
-- HTTP API 当前没有分页、异步 AgentRun、SSE/WebSocket 流式输出或批量 API。
+- HTTP API 当前已有 Ticket list/query pagination；AgentRun get/status polling、异步 AgentRun、
+  SSE/WebSocket 流式输出和批量 API 仍未实现。
 - 部署能力偏本地开发：没有 Kubernetes、Helm、CI/CD workflow、生产级 secret 管理、生产监控或部署加固。
 
 ### 2.2 需要修正口径的问题
@@ -34,7 +35,8 @@
 - Ticket 不是纯贫血模型；它有状态流转和 terminal-state guard。Order 更薄，更接近只读模型。
 - 当前项目没有实现手写 SQL PGvector repository。默认 vector repository 是 in-memory / fake，PGvector 当前是 profile、schema、compose、docs 和架构边界基础。
 - `docker-compose-rag.yml` 提供 PGvector 本地基础设施，但当前没有在同一个 compose 文件里启动 app 服务。
-- 当前 REST API 不是完整 CRUD。Ticket 有 create/get；AgentRun 有 create，以及 trace / execution-tree 只读视图；Approval 有 pending/get/approve/reject。
+- 当前 REST API 不是完整 CRUD。Ticket 有 create/get/list pagination；AgentRun 有 create，以及 trace /
+  execution-tree 只读视图；Approval 有 pending/get/approve/reject。
 - V4 completed 不等于 production deployment、production monitoring、production auth、live PGvector validation，也不等于接入真实退款、换货、支付或物流系统。
 
 ### 2.3 必须保留的 V4 边界
@@ -155,11 +157,35 @@
 - 不实现 batch API；
 - 不实现 production auth / RBAC。
 
-#### 阶段 3.2+：API runtime 改进候选
+#### 阶段 3.2：Ticket list/query pagination foundation
+
+状态：已完成。
 
 范围：
 
-- 给适合 list 的 endpoint 增加分页。
+- 新增 `GET /api/tickets` 只读 list/query endpoint。
+- 支持 `page` / `size` / `sort`。
+- 支持 `status`、`userId`、`orderId`、`intentType`、`createdFrom`、`createdTo` 只读过滤。
+- 补 Controller / OpenAPI / docs harness tests。
+- 更新 README、OpenAPI docs、API completeness decision、整改方案和质量文档。
+- 完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md`。
+
+非目标：
+
+- 不新增 AgentRun get/status endpoint。
+- 不实现异步 AgentRun。
+- 不实现 SSE / WebSocket。
+- 不实现 batch API。
+- 不实现 production auth / RBAC。
+- 不新增 public RAG HTTP endpoint。
+- 不修改 ToolRegistry、RAG runtime、ingestion、health、OpenAPI config、ToolCallTrace、Workspace 或 Execution Tree
+  runtime。
+
+#### 阶段 3.3+：API runtime 改进候选
+
+范围：
+
 - 按需要补一个明确的 AgentRun get endpoint。
 - 考虑异步 AgentRun + status polling。
 - 将 SSE progress / trace streaming 作为后续 opt-in API 评估。

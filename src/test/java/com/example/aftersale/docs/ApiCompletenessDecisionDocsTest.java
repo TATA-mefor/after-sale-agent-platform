@@ -47,7 +47,7 @@ class ApiCompletenessDecisionDocsTest {
         assertThat(validation).contains("ApiCompletenessDecisionDocsTest", DECISION_DOC);
         assertThat(remediation).contains("阶段 3.1：已完成", DECISION_DOC);
         assertThat(quality).contains("Project Review Correction Stage 3.1 (completed)", DECISION_DOC);
-        assertThat(activePlan).contains("状态：阶段 0-3.1 已完成", DECISION_DOC, COMPLETED_PLAN);
+        assertThat(activePlan).contains("状态：阶段 0-3.2 已完成", DECISION_DOC, COMPLETED_PLAN);
     }
 
     @Test
@@ -59,6 +59,7 @@ class ApiCompletenessDecisionDocsTest {
                 "不是完整生产 CRUD",
                 "Ticket",
                 "`POST /api/tickets`",
+                "`GET /api/tickets`",
                 "`GET /api/tickets/{ticketId}`",
                 "AgentRun",
                 "`POST /api/tickets/{ticketId}/agent-runs`",
@@ -88,13 +89,13 @@ class ApiCompletenessDecisionDocsTest {
                 "production auth / RBAC",
                 "future work",
                 "planned",
+                "阶段 3.1",
                 "阶段 3.2",
                 "阶段 3.3",
                 "阶段 3.4");
         assertThat(lower).doesNotContain(
                 "complete crud api completed",
                 "production api hardening completed",
-                "pagination completed",
                 "async agentrun completed",
                 "sse completed",
                 "websocket completed",
@@ -129,7 +130,7 @@ class ApiCompletenessDecisionDocsTest {
         assertThat(docs).contains(
                 "不新增 endpoint",
                 "不修改 Controller",
-                "不修改 OpenAPI runtime",
+                "OpenAPI config",
                 "Runtime non-change",
                 "只读文档",
                 "不启动应用",

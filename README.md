@@ -28,6 +28,7 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 2](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md)
 - [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md)
 - [Project Review Correction Stage 3.1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_1_API_COMPLETENESS_DECISION.md)
+- [Project Review Correction Stage 3.2](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md)
 
 ## V4 事实口径
 
@@ -40,8 +41,9 @@ V4 completed 表示 foundation / demo / interview-grade 阶段完成，不表示
   测试边界；`JdbcPolicyVectorRepository`、默认 live PGvector write/search、Spring AI VectorStore production path
   和 live PGvector integration validation 仍是 future / opt-in。
 - `docker-compose-rag.yml` 提供本地 PGvector infrastructure，不是完整 app + PGvector 生产部署方案。
-- 当前 HTTP API 是 demo/backend API surface：Ticket create/get、AgentRun create、trace / execution-tree 只读视图、
-  Approval pending/get/approve/reject、Actuator health 和 OpenAPI docs；它不是完整生产 CRUD 平台。
+- 当前 HTTP API 是 demo/backend API surface：Ticket create/get/list pagination、AgentRun create、
+  trace / execution-tree 只读视图、Approval pending/get/approve/reject、Actuator health 和 OpenAPI docs；
+  它不是完整生产 CRUD 平台。
 - Spring AI 当前是 adapter foundation，不代表已经使用 ChatMemory、Advisors、Tool Calling API 或 bulk embedding。
 - RAG 当前支持 KEYWORD / VECTOR / HYBRID policy evidence retrieval，但 reranking、query rewriting、RRF 和 chunk
   window expansion 仍是 future work。
@@ -422,9 +424,9 @@ Default actuator exposure remains limited to `/actuator/health`.
 ## Core API List
 
 Current HTTP APIs are a demo/backend API surface, not a complete production CRUD platform. Stage 3.1 records this in
-[API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md). Pagination, AgentRun
-get/status polling, async AgentRun, SSE / WebSocket streaming, batch APIs, and production auth / RBAC remain planned
-follow-ups; they are not completed runtime behavior.
+[API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md). Stage 3.2 adds bounded
+Ticket list/query pagination. AgentRun get/status polling, async AgentRun, SSE / WebSocket streaming, batch APIs,
+and production auth / RBAC remain planned follow-ups; they are not completed runtime behavior.
 
 Health:
 
@@ -437,8 +439,12 @@ Tickets:
 
 ```bash
 POST /api/tickets
+GET /api/tickets?page=0&size=20&sort=createdAt,desc
 GET /api/tickets/{ticketId}
 ```
+
+Ticket list supports bounded pagination and read-only filters for `status`, `userId`, `orderId`, `intentType`,
+`createdFrom`, and `createdTo`. It does not start AgentRun execution and does not expose a public RAG search endpoint.
 
 Agent execution:
 

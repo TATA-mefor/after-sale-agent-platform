@@ -1547,9 +1547,10 @@ Current Stage 0 quality status:
 
 Known limitations:
 
-- Stage 0 does not implement V5 production hardening, production config templates, metrics, distributed tracing,
-  API pagination, async AgentRun, SSE, deeper Spring AI features, RAG reranking, query rewriting, RRF, chunk window
-  expansion, `JdbcPolicyVectorRepository`, or live PGvector validation.
+- Stage 0 did not implement V5 production hardening, production config templates, metrics, distributed tracing,
+  Ticket pagination, async AgentRun, SSE, deeper Spring AI features, RAG reranking, query rewriting, RRF, chunk window
+  expansion, `JdbcPolicyVectorRepository`, or live PGvector validation. Ticket pagination is later completed by
+  Project Review Correction Stage 3.2.
 
 ### Project Review Correction Stage 1 (completed)
 
@@ -1575,9 +1576,10 @@ Current Stage 1 quality status:
 Known limitations:
 
 - Stage 1 does not implement production auth, secret manager integration, production deployment, production monitoring,
-  metrics, distributed tracing, CI/CD, Kubernetes, Helm, Dockerfile hardening, API pagination, async AgentRun,
+  metrics, distributed tracing, CI/CD, Kubernetes, Helm, Dockerfile hardening, async AgentRun,
   `JdbcPolicyVectorRepository`, live PGvector validation, production ingestion admin UI, or real payment / logistics /
-  refund / exchange / coupon compensation integrations.
+  refund / exchange / coupon compensation integrations. Ticket pagination is later completed by Project Review
+  Correction Stage 3.2.
 
 ### Project Review Correction Stage 2 (completed)
 
@@ -1613,8 +1615,8 @@ Known limitations:
 
 - Stage 2 does not implement Micrometer instrumentation, Prometheus registry, Grafana dashboard, OpenTelemetry,
   collector configuration, production log aggregation, provider latency / cost metrics, production monitoring,
-  live provider connectivity checks, live PGvector connectivity checks, API pagination, async AgentRun, SSE /
-  WebSocket, or batch APIs.
+  live provider connectivity checks, live PGvector connectivity checks, async AgentRun, SSE / WebSocket, or batch
+  APIs. Ticket pagination is later completed by Project Review Correction Stage 3.2.
 
 ### Project Review Correction Stage 3.1 (completed)
 
@@ -1626,9 +1628,10 @@ Current Stage 3.1 quality status:
   `docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md` records the current demo/backend API surface:
   Ticket create/get, AgentRun create/start, ToolCallTrace read-only view, Execution Tree read-only view, Approval
   pending/get/approve/reject, health endpoints, OpenAPI JSON, and Swagger UI.
-- API limitation quality: docs state that current APIs are not complete production CRUD. Ticket list/query pagination,
-  AgentRun get/status polling, production-grade async AgentRun, SSE / WebSocket streaming, batch APIs, production
-  auth / RBAC, idempotency, rate limiting, and API audit hardening remain future work.
+- API limitation quality: docs state that current APIs are not complete production CRUD. Stage 3.1 recorded Ticket
+  list/query pagination, AgentRun get/status polling, production-grade async AgentRun, SSE / WebSocket streaming,
+  batch APIs, production auth / RBAC, idempotency, rate limiting, and API audit hardening as follow-up candidates.
+  Ticket list/query pagination is later completed by Project Review Correction Stage 3.2.
 - OpenAPI quality: OpenAPI docs continue to describe existing HTTP APIs only. They do not add a public RAG search
   endpoint and do not claim production API hardening.
 - ToolRegistry boundary quality: `search_aftersale_policy` remains a LOW-risk read-only ToolRegistry tool. LLM output
@@ -1643,8 +1646,35 @@ Current Stage 3.1 quality status:
 
 Known limitations:
 
-- Stage 3.1 does not implement pagination, AgentRun get/status polling, async AgentRun, SSE / WebSocket, batch APIs,
-  production auth / RBAC, idempotency, rate limiting, or production API audit hardening.
+- Stage 3.1 does not implement Ticket list/query pagination, AgentRun get/status polling, async AgentRun,
+  SSE / WebSocket, batch APIs, production auth / RBAC, idempotency, rate limiting, or production API audit hardening.
+  Ticket list/query pagination is later completed by Project Review Correction Stage 3.2.
+
+### Project Review Correction Stage 3.2 (completed)
+
+Status: completed for Ticket list/query pagination foundation, OpenAPI documentation, and docs harness coverage.
+
+Current Stage 3.2 quality status:
+
+- Ticket pagination quality: `GET /api/tickets` returns a bounded page with `items`, `page`, `size`, `totalElements`,
+  `totalPages`, `hasNext`, `hasPrevious`, and applied `sort`.
+- Query filter quality: Ticket list supports `page`, `size`, `sort`, `status`, `userId`, `orderId`, `intentType`,
+  `createdFrom`, and `createdTo`. Sort fields are whitelisted to `createdAt`, `updatedAt`, and `ticketId`.
+- API compatibility quality: existing `POST /api/tickets` and `GET /api/tickets/{ticketId}` paths remain unchanged.
+- OpenAPI quality: Ticket list/query parameters are documented in `/v3/api-docs` and `docs/api/OPENAPI.md`.
+- ToolRegistry / Agent boundary quality: Ticket listing is read-only. It does not create AgentRun records, call
+  ToolRegistry, write ToolCallTrace or Workspace, invoke RAG retrieval, or expose a public RAG HTTP endpoint.
+- Default offline quality: Ticket pagination tests use default in-memory dependencies and do not require real LLMs,
+  API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live calls, or external
+  network.
+- Docs harness quality: `TicketPaginationDocsTest` verifies Stage 3.2 documentation links, completion status,
+  pagination/filter wording, future API boundaries, secret safety, and no production integration overclaims.
+
+Known limitations:
+
+- Stage 3.2 does not add AgentRun get/status polling, production-grade async AgentRun, SSE / WebSocket streaming,
+  batch APIs, production auth / RBAC, idempotency, rate limiting, public RAG HTTP APIs, or production API audit
+  hardening.
 
 Planned phases:
 

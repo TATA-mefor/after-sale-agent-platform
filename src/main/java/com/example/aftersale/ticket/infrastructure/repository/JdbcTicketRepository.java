@@ -2,6 +2,8 @@ package com.example.aftersale.ticket.infrastructure.repository;
 
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.Ticket;
+import com.example.aftersale.ticket.domain.TicketPage;
+import com.example.aftersale.ticket.domain.TicketQueryCriteria;
 import com.example.aftersale.ticket.domain.TicketRepository;
 import com.example.aftersale.ticket.domain.TicketStatus;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -9,14 +11,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-/*
-如果启用 mysql profile，就用 JdbcTicketRepository.java (line 19)：
-这里会执行 INSERT INTO tickets ... ON DUPLICATE KEY UPDATE ...，也就是写 MySQL。
-*/
+
 @Repository
 @Profile("mysql")
 public class JdbcTicketRepository implements TicketRepository {
@@ -73,6 +74,39 @@ public class JdbcTicketRepository implements TicketRepository {
                 """, (resultSet, rowNumber) -> mapTicket(resultSet), ticketId).stream().findFirst();
     }
 
+    @Override
+    public TicketPage findPage(TicketQueryCriteria criteria) {
+        QueryParts where = buildWhere(criteria);
+        Long total = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM tickets" + where.sql(),
+                Long.class,
+                where.parameters().toArray());
+
+        List<Object> queryParameters = new ArrayList<>(where.parameters());
+        queryParameters.add(criteria.size());
+        queryParameters.add(criteria.offset());
+
+        List<Ticket> items = jdbcTemplate.query("""
+                SELECT ticket_id, user_id, order_id, raw_user_message, intent_type, priority, status,
+                       internal_note, agent_suggestion, created_at, updated_at
+                FROM tickets
+                """
+                        + where.sql()
+                        + " ORDER BY " + criteria.sortField().persistenceColumn() + " "
+                        + criteria.sortDirection().name()
+                        + ", ticket_id ASC LIMIT ? OFFSET ?",
+                (resultSet, rowNumber) -> mapTicket(resultSet),
+                queryParameters.toArray());
+
+        return new TicketPage(
+                items,
+                criteria.page(),
+                criteria.size(),
+                total == null ? 0 : total,
+                criteria.sortField(),
+                criteria.sortDirection());
+    }
+
     private static Ticket mapTicket(ResultSet resultSet) throws SQLException {
         return Ticket.restore(
                 resultSet.getString("ticket_id"),
@@ -94,5 +128,47 @@ public class JdbcTicketRepository implements TicketRepository {
 
     private static Instant instant(Timestamp value) {
         return value.toInstant();
+    }
+
+    private static QueryParts buildWhere(TicketQueryCriteria criteria) {
+        List<String> clauses = new ArrayList<>();
+        List<Object> parameters = new ArrayList<>();
+        addEquals(clauses, parameters, "status", criteria.status() == null ? null : criteria.status().name());
+        addEquals(clauses, parameters, "user_id", criteria.userId());
+        addEquals(clauses, parameters, "order_id", criteria.orderId());
+        addEquals(
+                clauses,
+                parameters,
+                "intent_type",
+                criteria.intentType() == null ? null : criteria.intentType().name());
+        if (criteria.createdFrom() != null) {
+            clauses.add("created_at >= ?");
+            parameters.add(timestamp(criteria.createdFrom()));
+        }
+        if (criteria.createdTo() != null) {
+            clauses.add("created_at <= ?");
+            parameters.add(timestamp(criteria.createdTo()));
+        }
+        if (clauses.isEmpty()) {
+            return new QueryParts("", parameters);
+        }
+        return new QueryParts(" WHERE " + String.join(" AND ", clauses), parameters);
+    }
+
+    private static void addEquals(
+            List<String> clauses,
+            List<Object> parameters,
+            String column,
+            String value) {
+        if (value != null) {
+            clauses.add(column + " = ?");
+            parameters.add(value);
+        }
+    }
+
+    private record QueryParts(String sql, List<Object> parameters) {
+        private QueryParts {
+            parameters = List.copyOf(parameters);
+        }
     }
 }

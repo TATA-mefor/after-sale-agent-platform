@@ -9,15 +9,17 @@ Status: Completed
 项目审查指出当前 HTTP API 缺少分页、异步 AgentRun、SSE / WebSocket 流式输出和批量操作。该判断总体成立，
 但需要先把当前 API surface 与后续 API hardening 路线区分清楚。
 
-本决策记录只做阶段 3.1：API Surface Audit / API Completeness Decision。它不新增 endpoint，不修改
-Controller，不修改 OpenAPI runtime，不修改 AgentRun、ToolRegistry、RAG、Approval 或 Execution Tree 行为。
+本决策记录起始于阶段 3.1：API Surface Audit / API Completeness Decision。阶段 3.2 已按该决策补充
+Ticket list/query pagination foundation。阶段 3.2 只扩展 Ticket 只读 list endpoint，不修改 AgentRun、
+ToolRegistry、RAG、Approval 或 Execution Tree 行为。
 
 ## Current API Surface
 
 当前 API 是 demo/backend API surface，不是完整生产 CRUD 平台。
 
 - Health: `GET /api/health` 和 `GET /actuator/health`。
-- Ticket: `POST /api/tickets` 创建工单；`GET /api/tickets/{ticketId}` 读取单个工单。
+- Ticket: `POST /api/tickets` 创建工单；`GET /api/tickets` 分页查询工单；
+  `GET /api/tickets/{ticketId}` 读取单个工单。
 - AgentRun: `POST /api/tickets/{ticketId}/agent-runs` 为已有工单创建并触发当前 AgentRun。
 - Trace: `GET /api/agent-runs/{runId}/traces` 提供 ToolCallTrace 只读审计视图。
 - Execution Tree: `GET /api/agent-runs/{runId}/execution-tree` 提供只读执行树视图。
@@ -31,7 +33,7 @@ evidence 是 policy evidence，不执行业务动作。
 
 ## Current Limitations
 
-- Ticket 当前没有 list / query / pagination endpoint。
+- Ticket 已有最小 list / query / pagination endpoint；它不是完整生产 Ticket CRUD。
 - AgentRun 当前没有独立的 get/status polling endpoint。
 - AgentRun 当前不是生产级异步 job system。
 - Trace 和 Execution Tree 是查询视图，不是实时流式输出。
@@ -48,7 +50,7 @@ evidence 是 policy evidence，不执行业务动作。
 
 后续 API 改进按小阶段推进：
 
-- 阶段 3.2：list / pagination foundation。
+- 阶段 3.2：Ticket list / pagination foundation。已完成。
 - 阶段 3.3：AgentRun get/status polling endpoint。
 - 阶段 3.4：async AgentRun、SSE / WebSocket streaming 和 batch API 评估。
 
@@ -62,16 +64,26 @@ evidence 是 policy evidence，不执行业务动作。
 3. 再评估异步 AgentRun 与进度模型，明确同步 demo path 与异步 production path 的边界。
 4. 最后评估 SSE / WebSocket 和 batch API，先有事件模型、安全边界和测试策略，再实现 runtime。
 
-## Pagination Strategy
+## Ticket Pagination Foundation
 
-分页是阶段 3.2 的候选范围，不属于阶段 3.1 已实现能力。
+Ticket list/query pagination 已在阶段 3.2 完成最小实现。
 
-建议策略：
+当前策略：
 
-- 对 list/query endpoint 使用显式 `page` / `size` 或 cursor 参数。
-- 设置默认 page size 和最大 page size。
-- 返回总数或下一页标记时避免引入昂贵默认查询。
+- `GET /api/tickets` 使用显式 `page` / `size` 参数。
+- page 为 zero-based，默认 `0`。
+- size 默认 `20`，最大 `100`。
+- `sort` 使用 `field,direction` 格式，字段白名单为 `createdAt`、`updatedAt`、`ticketId`。
+- 支持只读过滤：`status`、`userId`、`orderId`、`intentType`、`createdFrom`、`createdTo`。
+- 响应返回 `items`、`page`、`size`、`totalElements`、`totalPages`、`hasNext`、`hasPrevious` 和 `sort`。
 - OpenAPI examples 使用 fake/demo 数据，不包含客户隐私、secret 或本地路径。
+
+边界：
+
+- Ticket list 不创建 Ticket。
+- Ticket list 不创建 AgentRun。
+- Ticket list 不写 ToolCallTrace 或 Workspace。
+- Ticket list 不调用 ToolRegistry、RAG、LLM、embedding provider、PGvector 或 Spring AI。
 
 ## AgentRun Read / Status Strategy
 
@@ -119,7 +131,7 @@ Batch API 是 future work，不属于阶段 3.1 已实现能力。
 
 OpenAPI docs 应展示当前 existing HTTP APIs，并清楚标记边界：
 
-- 当前 Ticket API 是 create/get，不是完整 Ticket CRUD。
+- 当前 Ticket API 是 create/get/list pagination，不是完整 Ticket CRUD。
 - 当前 AgentRun API 是 create/start，不是完整异步 job API。
 - Trace 和 Execution Tree 是 read-only views。
 - Approval API 是 pending/get/approve/reject。
@@ -156,11 +168,17 @@ Spring AI VectorStore、Docker、Redis、MySQL、PostgreSQL、PGvector 或外部
 默认验证仍不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider 或
 external network。
 
-## Non-goals
+阶段 3.2 Ticket pagination tests 使用默认 in-memory repository 和 MockMvc，不连接数据库，不调用 LLM、embedding
+provider、Spring AI VectorStore、Docker、Redis、MySQL、PostgreSQL、PGvector 或外部网络。
+
+## Stage 3.1 Non-goals
 
 - 不新增 endpoint。
 - 不修改 Controller、DTO runtime 或 OpenAPI runtime config。
 - 不实现分页。
+
+这些是阶段 3.1 的历史非目标。阶段 3.2 已补 Ticket list/query pagination，仍保留以下非目标：
+
 - 不实现 AgentRun get/status polling。
 - 不实现异步 AgentRun。
 - 不实现 SSE / WebSocket。
@@ -171,7 +189,8 @@ external network。
 
 ## Alternatives Considered
 
-- 直接实现分页和 AgentRun status：拒绝。当前阶段目标是先校准 API 事实和路线，避免范围膨胀。
+- 在阶段 3.1 直接实现分页和 AgentRun status：拒绝。阶段 3.2 只补 Ticket pagination，没有合并
+  AgentRun status 或 streaming。
 - 公开 RAG search HTTP endpoint：拒绝。当前产品边界中 RAG policy retrieval 是 Agent ToolRegistry 内部能力。
 - 直接引入 SSE：拒绝。当前缺少事件模型、异步运行模型和安全字段边界。
 
@@ -179,11 +198,12 @@ external network。
 
 - README、OpenAPI docs、整改方案和质量文档会用同一事实口径描述当前 API。
 - 后续 API 改进可以按阶段拆分，避免一次性把 production API hardening 混入当前 demo/backend surface。
+- Ticket list/query pagination 已有最小 foundation，但仍不是完整生产 API hardening。
 - ToolRegistry、Approval、RAG evidence-only 和默认离线验证边界继续保持。
 
 ## Follow-ups
 
-- 阶段 3.2：Ticket / Approval 等 list endpoint 的分页策略和最小实现。
+- 阶段 3.2：Ticket list/query pagination foundation。已完成。
 - 阶段 3.3：AgentRun get/status polling endpoint。
 - 阶段 3.4：异步 AgentRun、SSE / WebSocket、batch API 评估。
 - 后续安全任务：production auth / RBAC、idempotency、rate limiting、audit hardening。

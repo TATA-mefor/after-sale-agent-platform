@@ -5,7 +5,11 @@ import com.example.aftersale.common.observability.MdcScope;
 import com.example.aftersale.common.observability.ObservabilityConstants;
 import com.example.aftersale.ticket.domain.IntentType;
 import com.example.aftersale.ticket.domain.Ticket;
+import com.example.aftersale.ticket.domain.TicketPage;
+import com.example.aftersale.ticket.domain.TicketQueryCriteria;
 import com.example.aftersale.ticket.domain.TicketRepository;
+import com.example.aftersale.ticket.domain.TicketSortDirection;
+import com.example.aftersale.ticket.domain.TicketSortField;
 import com.example.aftersale.ticket.domain.TicketStatus;
 import java.time.Instant;
 import java.util.Map;
@@ -47,6 +51,30 @@ public class TicketApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "TICKET_NOT_FOUND",
                         "Ticket not found: " + ticketId));
+    }
+
+    public TicketPage listTickets(
+            Integer page,
+            Integer size,
+            String sort,
+            TicketStatus status,
+            String userId,
+            String orderId,
+            IntentType intentType,
+            Instant createdFrom,
+            Instant createdTo) {
+        TicketQueryCriteria criteria = new TicketQueryCriteria(
+                page == null ? TicketQueryCriteria.DEFAULT_PAGE : page,
+                size == null ? TicketQueryCriteria.DEFAULT_SIZE : size,
+                parseSortField(sort),
+                parseSortDirection(sort),
+                status,
+                userId,
+                orderId,
+                intentType,
+                createdFrom,
+                createdTo);
+        return ticketRepository.findPage(criteria);
     }
 
     public Ticket addTicketNote(String ticketId, String note) {
@@ -97,5 +125,27 @@ public class TicketApplicationService {
             throw new IllegalArgumentException(fieldName + " must not be blank");
         }
         return value;
+    }
+
+    private static TicketSortField parseSortField(String sort) {
+        return TicketSortField.fromApiName(sortPart(sort, 0));
+    }
+
+    private static TicketSortDirection parseSortDirection(String sort) {
+        return TicketSortDirection.fromApiName(sortPart(sort, 1));
+    }
+
+    private static String sortPart(String sort, int index) {
+        if (sort == null || sort.isBlank()) {
+            return null;
+        }
+        String[] parts = sort.split(",", -1);
+        if (parts.length > 2) {
+            throw new IllegalArgumentException("sort must use the format field,direction");
+        }
+        if (index >= parts.length) {
+            return null;
+        }
+        return parts[index].trim();
     }
 }

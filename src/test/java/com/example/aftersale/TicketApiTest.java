@@ -1,8 +1,9 @@
 package com.example.aftersale;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -81,6 +82,88 @@ class TicketApiTest {
                 .andExpect(header().string(ObservabilityConstants.REQUEST_ID_HEADER, notNullValue()))
                 .andExpect(jsonPath("$.code").value("TICKET_NOT_FOUND"))
                 .andExpect(jsonPath("$.message", containsString("T-MISSING-M4")));
+    }
+
+    @Test
+    void listTicketsReturnsPagedReadOnlyTicketResults() throws Exception {
+        createTicket("U-PAGE-3201", "O-PAGE-3201", "First pagination ticket.");
+        createTicket("U-PAGE-3201", "O-PAGE-3202", "Second pagination ticket.");
+        createTicket("U-PAGE-3201", "O-PAGE-3203", "Third pagination ticket.");
+
+        mockMvc.perform(get("/api/tickets")
+                        .param("userId", "U-PAGE-3201")
+                        .param("page", "0")
+                        .param("size", "2")
+                        .param("sort", "ticketId,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.items", hasSize(2)))
+                .andExpect(jsonPath("$.data.page").value(0))
+                .andExpect(jsonPath("$.data.size").value(2))
+                .andExpect(jsonPath("$.data.totalElements").value(3))
+                .andExpect(jsonPath("$.data.totalPages").value(2))
+                .andExpect(jsonPath("$.data.hasNext").value(true))
+                .andExpect(jsonPath("$.data.hasPrevious").value(false))
+                .andExpect(jsonPath("$.data.sort").value("ticketId,asc"))
+                .andExpect(jsonPath("$.data.items[0].userId").value("U-PAGE-3201"));
+    }
+
+    @Test
+    void listTicketsSupportsQueryFiltersAndEmptyPages() throws Exception {
+        createTicket("U-PAGE-3202", "O-PAGE-3204", "Filter by order id.");
+
+        mockMvc.perform(get("/api/tickets")
+                        .param("userId", "U-PAGE-3202")
+                        .param("orderId", "O-PAGE-3204")
+                        .param("status", "CREATED")
+                        .param("intentType", "UNKNOWN")
+                        .param("page", "1")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items", hasSize(0)))
+                .andExpect(jsonPath("$.data.page").value(1))
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.totalPages").value(1))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
+                .andExpect(jsonPath("$.data.hasPrevious").value(true));
+    }
+
+    @Test
+    void listTicketsRejectsInvalidPaginationAndSortParameters() throws Exception {
+        mockMvc.perform(get("/api/tickets").param("page", "-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message", containsString("page")));
+
+        mockMvc.perform(get("/api/tickets").param("size", "101"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message", containsString("size")));
+
+        mockMvc.perform(get("/api/tickets").param("sort", "status,desc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message", containsString("sort field")));
+
+        mockMvc.perform(get("/api/tickets").param("sort", "createdAt,sideways"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message", containsString("sort direction")));
+    }
+
+    private String createTicket(String userId, String orderId, String message) throws Exception {
+        MvcResult createResult = mockMvc.perform(post("/api/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": "%s",
+                                  "orderId": "%s",
+                                  "message": "%s"
+                                }
+                                """.formatted(userId, orderId, message)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        return JsonPath.read(createResult.getResponse().getContentAsString(), "$.data.ticketId");
     }
 
     @Test

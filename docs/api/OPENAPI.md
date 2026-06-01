@@ -25,7 +25,7 @@ keys, PostgreSQL, PGvector, Docker, MySQL, Redis, a real LLM, a real embedding p
 
 ## API Groups
 
-- Ticket APIs create and read after-sale tickets.
+- Ticket APIs create, read, and list after-sale tickets with bounded pagination.
 - AgentRun APIs trigger the configured Agent orchestration for an existing ticket.
 - Approval APIs expose human review for high-risk proposed actions.
 - Tool Trace APIs expose ToolCallTrace audit JSON for an AgentRun.
@@ -37,7 +37,7 @@ keys, PostgreSQL, PGvector, Docker, MySQL, Redis, a real LLM, a real embedding p
 The current OpenAPI document describes the existing demo/backend API surface. It is not a complete production CRUD API
 and it is not production API hardening.
 
-- Ticket APIs currently cover create/get. Ticket list, query filters, and pagination are future work.
+- Ticket APIs currently cover create/get and bounded list/query pagination.
 - AgentRun APIs currently cover create/start for a ticket. AgentRun get/status polling is future work.
 - Trace and Execution Tree APIs are read-only views. They are not SSE / WebSocket streaming endpoints.
 - Approval APIs currently cover pending/get/approve/reject.
@@ -49,8 +49,19 @@ ToolRegistry tool, not a public RAG HTTP endpoint.
 
 ## Ticket Flow
 
-Create a ticket with synthetic demo data, then read it back by `ticketId`. Creating a ticket does not run the Agent and
-does not execute refunds, exchanges, compensation, payment, logistics, or dispute closure.
+Create a ticket with synthetic demo data, list tickets with bounded pagination, then read a ticket back by `ticketId`.
+Creating or listing a ticket does not run the Agent and does not execute refunds, exchanges, compensation, payment,
+logistics, or dispute closure.
+
+```text
+POST /api/tickets
+GET /api/tickets?page=0&size=20&sort=createdAt,desc
+GET /api/tickets?status=CREATED&userId=U-DEMO-1001&orderId=O-DEMO-2001
+GET /api/tickets/{ticketId}
+```
+
+Ticket list supports `page`, `size`, `sort`, `status`, `userId`, `orderId`, `intentType`, `createdFrom`, and
+`createdTo`. Page indexes are zero-based, `size` is bounded, and sort fields are whitelisted.
 
 ## AgentRun Flow
 
@@ -93,7 +104,7 @@ closure.
 
 Use Swagger UI as an existing API map, not as proof of new runtime behavior:
 
-1. Show Ticket APIs for creating and reading synthetic after-sale tickets.
+1. Show Ticket APIs for creating, listing, and reading synthetic after-sale tickets.
 2. Show AgentRun APIs for triggering the current Agent orchestration path.
 3. Show Approval APIs to explain high-risk action gating.
 4. Show ToolCallTrace and Execution Tree APIs to explain audit and read-only interpretation.
