@@ -2,11 +2,13 @@ package com.example.aftersale.policy.rag.infrastructure.pgvector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.aftersale.policy.rag.domain.PolicyVectorRepository;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
 class PgVectorProfileBoundaryTest {
 
@@ -18,6 +20,8 @@ class PgVectorProfileBoundaryTest {
         contextRunner.run(context -> {
             assertThat(context).doesNotHaveBean(PgVectorProfileGuard.class);
             assertThat(context).doesNotHaveBean(DataSource.class);
+            assertThat(context).doesNotHaveBean(NamedParameterJdbcOperations.class);
+            assertThat(context).doesNotHaveBean(PolicyVectorRepository.class);
             assertThat(beanNamesContaining(context.getBeanDefinitionNames(), "VectorStore")).isEmpty();
         });
     }
@@ -56,10 +60,11 @@ class PgVectorProfileBoundaryTest {
     }
 
     @Test
-    void completePgVectorConfigurationCreatesGuardOnly() {
+    void completePgVectorConfigurationCreatesGuardDataSourceAndRepositoryWhenOptedIn() {
         contextRunner
                 .withPropertyValues(
                         "spring.profiles.active=rag-postgres",
+                        "agent.rag.vector-store.provider=pgvector",
                         "agent.rag.vector-store.pgvector.enabled=true",
                         "agent.rag.vector-store.pgvector.jdbc-url=jdbc:postgresql://localhost:5432/aftersale_rag",
                         "agent.rag.vector-store.pgvector.username=aftersale_rag",
@@ -76,7 +81,11 @@ class PgVectorProfileBoundaryTest {
                     assertThat(guard.schema()).isEqualTo("rag");
                     assertThat(guard.initializeSchema()).isFalse();
                     assertThat(guard.dimensions()).isEqualTo(1024);
-                    assertThat(context).doesNotHaveBean(DataSource.class);
+                    assertThat(context).hasSingleBean(DataSource.class);
+                    assertThat(context).hasSingleBean(NamedParameterJdbcOperations.class);
+                    assertThat(context).hasSingleBean(PolicyVectorRepository.class);
+                    assertThat(context.getBean(PolicyVectorRepository.class))
+                            .isInstanceOf(JdbcPolicyVectorRepository.class);
                     assertThat(beanNamesContaining(context.getBeanDefinitionNames(), "VectorStore")).isEmpty();
                 });
     }

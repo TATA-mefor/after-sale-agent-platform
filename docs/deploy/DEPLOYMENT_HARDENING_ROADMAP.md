@@ -32,7 +32,8 @@ Status: Completed
 - 新增 docs harness test。
 
 阶段 6 不实现 runtime，不新增 Dockerfile，不新增 CI/CD，不新增 Kubernetes / Helm，不接入 secret manager，
-不接入 production monitoring，不做 live PGvector validation，不实现 `JdbcPolicyVectorRepository`。
+不接入 production monitoring，不做 live PGvector validation。V5.A.1 后续新增了显式 opt-in
+`JdbcPolicyVectorRepository`，但 live PGvector validation、migration baseline 和 production deployment 仍未完成。
 
 ## 推荐后续里程碑
 
@@ -41,7 +42,8 @@ Status: Completed
 3. Profile matrix：default / mysql / rag-postgres / prod-template 的验证矩阵。
 4. Secret management：选择 secret manager 或部署注入策略。
 5. Database migration：选择 Flyway 或 Liquibase。
-6. PGvector deployment：实现 `JdbcPolicyVectorRepository` 和 opt-in live validation。
+6. PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 schema migration 和 opt-in live
+   validation。
 7. Readiness / liveness：区分 liveness 与 readiness。
 8. Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
 9. Security / auth：production auth/RBAC 和 trace access control。
@@ -91,7 +93,7 @@ Status: Completed
 
 ## PGvector deployment checklist
 
-- 实现 `JdbcPolicyVectorRepository`。
+- 使用 V5.A.1 opt-in `JdbcPolicyVectorRepository` 作为 JDBC adapter baseline。
 - 定义 vector schema migration。
 - 定义 index creation / refresh strategy。
 - 增加 opt-in live PGvector validation。
@@ -161,7 +163,7 @@ default offline validation 不需要：
 - secret manager is not implemented。
 - production deployment is not completed。
 - live PGvector validation is not completed。
-- JdbcPolicyVectorRepository is not implemented。
+- JdbcPolicyVectorRepository live validation is not completed。
 - production auth/RBAC is not completed。
 - production monitoring is not completed。
 - production external integrations are not completed。

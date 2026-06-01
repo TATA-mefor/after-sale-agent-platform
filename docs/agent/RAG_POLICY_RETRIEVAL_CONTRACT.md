@@ -129,6 +129,12 @@ query rewriting is not implemented, RRF is not implemented, and chunk window exp
 quality improvements must remain evidence-only and must not bypass ToolRegistry / RiskPolicy / Approval / Trace /
 Workspace / Execution Tree.
 
+V5.A.1 status: an explicit opt-in `JdbcPolicyVectorRepository` infrastructure adapter now exists for the
+`rag-postgres` / `pgvector` profile. This updates the repository implementation status only. It does not change
+`search_aftersale_policy` retrieval algorithms, does not add live PGvector validation to default tests, does not call
+Spring AI `VectorStore`, does not add a public RAG HTTP endpoint, and does not turn policy evidence into a business
+action. Default tests continue to use fake / in-memory dependencies and remain offline.
+
 允许链路：
 
 ```text

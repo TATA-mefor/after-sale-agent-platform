@@ -70,6 +70,8 @@ class ProjectReviewCorrectionDocsTest {
         assertThat(docs).contains(
                 "PGvector 当前是 profile、schema、compose、docs、repository contract",
                 "fake / in-memory",
+                "V5.A.1",
+                "JdbcPolicyVectorRepository",
                 "opt-in profile",
                 "live PGvector validation",
                 "Default live PGvector write/search",

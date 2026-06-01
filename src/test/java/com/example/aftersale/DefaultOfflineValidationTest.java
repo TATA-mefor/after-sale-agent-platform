@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.aftersale.agent.infrastructure.springai.SpringAiChatGateway;
+import com.example.aftersale.policy.rag.domain.PolicyVectorRepository;
+import com.example.aftersale.policy.rag.infrastructure.pgvector.JdbcPolicyVectorRepository;
 import com.example.aftersale.policy.rag.infrastructure.pgvector.PgVectorProfileGuard;
 import com.example.aftersale.policy.rag.infrastructure.springai.SpringAiEmbeddingGateway;
 import javax.sql.DataSource;
@@ -40,6 +42,8 @@ class DefaultOfflineValidationTest {
     void defaultContextStartsWithoutDatabaseVectorStoreOrLiveProviderBeans() {
         assertThat(applicationContext.getBeansOfType(DataSource.class)).isEmpty();
         assertThat(applicationContext.getBeansOfType(PgVectorProfileGuard.class)).isEmpty();
+        assertThat(applicationContext.getBeansOfType(PolicyVectorRepository.class)).isEmpty();
+        assertThat(applicationContext.getBeansOfType(JdbcPolicyVectorRepository.class)).isEmpty();
         assertThat(beanNamesForOptionalType("org.springframework.ai.chat.model.ChatModel")).isEmpty();
         assertThat(beanNamesForOptionalType("org.springframework.ai.embedding.EmbeddingModel")).isEmpty();
         assertThat(beanNamesForOptionalType("org.springframework.ai.vectorstore.VectorStore")).isEmpty();

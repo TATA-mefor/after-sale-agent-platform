@@ -1840,6 +1840,32 @@ Known limitations:
   deployment, production auth/RBAC, production monitoring, live PGvector validation, `JdbcPolicyVectorRepository`,
   Flyway / Liquibase, readiness/liveness runtime changes, or production external integrations.
 
+### V5.A.1 JdbcPolicyVectorRepository (completed)
+
+Status: completed for the explicit opt-in JDBC PGvector repository adapter and its offline-safe boundary tests.
+
+Current V5.A.1 quality status:
+
+- Repository adapter quality:
+  `JdbcPolicyVectorRepository` implements the existing `PolicyVectorRepository` port through
+  `NamedParameterJdbcOperations` and stays inside PGvector infrastructure.
+- Profile isolation quality: the adapter is created only for the explicit `rag-postgres` / `pgvector` path and is not
+  created by the default profile.
+- SQL / row mapping quality: repository tests cover vector literal validation, schema-name validation, SQL parameter
+  usage, document/chunk/embedding row mapping, and vector search score mapping.
+- Sanitized error quality: PGvector repository failures are wrapped without exposing JDBC credentials, raw SQL, raw
+  vectors, local paths, raw prompts, or raw dataset paths.
+- Default offline quality: V5.A.1 tests do not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL,
+  Redis, real embedding providers, Spring AI `VectorStore`, or external network.
+- Runtime non-change quality: V5.A.1 does not modify `search_aftersale_policy` retrieval algorithms, ToolRegistry
+  execution semantics, ToolCallTrace schema, Workspace evidence logic, Execution Tree runtime, RAG evaluation runner,
+  Actuator health behavior, OpenAPI behavior, or public API surface.
+
+Known limitations:
+
+- V5.A.1 does not add live PGvector validation, database migration baseline, Spring AI `VectorStore` production path,
+  Admin ingestion API, public RAG HTTP endpoint, reranking, query rewriting, RRF, or chunk window expansion.
+
 Planned phases:
 
 ```text

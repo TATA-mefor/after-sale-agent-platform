@@ -868,8 +868,13 @@ class ArchitectureTest {
                 .resideInAnyPackage("..policy.rag.infrastructure.pgvector..")
                 .should()
                 .dependOnClassesThat()
-                .haveSimpleNameEndingWith("Repository")
-                .because("PGvector profile boundary must not access business repositories.")
+                .resideInAnyPackage(
+                        "..order..infrastructure..repository..",
+                        "..ticket..infrastructure..repository..",
+                        "..policy..infrastructure..repository..",
+                        "..policy.rag.ingestion.infrastructure..")
+                .because("PGvector infrastructure may implement the vector contract but must not access business "
+                        + "or ingestion repositories.")
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
 

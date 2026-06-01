@@ -45,6 +45,9 @@ production auth、production monitoring、live PGvector validation 或真实外�
 - PGvector is an explicit opt-in profile; default validation does not connect to PostgreSQL or PGvector.
 - PGvector delivery means profile, schema, compose docs, repository contract, and fake / in-memory default store. It
   does not mean `JdbcPolicyVectorRepository`, live PGvector write/search, or Spring AI VectorStore production path.
+- Current addendum: V5.A.1 later adds an explicit opt-in `JdbcPolicyVectorRepository` infrastructure adapter. This
+  does not change the V4 release boundary, does not add live PGvector validation to default tests, and does not enable
+  Spring AI VectorStore production use.
 - Spring AI delivery means adapter foundation. It does not mean ChatMemory, Advisors, Tool Calling API, or bulk
   embedding are used in the default runtime.
 - RAG retrieval does not yet include reranking, query rewriting, RRF, or chunk window expansion.
@@ -97,8 +100,9 @@ MySQL, Redis, real LLMs, real embedding providers, Spring AI VectorStore, or ext
 ## What Is Intentionally Not Production / Live
 
 V4 does not complete production auth, production deployment, production monitoring, real refund, real exchange, real
-payment, real logistics, real inventory, real coupon compensation, `JdbcPolicyVectorRepository`, live PGvector
-validation, or production ingestion admin UI. Those remain future or explicit opt-in work.
+payment, real logistics, real inventory, real coupon compensation, live PGvector validation, or production ingestion
+admin UI. Those remain future or explicit opt-in work. V5.A.1 later adds an opt-in JDBC vector repository adapter, but
+does not turn live PGvector validation into a default gate.
 
 The current HTTP surface is a demo/backend API surface, not a complete production CRUD platform. It covers ticket
 create/get, AgentRun create, ToolCallTrace and Execution Tree read-only views, Approval pending/get/approve/reject,
@@ -123,7 +127,6 @@ Deployment hardening docs:
 
 - V5 production hardening.
 - Production auth and security.
-- `JdbcPolicyVectorRepository`.
 - Live PGvector validation.
 - Production ingestion API or admin UI.
 - Real payment, logistics, refund, exchange, and coupon compensation integrations.

@@ -71,14 +71,13 @@ class PgVectorComposeDocsHarnessTest {
         assertThat(docs).contains("default `docker-compose.yml` app + MySQL path does not depend on PGvector");
         assertThat(docs).contains("Default validation does not start Docker");
         assertThat(docs).contains("Still not completed:");
-        assertThat(docs).contains("`JdbcPolicyVectorRepository`");
+        assertThat(docs).contains("V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository`");
         assertThat(docs).contains("Later V4.4 and V4.5 stages added offline policy ingestion foundation");
         assertThat(docs)
                 .contains("V4.5 `search_aftersale_policy` supports KEYWORD / VECTOR / HYBRID retrieval"
                         + " through ToolRegistry");
         assertThat(docs).contains("Default live PGvector write/search");
-        assertThat(docs).contains(
-                "live PGvector persistence/search still requires future `JdbcPolicyVectorRepository`");
+        assertThat(docs).contains("live PGvector persistence/search validation");
         assertThat(docs).contains("docker compose -f docker-compose-rag.yml up -d");
         assertThat(docs).contains("docker compose -f docker-compose-rag.yml down");
         assertThat(docs).contains("docker compose -f docker-compose-rag.yml down -v");

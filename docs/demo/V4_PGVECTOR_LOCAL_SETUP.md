@@ -21,10 +21,10 @@ Available as V4 foundation:
 - V4.5 `search_aftersale_policy` supports KEYWORD / VECTOR / HYBRID retrieval through ToolRegistry using the current
   default fake / in-memory vector path.
 - Fake vector store tests remain the default offline vector validation path.
+- V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile.
 
 Still not completed:
 
-- `JdbcPolicyVectorRepository`.
 - Default live PGvector write/search.
 - Spring AI `VectorStore` production path.
 - Live PGvector integration validation.
@@ -131,5 +131,6 @@ Vector extension unavailable: use the PGvector image from `docker-compose-rag.ym
 include the `vector` extension.
 
 App cannot execute real vector search through PGvector by default: expected. HYBRID `search_aftersale_policy` wiring is
-available through ToolRegistry, but live PGvector persistence/search still requires future `JdbcPolicyVectorRepository`
-or a separately approved Spring AI `VectorStore` integration path.
+available through ToolRegistry, and V5.A.1 adds an explicit opt-in JDBC repository adapter for `rag-postgres` /
+`pgvector`. Default validation still uses fake / in-memory dependencies; live PGvector persistence/search validation
+and any Spring AI `VectorStore` production path require separate future approval.

@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-6 已完成，current correction scope completed
+状态：阶段 0-6 已完成，V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，current correction scope completed
 
 历史状态记录：阶段 5 收口时状态为“状态：阶段 0-5 已完成，阶段 6 planned”；当前状态已推进为阶段 0-6 已完成。
 
@@ -299,7 +299,8 @@
 - 已记录当前 KEYWORD / VECTOR / HYBRID RAG baseline。
 - 已记录 deterministic RAG evaluation baseline 和 no LLM-as-judge by default。
 - 已评估 reranking、query rewriting、RRF / hybrid scoring、chunk window expansion 的 future / opt-in 路线。
-- 已明确 JdbcPolicyVectorRepository、live PGvector validation 和 Spring AI VectorStore production path 未完成。
+- 已明确 V5.A.1 前 JdbcPolicyVectorRepository 未完成；当前 V5.A.1 已新增 opt-in JDBC adapter，但 live
+  PGvector validation 和 Spring AI VectorStore production path 未完成。
 
 非目标：
 
@@ -346,7 +347,7 @@
 - 不新增 Kubernetes / Helm。
 - 不实现 secret manager。
 - 不实现 production deployment、production auth/RBAC、production monitoring。
-- 不实现 live PGvector validation 或 `JdbcPolicyVectorRepository`。
+- 不实现 live PGvector validation；`JdbcPolicyVectorRepository` 已由 V5.A.1 作为 opt-in adapter 单独完成。
 
 验证：
 
@@ -368,7 +369,9 @@
 6. 阶段 5：RAG 检索质量改进评估。已完成文档决策；reranking、query rewriting、RRF 和 chunk window expansion
    runtime 仍需独立任务。
 7. 阶段 6：部署加固路线。已完成文档决策；Dockerfile、CI/CD、Kubernetes / Helm、secret manager、
-   production auth/RBAC、production monitoring、live PGvector validation 和 `JdbcPolicyVectorRepository` 仍需独立任务。
+   production auth/RBAC、production monitoring 和 live PGvector validation 仍需独立任务。
+8. V5.A.1：`JdbcPolicyVectorRepository` opt-in adapter 已完成；migration baseline、live PGvector validation 和
+   Spring AI `VectorStore` production path 仍需独立任务。
 
 ## 5. 风险控制
 

@@ -81,8 +81,9 @@ embedding provider。
 - `AFTERSALE_PGVECTOR_INITIALIZE_SCHEMA`
 - `AFTERSALE_EMBEDDING_DIMENSION`
 
-PGvector 在当前项目中仍是 profile、schema、compose、repository contract 和 opt-in foundation。默认路径不连接
-PostgreSQL / PGvector，不调用 Spring AI `VectorStore`，也不证明 live PGvector validation 已完成。
+PGvector 在当前项目中是 profile、schema、compose、repository contract、opt-in foundation 和 V5.A.1 显式
+opt-in `JdbcPolicyVectorRepository` adapter。默认路径不连接 PostgreSQL / PGvector，不调用 Spring AI
+`VectorStore`，也不证明 live PGvector validation 已完成。
 
 ### Actuator / OpenAPI
 
@@ -169,7 +170,7 @@ mvn test -Dtest=ArchitectureTest
 - Kubernetes / Helm；
 - Dockerfile hardening；
 - deployment hardening implementation；
-- `JdbcPolicyVectorRepository`；
+- `JdbcPolicyVectorRepository` live validation；
 - live PGvector validation；
 - production ingestion API / admin UI；
 - 真实退款、换货、优惠券补偿、支付或物流系统接入。

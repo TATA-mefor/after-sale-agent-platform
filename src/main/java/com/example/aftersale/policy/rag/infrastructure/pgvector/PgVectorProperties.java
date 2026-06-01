@@ -3,7 +3,7 @@ package com.example.aftersale.policy.rag.infrastructure.pgvector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Binds opt-in PGvector settings; V4.3.1 validates only, with no database connection.
+ * Binds opt-in PGvector settings for the explicit rag-postgres profile.
  */
 @ConfigurationProperties(prefix = "agent.rag.vector-store.pgvector")
 public record PgVectorProperties(

@@ -278,8 +278,9 @@ mvn test -Dtest=RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,Asy
 - no LLM-as-judge by default；
 - reranking is not implemented，query rewriting is not implemented，RRF is not implemented，chunk window expansion
   is not implemented；
-- `JdbcPolicyVectorRepository` is not implemented，live PGvector validation is not completed，Spring AI VectorStore
-  production path is not enabled；
+- Stage 5 completion record keeps the historical note that `JdbcPolicyVectorRepository` was not implemented at that
+  time；current V5.A.1 adds an opt-in JDBC adapter, while live PGvector validation and Spring AI VectorStore production
+  path are still not completed；
 - `search_aftersale_policy` remains LOW-risk read-only ToolRegistry tool，RAG evidence is evidence-only，
   RAG score is not business decision confidence，high-risk actions require Approval，LLM must not directly execute
   tools，future RAG improvements must not bypass ToolRegistry / RiskPolicy / Approval / Trace / Workspace /
@@ -311,7 +312,7 @@ mvn test -Dtest=DeploymentHardeningRoadmapDocsTest,RagQualityDecisionDocsTest,Sp
   OpenAPI docs 和 default offline validation；
 - Dockerfile is not implemented，CI/CD is not implemented，Kubernetes / Helm is not implemented，
   secret manager is not implemented，production deployment is not completed，live PGvector validation is not
-  completed，JdbcPolicyVectorRepository is not implemented，production auth/RBAC is not completed，
+  completed，JdbcPolicyVectorRepository live validation is not completed，production auth/RBAC is not completed，
   production monitoring is not completed；
 - roadmap 包含 Dockerfile、CI quality gate、profile matrix、secret management、database migration、PGvector
   deployment、readiness/liveness、observability、security/auth 和 release/rollback checklist；
@@ -322,6 +323,33 @@ mvn test -Dtest=DeploymentHardeningRoadmapDocsTest,RagQualityDecisionDocsTest,Sp
 阶段 6 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
 Spring AI live provider calls、secret manager、CI runner、Kubernetes / Helm、Prometheus、Grafana、OpenTelemetry
 collector 或 external network。如果默认验证需要这些依赖，视为回归。
+
+## V5.A.1 JdbcPolicyVectorRepository Validation
+
+V5.A.1 adds an explicit opt-in JDBC adapter for `PolicyVectorRepository` under the `rag-postgres` / `pgvector` profile.
+It does not change `search_aftersale_policy` retrieval algorithms, does not add a public RAG HTTP endpoint, does not
+enable Spring AI `VectorStore`, and does not add live PGvector validation to the default gate.
+
+Targeted validation:
+
+```bash
+mvn test -Dtest=JdbcPolicyVectorRepositoryTest
+mvn test -Dtest=PgVectorProfileBoundaryTest,DefaultOfflineValidationTest,ArchitectureTest
+mvn test -Dtest=JdbcPolicyVectorRepositoryDocsTest
+```
+
+The default gate remains:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.A.1 default validation must not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real
+embedding providers, Spring AI `VectorStore`, or external network access. Live PGvector smoke validation remains a
+separate future / opt-in task.
 
 ## Interview Safe Validation Commands
 

@@ -94,6 +94,12 @@ profile, schema, repository contract, fake / in-memory default path, and KEYWORD
 `JdbcPolicyVectorRepository` is not implemented, live PGvector validation is not completed, Spring AI VectorStore
 production path is not enabled, and default tests do not connect to real PGvector.
 
+V5.A.1 addendum: after the V4 final closure and project review correction stages, the project added an explicit opt-in
+`JdbcPolicyVectorRepository` adapter for the `rag-postgres` / `pgvector` profile. This does not revise the historical
+V4 scope above: V4 still completed the vector-store foundation, while V5.A.1 adds the JDBC repository adapter as a
+separate opt-in infrastructure task. Live PGvector validation, Spring AI `VectorStore` production use, database
+migration baseline, public RAG HTTP endpoints, and retrieval algorithm changes remain outside this addendum.
+
 推荐 profile：
 
 ```text
