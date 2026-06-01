@@ -24,6 +24,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 0](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
 - [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md)
 - [Project Review Correction Stage 1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
+- [Observability Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md)
+- [Project Review Correction Stage 2](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md)
 
 ## V4 事实口径
 
@@ -406,6 +408,13 @@ curl http://localhost:8080/api/approval-requests/{approvalRequestId}
 Logs are diagnostic only. ToolCallTrace, ApprovalRequest records, and the Execution Tree API remain the audit and
 inspection surfaces. Logs must not contain API keys, database passwords, full LLM prompts, sensitive credentials, or
 long raw user text.
+
+Stage 2 of the project review correction records the observability hardening decision in
+[Observability Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md). The current
+baseline is MDC / structured logs, ToolCallTrace, ApprovalRequest, Execution Tree, Actuator health, RAG readiness
+diagnostics, OpenAPI docs, and offline RAG evaluation metrics. Prometheus, Grafana, OpenTelemetry, collector-based
+tracing, production dashboards, provider cost metrics, and external log aggregation remain future / opt-in work.
+Default actuator exposure remains limited to `/actuator/health`.
 
 ## Core API List
 

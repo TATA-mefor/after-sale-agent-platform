@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-1 已完成，阶段 2+ planned
+状态：阶段 0-2 已完成，阶段 3+ planned
 
 ## 1. 目标
 
@@ -104,21 +104,28 @@
 
 范围：
 
-- 新增 metrics / tracing 方向的 decision record。
-- 决定是否引入 Micrometer Prometheus registry。
-- 决定 trace-id 传播先保持 MDC-only，还是后续接 OpenTelemetry。
-- Actuator 默认暴露边界继续安全。
+- 已新增 metrics / tracing 方向的 decision record：
+  `docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md`。
+- 已新增完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md`。
+- 已明确当前保持 MDC-only，OpenTelemetry 是 future / opt-in path。
+- 已明确 Prometheus、Grafana、collector、metrics dashboard、provider latency / cost metrics 和 external logging
+  platform 仍是 future / opt-in，不是阶段 2 runtime 实现。
+- Actuator 默认暴露边界继续安全，只包含 `health`。
 
 非目标：
 
 - 不默认暴露敏感 actuator endpoints。
 - 不把外部监控平台变成默认测试依赖。
+- 不实现 Micrometer instrumentation。
+- 不修改 runtime 代码。
 
 验证：
 
 - 默认 `/actuator/health` 继续暴露。
 - 敏感 actuator endpoints 继续不默认暴露。
 - 默认测试不需要 Prometheus、collector 或外部网络。
+- `ObservabilityHardeningDecisionDocsTest` 检查阶段 2 文档、边界和 secret safety。
 
 ### 阶段 3：API 完整性改进
 
@@ -214,7 +221,7 @@
 1. 阶段 0：文档事实口径修正。
 2. 阶段 1：生产配置模板。
 3. 阶段 3：API 分页和 AgentRun 读取模型。
-4. 阶段 2：可观测性指标决策和最小 Micrometer 集成。
+4. 阶段 2：可观测性指标决策。已完成文档决策；最小 Micrometer 集成仍是后续实现任务。
 5. 阶段 5：由评估失败项驱动的 RAG 质量改进。
 6. 阶段 6：CI 和部署加固。
 7. 阶段 4：更深的 Spring AI 能力，只在不破坏当前 Agent 安全边界时推进。

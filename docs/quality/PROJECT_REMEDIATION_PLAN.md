@@ -1,4 +1,4 @@
-# 项目整改方案：阶段 0-1 文档事实口径修正与生产配置模板
+# 项目整改方案：阶段 0-2 文档事实口径、生产配置模板与可观测性决策
 
 Date: 2026-06-01
 
@@ -7,8 +7,8 @@ Status: Completed
 ## 目的
 
 本文件用于回应项目整体审查中的 Spring Boot、Spring AI、RAG / Tool、API 和部署评价，给出中文事实核验与
-阶段化整改路线。阶段 0 完成文档事实口径修正；阶段 1 补充生产配置模板和 secret placeholder 说明。
-两个阶段都不修改 runtime 代码。
+阶段化整改路线。阶段 0 完成文档事实口径修正；阶段 1 补充生产配置模板和 secret placeholder 说明；
+阶段 2 完成可观测性加固决策。三个阶段都不修改 runtime 代码。
 
 ## 总体结论
 
@@ -45,9 +45,15 @@ Status: Completed
 - 新增 `docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md`，说明环境变量分组、secret safety、默认离线边界和
   non-production boundary。
 
-阶段 2+ 建议：
+阶段 2 完成：
 
-- 增加 metrics / tracing 决策文档，再决定是否接 Prometheus 或 OpenTelemetry。
+- 新增 `docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md`，明确当前 observability baseline、
+  metrics strategy、tracing strategy、Actuator exposure strategy、secret safety 和默认离线边界。
+- 明确 Prometheus、Grafana、OpenTelemetry、collector、production dashboards、provider cost metrics 和外部日志
+  平台仍是 future / opt-in，不是阶段 2 已实现 runtime 能力。
+
+阶段 3+ 建议：
+
 - 针对 Ticket / Order 梳理业务不变量，逐步减少贫血模型倾向。
 
 ### Spring AI 使用
@@ -127,7 +133,8 @@ Status: Completed
 
 阶段 1：已完成。生产配置模板、环境变量表、secret placeholder safety、docs harness test。
 
-阶段 2：planned。可观测性决策。补 metrics / Prometheus / tracing ADR，决定默认不启用还是 opt-in。
+阶段 2：已完成。可观测性决策。补 metrics / Prometheus / tracing ADR，明确当前保持 MDC-only、Prometheus /
+OpenTelemetry 作为 future / opt-in，Actuator 默认只暴露 health。
 
 阶段 3：planned。领域模型强化。梳理 Ticket / Order 业务不变量，避免把状态规则全部留在 application service。
 
@@ -138,6 +145,38 @@ Status: Completed
 阶段 6：planned。Spring AI 深化。评估 ChatMemory、Advisors、Tool Calling API 与 ToolRegistry 边界的兼容性。
 
 阶段 7：planned。部署工程化。补 Dockerfile hardening、CI/CD、secrets 管理、日志采集和部署文档。
+
+## 可观测性决策边界
+
+阶段 2 新增 `docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md`。该文档用于把项目审查中的
+“缺少 metrics、Prometheus、distributed tracing、cross-service trace-id propagation”转化为可执行策略。
+
+当前基线：
+
+- MDC / structured logs；
+- `X-Request-Id`；
+- ToolCallTrace；
+- ApprovalRequest；
+- Execution Tree；
+- `/actuator/health`；
+- RAG readiness diagnostics；
+- OpenAPI docs；
+- offline RAG evaluation metrics。
+
+当前缺口：
+
+- Prometheus registry；
+- Grafana dashboard；
+- OpenTelemetry；
+- collector；
+- cross-service trace-id propagation；
+- provider latency / cost metrics；
+- AgentRun / ToolCall / RAG search production metrics；
+- external logging platform。
+
+阶段 2 不实现这些 runtime 能力，只定义 future / opt-in 策略。默认 actuator exposure 继续只包含 `health`，
+不默认暴露 env、beans、configprops、heapdump、threaddump 或 prometheus。Health 仍是 offline readiness signal，
+不是 live provider 或 live PGvector 连通性证明。
 
 ## 生产配置模板边界
 
@@ -182,11 +221,16 @@ Status: Completed
 - external network；
 - real embedding provider；
 - Spring AI live provider calls。
+- Prometheus；
+- Grafana；
+- OpenTelemetry collector；
+- external logging platform。
 
 ## 验证命令
 
 ```bash
 mvn test -Dtest=ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
+mvn test -Dtest=ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 mvn test -Dtest=ProjectRemediationPlanDocsTest
 mvn test -Dtest=ArchitectureTest
 mvn test

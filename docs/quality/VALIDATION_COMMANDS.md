@@ -94,6 +94,32 @@ mvn test -Dtest=ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
 - 文档不把 production auth、production monitoring、secret manager、CI/CD、Kubernetes、Helm 或 live PGvector
   validation 写成已完成能力。
 
+## Observability Hardening Decision Validation
+
+阶段 2 新增 `docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md` 和完成记录。该阶段只做
+可观测性决策、文档路线和 docs harness coverage，不接入 runtime monitoring。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
+```
+
+该测试只读文档，检查：
+
+- README、中文整改方案、验证文档、生产配置模板说明和 active correction plan 链接或记录阶段 2；
+- 当前 baseline 明确为 MDC / structured logs、ToolCallTrace、ApprovalRequest、Execution Tree、Actuator health、
+  RAG readiness diagnostics、OpenAPI docs 和 offline RAG evaluation metrics；
+- Prometheus、Grafana、OpenTelemetry、collector、dashboard、provider cost metrics 和 external logging platform
+  是 future / opt-in，不是当前已接入 runtime；
+- 默认 actuator exposure 继续只包含 `/actuator/health`；
+- 敏感 actuator endpoints 如 env、beans、configprops、heapdump、threaddump、prometheus 不默认暴露；
+- health 不调用真实 LLM、embedding provider、PGvector、Spring AI `VectorStore`、ToolRegistry 或 AgentRun；
+- docs 不包含真实 API Key、数据库密码、token、本地绝对路径、raw prompt 或 raw dataset path。
+
+默认验证不需要 Prometheus、Grafana、OpenTelemetry collector、external logging platform、external monitoring
+platform 或 external network。如果默认验证需要这些依赖，视为回归。
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

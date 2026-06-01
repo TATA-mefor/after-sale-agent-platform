@@ -84,6 +84,17 @@ PostgreSQL / PGvector，不调用 Spring AI `VectorStore`，也不证明 live PG
 模板保持默认 actuator exposure 只包含 `health`。Swagger UI 在模板中默认关闭，避免把本地 review 入口误当成
 生产 public API 文档入口。
 
+### 可观测性 / 监控
+
+阶段 2 的可观测性决策见
+`docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md`。当前模板不接入 Prometheus、Grafana、
+OpenTelemetry collector 或外部日志平台，也不默认暴露 prometheus、env、beans、configprops、heapdump、
+threaddump 等 actuator endpoint。
+
+当前项目默认可观测性基线是 MDC / structured logs、`X-Request-Id`、ToolCallTrace、ApprovalRequest、Execution
+Tree、`/actuator/health`、RAG readiness diagnostics、OpenAPI docs 和 offline RAG evaluation metrics。生产
+metrics、distributed tracing、provider latency / cost metrics、dashboard 和日志采集仍是 future / opt-in path。
+
 ## Secret / Path Safety
 
 仓库内只能保存环境变量占位，不能保存真实值：
@@ -143,6 +154,8 @@ mvn test -Dtest=ArchitectureTest
 - secret manager 集成；
 - Prometheus / metrics dashboard；
 - distributed tracing；
+- OpenTelemetry collector；
+- external logging platform；
 - CI/CD pipeline；
 - Kubernetes / Helm；
 - Dockerfile hardening；

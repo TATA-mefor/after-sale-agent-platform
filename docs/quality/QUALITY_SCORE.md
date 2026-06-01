@@ -1579,6 +1579,43 @@ Known limitations:
   `JdbcPolicyVectorRepository`, live PGvector validation, production ingestion admin UI, or real payment / logistics /
   refund / exchange / coupon compensation integrations.
 
+### Project Review Correction Stage 2 (completed)
+
+Status: completed for observability hardening decision, metrics / tracing strategy documentation, and docs harness
+coverage.
+
+Current Stage 2 quality status:
+
+- Observability decision quality:
+  `docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md` records the current baseline, gaps, decision,
+  metrics strategy, tracing strategy, logging strategy, Actuator exposure strategy, RAG / Agent observability strategy,
+  secret safety, and default offline boundary.
+- Current baseline quality: docs now consistently describe MDC / structured logs, `X-Request-Id`, ToolCallTrace,
+  ApprovalRequest, Execution Tree, `/actuator/health`, RAG readiness diagnostics, OpenAPI docs, and offline RAG
+  evaluation metrics as the current diagnostic surfaces.
+- Metrics strategy quality: candidate AgentRun, ToolCall, Approval, RAG search, LLM provider, and embedding provider
+  metrics are recorded as future / opt-in work with low-cardinality and no-secret label boundaries.
+- Tracing strategy quality: current tracing remains MDC-only; OpenTelemetry, collector, cross-service trace-id
+  propagation, spans, and exporters remain future / opt-in.
+- Actuator exposure quality: default exposure remains limited to `health`; env, beans, configprops, heapdump,
+  threaddump, and prometheus are not default endpoints.
+- Secret safety quality: docs state logs, metrics labels, trace attributes, health details, OpenAPI examples, and docs
+  must not contain API keys, database passwords, tokens, complete prompt content, raw provider responses, raw dataset paths,
+  local absolute paths, or customer private data.
+- Docs harness quality: `ObservabilityHardeningDecisionDocsTest` verifies links, baseline wording, future / opt-in
+  monitoring boundaries, actuator exposure boundaries, default offline requirements, secret safety, and completion
+  record.
+- Runtime non-change quality: Stage 2 changes docs and docs harness tests only. Runtime services, controllers, tools,
+  RAG retrieval, ingestion, health indicators, OpenAPI config, ToolRegistry, ToolCallTrace, Workspace, Execution Tree,
+  AgentApplicationService, `pom.xml`, and `application.yml` are unchanged.
+
+Known limitations:
+
+- Stage 2 does not implement Micrometer instrumentation, Prometheus registry, Grafana dashboard, OpenTelemetry,
+  collector configuration, production log aggregation, provider latency / cost metrics, production monitoring,
+  live provider connectivity checks, live PGvector connectivity checks, API pagination, async AgentRun, SSE /
+  WebSocket, or batch APIs.
+
 Planned phases:
 
 ```text
