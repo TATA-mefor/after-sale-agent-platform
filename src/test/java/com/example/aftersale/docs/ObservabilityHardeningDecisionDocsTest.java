@@ -44,7 +44,7 @@ class ObservabilityHardeningDecisionDocsTest {
         assertThat(validation).contains("ObservabilityHardeningDecisionDocsTest", DECISION_DOC);
         assertThat(remediation).contains("阶段 2：已完成", DECISION_DOC);
         assertThat(quality).contains("Project Review Correction Stage 2 (completed)");
-        assertThat(activePlan).contains("状态：阶段 0-2 已完成", DECISION_DOC, COMPLETED_PLAN);
+        assertThat(activePlan).contains("阶段 2：可观测性加固方案", "状态：已完成", DECISION_DOC, COMPLETED_PLAN);
     }
 
     @Test

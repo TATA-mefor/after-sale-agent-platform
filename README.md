@@ -26,6 +26,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
 - [Observability Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md)
 - [Project Review Correction Stage 2](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md)
+- [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md)
+- [Project Review Correction Stage 3.1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_1_API_COMPLETENESS_DECISION.md)
 
 ## V4 事实口径
 
@@ -87,6 +89,7 @@ Interview docs:
 - [V4 Release Summary](docs/release/V4_RELEASE_SUMMARY.md)
 - [Project Review Correction Stage 0](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
 - [Project Review Correction Stage 1](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
+- [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md)
 
 Fast validation:
 
@@ -417,6 +420,11 @@ tracing, production dashboards, provider cost metrics, and external log aggregat
 Default actuator exposure remains limited to `/actuator/health`.
 
 ## Core API List
+
+Current HTTP APIs are a demo/backend API surface, not a complete production CRUD platform. Stage 3.1 records this in
+[API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md). Pagination, AgentRun
+get/status polling, async AgentRun, SSE / WebSocket streaming, batch APIs, and production auth / RBAC remain planned
+follow-ups; they are not completed runtime behavior.
 
 Health:
 

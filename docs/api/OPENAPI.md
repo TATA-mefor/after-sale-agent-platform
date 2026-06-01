@@ -32,6 +32,21 @@ keys, PostgreSQL, PGvector, Docker, MySQL, Redis, a real LLM, a real embedding p
 - Execution Tree APIs expose a read-only explanation view with subtasks, tools, approvals, and policy evidence nodes.
 - Platform health includes `/api/health`; Actuator readiness is exposed separately at `/actuator/health`.
 
+## API Completeness Roadmap
+
+The current OpenAPI document describes the existing demo/backend API surface. It is not a complete production CRUD API
+and it is not production API hardening.
+
+- Ticket APIs currently cover create/get. Ticket list, query filters, and pagination are future work.
+- AgentRun APIs currently cover create/start for a ticket. AgentRun get/status polling is future work.
+- Trace and Execution Tree APIs are read-only views. They are not SSE / WebSocket streaming endpoints.
+- Approval APIs currently cover pending/get/approve/reject.
+- Batch APIs, production auth / RBAC, idempotency, rate limiting, and API audit hardening remain future work.
+
+The decision record for this boundary is
+`docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md`. `search_aftersale_policy` remains a LOW-risk read-only
+ToolRegistry tool, not a public RAG HTTP endpoint.
+
 ## Ticket Flow
 
 Create a ticket with synthetic demo data, then read it back by `ticketId`. Creating a ticket does not run the Agent and

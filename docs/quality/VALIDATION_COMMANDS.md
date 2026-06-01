@@ -120,6 +120,32 @@ mvn test -Dtest=ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateD
 默认验证不需要 Prometheus、Grafana、OpenTelemetry collector、external logging platform、external monitoring
 platform 或 external network。如果默认验证需要这些依赖，视为回归。
 
+## API Completeness Decision Validation
+
+阶段 3.1 新增 `docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md` 和完成记录。该阶段只做 API surface
+audit、API completeness decision、文档路线和 docs harness coverage，不新增 runtime API。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=ApiCompletenessDecisionDocsTest,ObservabilityHardeningDecisionDocsTest,ProductionConfigTemplateDocsTest,ProjectRemediationPlanDocsTest
+```
+
+该测试只读文档，检查：
+
+- 当前 API 明确为 demo/backend API surface，不是完整生产 CRUD；
+- Ticket 当前为 create/get；
+- AgentRun 当前为 create/start，AgentRun get/status polling 是 future work；
+- ToolCallTrace 和 Execution Tree 是 read-only views；
+- Approval API 为 pending/get/approve/reject；
+- `/actuator/health`、`/v3/api-docs` 和 Swagger UI 已记录；
+- `search_aftersale_policy` 仍是 LOW-risk read-only ToolRegistry tool，不是 public RAG HTTP endpoint；
+- 分页、异步 AgentRun、SSE / WebSocket、batch API、production auth / RBAC 是 planned / future；
+- 文档不包含真实 API Key、数据库密码、token、本地绝对路径、raw prompt 或 raw dataset path。
+
+阶段 3.1 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
+Spring AI live provider calls 或 external network。如果默认验证需要这些依赖，视为回归。
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

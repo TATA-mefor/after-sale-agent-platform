@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-2 已完成，阶段 3+ planned
+状态：阶段 0-3.1 已完成，阶段 3.2+ planned
 
 ## 1. 目标
 
@@ -128,6 +128,34 @@
 - `ObservabilityHardeningDecisionDocsTest` 检查阶段 2 文档、边界和 secret safety。
 
 ### 阶段 3：API 完整性改进
+
+#### 阶段 3.1：API Surface Audit / API Completeness Decision
+
+状态：已完成。
+
+范围：
+
+- 已新增 `docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md`。
+- 已新增完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_1_API_COMPLETENESS_DECISION.md`。
+- 已明确当前 HTTP API 是 demo/backend API surface，不是完整生产 CRUD。
+- 已记录当前 API：Ticket create/get、AgentRun create/start、ToolCallTrace read-only view、Execution Tree read-only
+  view、Approval pending/get/approve/reject、health 和 OpenAPI docs。
+- 已明确 `search_aftersale_policy` 是 LOW-risk read-only ToolRegistry tool，不是 public RAG HTTP endpoint。
+- 已新增 docs harness test：`ApiCompletenessDecisionDocsTest`。
+
+非目标：
+
+- 不新增 endpoint；
+- 不修改 Controller 或 DTO runtime；
+- 不实现分页；
+- 不实现 AgentRun get/status polling；
+- 不实现异步 AgentRun；
+- 不实现 SSE / WebSocket；
+- 不实现 batch API；
+- 不实现 production auth / RBAC。
+
+#### 阶段 3.2+：API runtime 改进候选
 
 范围：
 

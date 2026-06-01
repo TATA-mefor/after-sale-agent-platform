@@ -1616,6 +1616,36 @@ Known limitations:
   live provider connectivity checks, live PGvector connectivity checks, API pagination, async AgentRun, SSE /
   WebSocket, or batch APIs.
 
+### Project Review Correction Stage 3.1 (completed)
+
+Status: completed for API surface audit, API completeness decision, and docs harness coverage.
+
+Current Stage 3.1 quality status:
+
+- API surface audit quality:
+  `docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md` records the current demo/backend API surface:
+  Ticket create/get, AgentRun create/start, ToolCallTrace read-only view, Execution Tree read-only view, Approval
+  pending/get/approve/reject, health endpoints, OpenAPI JSON, and Swagger UI.
+- API limitation quality: docs state that current APIs are not complete production CRUD. Ticket list/query pagination,
+  AgentRun get/status polling, production-grade async AgentRun, SSE / WebSocket streaming, batch APIs, production
+  auth / RBAC, idempotency, rate limiting, and API audit hardening remain future work.
+- OpenAPI quality: OpenAPI docs continue to describe existing HTTP APIs only. They do not add a public RAG search
+  endpoint and do not claim production API hardening.
+- ToolRegistry boundary quality: `search_aftersale_policy` remains a LOW-risk read-only ToolRegistry tool. LLM output
+  may plan tools but must not directly execute tools or expose an HTTP bypass around ToolRegistry, RiskPolicy,
+  Approval, or ToolCallTrace.
+- Docs harness quality: `ApiCompletenessDecisionDocsTest` verifies decision docs, completion record, README / OpenAPI /
+  remediation / validation links, future boundaries, secret safety, no complete CRUD overclaim, and no real external
+  integration overclaim.
+- Runtime non-change quality: Stage 3.1 changes docs and docs harness tests only. Runtime services, controllers, DTOs,
+  tools, RAG retrieval, ingestion, health indicators, OpenAPI config, ToolRegistry, ToolCallTrace, Workspace,
+  Execution Tree, AgentApplicationService, `pom.xml`, and application resources are unchanged.
+
+Known limitations:
+
+- Stage 3.1 does not implement pagination, AgentRun get/status polling, async AgentRun, SSE / WebSocket, batch APIs,
+  production auth / RBAC, idempotency, rate limiting, or production API audit hardening.
+
 Planned phases:
 
 ```text
