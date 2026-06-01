@@ -227,6 +227,27 @@ Ticket, AgentRun, ToolCallTrace, Workspace, or Execution Tree state.
 V4.6.2 completed the V4 RAG demo script. V4.6.3 remains Actuator health indicator work. V4.6.4 remains OpenAPI / API
 documentation polish.
 
+## RAG Retrieval Quality Improvement Roadmap
+
+Project review correction stage 5 records the RAG quality improvement decision in
+`docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md`.
+
+The current RAG retrieval baseline remains KEYWORD / VECTOR / HYBRID policy evidence retrieval. Stage 5 does not
+modify runtime retrieval algorithms, does not expand the RAG evaluation runner, and does not implement reranking,
+query rewriting, RRF, or chunk window expansion.
+
+Future RAG quality changes should be evaluation-driven:
+
+- expand deterministic JSONL cases before changing ranking logic;
+- classify failures as query mismatch, ranking issue, snippet context issue, fallback issue, or source coverage issue;
+- keep no LLM-as-judge by default;
+- require fake / deterministic tests for reranking, query rewriting, RRF, and chunk window expansion candidates;
+- keep real reranker, real embedding provider, live PGvector, and Spring AI VectorStore paths explicit opt-in.
+
+RAG evaluation remains retrieval evaluation only. RAG evidence is evidence-only policy evidence and must not be treated
+as business decision confidence or as completed refund, exchange, coupon compensation, payment, logistics, inventory,
+or dispute-closure action.
+
 ## V4 RAG / Skill Evaluation Extension
 
 V4 evaluation extends the existing deterministic evaluation runner with RAG and Skill checks.

@@ -88,6 +88,12 @@ connect PGvector, does not call real Spring AI EmbeddingModel, does not call Spr
 Agent, Handler, or Skill layers direct access to `EmbeddingClient`, `PolicyVectorRepository`, vector infrastructure,
 JDBC, `DataSource`, PGvector, or fake vector repository implementations.
 
+Project review correction Stage 5 quality evaluation status: completed as decision / documentation only. See
+`docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md`. The vector-store foundation remains complete for
+profile, schema, repository contract, fake / in-memory default path, and KEYWORD / VECTOR / HYBRID evidence retrieval.
+`JdbcPolicyVectorRepository` is not implemented, live PGvector validation is not completed, Spring AI VectorStore
+production path is not enabled, and default tests do not connect to real PGvector.
+
 推荐 profile：
 
 ```text

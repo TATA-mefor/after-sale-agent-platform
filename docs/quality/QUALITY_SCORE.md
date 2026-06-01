@@ -1768,6 +1768,46 @@ Known limitations:
 - Stage 4 does not implement ChatMemory runtime, Advisors runtime, Spring AI Tool Calling API, bulk embedding runtime,
   provider runtime changes, public RAG HTTP endpoints, RAG reranking, query rewriting, RRF, or chunk window expansion.
 
+### Project Review Correction Stage 5 (completed)
+
+Status: completed for RAG retrieval quality improvement evaluation, decision documentation, and docs harness coverage.
+
+Current Stage 5 quality status:
+
+- Current RAG baseline quality:
+  `docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md` records current KEYWORD / VECTOR / HYBRID
+  policy evidence retrieval, `RagPolicyEvidenceMergeService`, `EmbeddingClient` abstraction,
+  `PolicyVectorRepository` contract, `FakeEmbeddingClient`, and `InMemoryPolicyVectorRepository`.
+- Evaluation baseline quality: deterministic RAG evaluation exists and remains no LLM-as-judge by default.
+- Reranking evaluation quality: reranking is not implemented in Stage 5. Future reranking must be opt-in for real
+  providers and must treat reranking score as retrieval score, not business decision confidence.
+- Query rewriting evaluation quality: query rewriting is not implemented in Stage 5. Future rewriting must be
+  auditable, deterministic by default, and safe against raw prompt leakage.
+- RRF / hybrid scoring quality: RRF is not implemented in Stage 5. Current HYBRID scoring remains unchanged and any
+  future scoring change must be proven against deterministic evaluation cases.
+- Chunk window expansion quality: chunk window expansion is not implemented in Stage 5. Future expansion must define
+  max window, max chars, source citation, and dedup rules without returning full source documents.
+- Provider / PGvector quality: `JdbcPolicyVectorRepository` is not implemented, live PGvector validation is not
+  completed, and Spring AI VectorStore production path is not enabled. Real reranker/embedding provider must be
+  opt-in.
+- Evidence-only quality: `search_aftersale_policy` remains LOW-risk read-only ToolRegistry tool. RAG evidence is
+  evidence-only, RAG score is not business decision confidence, high-risk actions require Approval, LLM must not
+  directly execute tools, and future RAG improvements must not bypass ToolRegistry / RiskPolicy / Approval / Trace /
+  Workspace / Execution Tree.
+- Default offline quality: Stage 5 docs harness tests read files only and do not require real LLMs, API keys,
+  PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, real reranker providers, Spring AI VectorStore,
+  or external network.
+- Runtime non-change quality: Stage 5 does not modify `search_aftersale_policy`, retrieval algorithms, RAG evaluation
+  runner, RAG runtime, ingestion pipeline, health indicators, OpenAPI config, ToolRegistry, ToolCallTrace, Workspace,
+  Execution Tree, `src/main/java`, `src/main/resources`, or `pom.xml`.
+
+Known limitations:
+
+- Stage 5 does not improve runtime retrieval quality directly.
+- Stage 5 does not implement reranking runtime, query rewriting runtime, RRF, hybrid scoring runtime changes, chunk
+  window expansion, `JdbcPolicyVectorRepository`, live PGvector validation, Spring AI VectorStore production path,
+  production-scale relevance benchmark, or a public RAG HTTP endpoint.
+
 Planned phases:
 
 ```text

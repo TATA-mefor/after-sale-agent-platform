@@ -34,6 +34,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [Project Review Correction Stage 3.4](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_4_ASYNC_STREAMING_BATCH_EVALUATION.md)
 - [Spring AI Deepening Decision](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)
 - [Project Review Correction Stage 4](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md)
+- [RAG Quality Improvement Decision](docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md)
+- [Project Review Correction Stage 5](docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE5_RAG_QUALITY_EVALUATION.md)
 
 ## V4 事实口径
 
@@ -52,8 +54,9 @@ V4 completed 表示 foundation / demo / interview-grade 阶段完成，不表示
 - Spring AI 当前是 adapter foundation；阶段 4 已完成
   [Spring AI 深化评估](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)，不代表已经实现
   ChatMemory、Advisors、Tool Calling API 或 bulk embedding runtime。
-- RAG 当前支持 KEYWORD / VECTOR / HYBRID policy evidence retrieval，但 reranking、query rewriting、RRF 和 chunk
-  window expansion 仍是 future work。
+- RAG 当前支持 KEYWORD / VECTOR / HYBRID policy evidence retrieval；阶段 5 已完成
+  [RAG 检索质量改进评估](docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md)，但 reranking、
+  query rewriting、RRF 和 chunk window expansion 仍是 future / opt-in，不是当前 runtime 能力。
 - 当前 observability 覆盖 MDC / structured logs、ToolCallTrace、Execution Tree、Actuator health 和 RAG readiness
   diagnostics；Prometheus registry、metrics dashboard、distributed tracing 和 cross-service trace-id propagation
   仍是 V5 / future work。
@@ -101,6 +104,7 @@ Interview docs:
 - [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md)
 - [Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md)
 - [Spring AI Deepening Decision](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)
+- [RAG Quality Improvement Decision](docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md)
 
 Fast validation:
 

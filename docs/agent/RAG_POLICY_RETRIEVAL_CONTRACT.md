@@ -122,6 +122,13 @@ V4.6.4 status: OpenAPI / API docs polish completed. OpenAPI describes existing H
 this retrieval contract, does not modify KEYWORD / VECTOR / HYBRID algorithms, does not execute tools, and does not
 call embedding providers or vector stores. Swagger UI is documentation only and is not production deployment coverage.
 
+Project Review Stage 5 RAG Quality Evaluation: RAG quality improvement evaluation completed as documentation and decision
+only. See `docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md`. The current runtime remains
+KEYWORD / VECTOR / HYBRID policy evidence retrieval through `search_aftersale_policy`. Reranking is not implemented,
+query rewriting is not implemented, RRF is not implemented, and chunk window expansion is not implemented. Future RAG
+quality improvements must remain evidence-only and must not bypass ToolRegistry / RiskPolicy / Approval / Trace /
+Workspace / Execution Tree.
+
 允许链路：
 
 ```text

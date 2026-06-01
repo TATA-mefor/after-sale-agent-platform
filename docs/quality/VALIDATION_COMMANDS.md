@@ -255,6 +255,41 @@ mvn test -Dtest=SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecision
 Spring AI live provider calls、Spring AI VectorStore、ChatMemory store、streaming server、queue 或 external network。
 如果默认验证需要这些依赖，视为回归。
 
+## RAG Quality Decision Validation
+
+阶段 5 新增 `docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md` 和完成记录。该阶段只做
+reranking、query rewriting、RRF / hybrid scoring、chunk window expansion、provider / PGvector path 的 RAG
+quality decision / evaluation，不修改 runtime retrieval algorithm。
+
+对应 docs harness 可用以下命令单独验证：
+
+```bash
+mvn test -Dtest=RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest,ObservabilityHardeningDecisionDocsTest
+```
+
+该测试只读文档，检查：
+
+- Stage 5 decision 文档和完成记录存在并包含 `TASK_COMPLETE`；
+- README、RAG retrieval contract、V4 vector decision、evaluation docs、整改方案、quality docs、validation docs 和
+  active correction plan 记录 Stage 5 completed as decision / evaluation；
+- 当前 baseline 是 KEYWORD / VECTOR / HYBRID、`RagPolicyEvidenceMergeService`、`EmbeddingClient` abstraction、
+  `PolicyVectorRepository` contract、`FakeEmbeddingClient`、`InMemoryPolicyVectorRepository` 和 deterministic RAG
+  evaluation；
+- no LLM-as-judge by default；
+- reranking is not implemented，query rewriting is not implemented，RRF is not implemented，chunk window expansion
+  is not implemented；
+- `JdbcPolicyVectorRepository` is not implemented，live PGvector validation is not completed，Spring AI VectorStore
+  production path is not enabled；
+- `search_aftersale_policy` remains LOW-risk read-only ToolRegistry tool，RAG evidence is evidence-only，
+  RAG score is not business decision confidence，high-risk actions require Approval，LLM must not directly execute
+  tools，future RAG improvements must not bypass ToolRegistry / RiskPolicy / Approval / Trace / Workspace /
+  Execution Tree；
+- docs 不包含真实 API Key、数据库密码、token、本地绝对路径、raw prompt 或 raw dataset path。
+
+阶段 5 默认验证不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
+real reranker provider、Spring AI VectorStore、RAG runtime server 或 external network。如果默认验证需要这些依赖，
+视为回归。
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

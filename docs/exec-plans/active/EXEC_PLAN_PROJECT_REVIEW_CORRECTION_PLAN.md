@@ -1,6 +1,8 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-4 已完成，阶段 5+ planned
+状态：阶段 0-5 已完成，阶段 6 planned
+
+历史状态记录：阶段 4 收口时状态为“状态：阶段 0-4 已完成”；当前状态已推进为阶段 0-5 已完成。
 
 历史状态记录：阶段 3.4 收口时状态为“状态：阶段 0-3.4 已完成”；当前状态已推进为阶段 0-4 已完成。
 
@@ -285,24 +287,36 @@
 
 ### 阶段 5：RAG 检索质量改进
 
+状态：已完成。
+
 范围：
 
-- 增加可选 reranking abstraction。
-- 只有在可离线测试时才增加 query rewrite abstraction。
-- 如果 evaluation cases 证明需要，增加 RRF 或更清晰的 hybrid scoring strategy。
-- 如果 evidence snippet 太窄，增加 chunk window expansion。
-- JdbcPolicyVectorRepository 或 Spring AI VectorStore integration 只能作为 opt-in live path。
+- 已新增 `docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md`。
+- 已新增完成记录：
+  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE5_RAG_QUALITY_EVALUATION.md`。
+- 已记录当前 KEYWORD / VECTOR / HYBRID RAG baseline。
+- 已记录 deterministic RAG evaluation baseline 和 no LLM-as-judge by default。
+- 已评估 reranking、query rewriting、RRF / hybrid scoring、chunk window expansion 的 future / opt-in 路线。
+- 已明确 JdbcPolicyVectorRepository、live PGvector validation 和 Spring AI VectorStore production path 未完成。
 
 非目标：
 
-- 不替换默认 in-memory/fake test path。
-- 不让默认测试连接 PGvector。
+- 不实现 reranking runtime。
+- 不实现 query rewriting runtime。
+- 不实现 RRF 或 hybrid scoring runtime change。
+- 不实现 chunk window expansion runtime。
+- 不修改 `search_aftersale_policy` runtime。
+- 不修改 retrieval algorithm。
+- 不修改 RAG evaluation runner。
+- 不替换默认 in-memory / fake test path。
+- 不让默认测试连接 PGvector、真实 embedding provider、真实 reranker provider 或 Spring AI VectorStore。
 - 不把 policy evidence 变成业务动作自动化。
 
 验证：
 
-- RAG evaluation metrics。
-- Offline fake vector store tests。
+- `RagQualityDecisionDocsTest`。
+- RAG evaluation metrics 继续作为后续 runtime 改动 gate。
+- Offline fake vector store tests 继续确定性。
 - Live PGvector tests 继续 opt-in。
 
 ### 阶段 6：部署加固路线
@@ -338,7 +352,8 @@
 3. 阶段 3：API 分页和 AgentRun 读取模型。
 4. 阶段 2：可观测性指标决策。已完成文档决策；最小 Micrometer 集成仍是后续实现任务。
 5. 阶段 4：Spring AI 深化评估。已完成文档决策；runtime 深化仍需独立任务。
-6. 阶段 5：由评估失败项驱动的 RAG 质量改进。
+6. 阶段 5：RAG 检索质量改进评估。已完成文档决策；reranking、query rewriting、RRF 和 chunk window expansion
+   runtime 仍需独立任务。
 7. 阶段 6：CI 和部署加固。
 
 ## 5. 风险控制
