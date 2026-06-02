@@ -1,5 +1,9 @@
 # AfterSale-Agent Platform
 
+[![CI](https://github.com/TATAme/after-sale-agent-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/TATAme/after-sale-agent-platform/actions/workflows/ci.yml)
+[![Java 17](https://img.shields.io/badge/Java-17-blue)](https://adoptium.net/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 AfterSale-Agent is a Java Spring Boot platform for auditable e-commerce after-sale ticket handling with Agent execution traces.
 
 ## Project Overview
