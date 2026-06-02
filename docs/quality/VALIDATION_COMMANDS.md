@@ -409,6 +409,47 @@ V5.A.3 validates SQL connectivity and persistence/search plumbing only. It does 
 embedding recall, reranking, query rewriting, RRF, chunk window expansion, Spring AI `VectorStore` production use,
 production deployment, or public RAG HTTP endpoints.
 
+## V5.A RAG Production Path Completion Validation
+
+V5.A completed the RAG production path foundation:
+
+- V5.A.1 opt-in `JdbcPolicyVectorRepository`;
+- V5.A.2 schema version baseline `2026-06-01-001`;
+- V5.A.3 opt-in PGvector connectivity smoke;
+- V5.A.4 docs / completion record closure.
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=RagProductionPathCompletionDocsTest,PgVectorConnectivitySmokeDocsTest,SchemaVersionBaselineDocsTest,JdbcPolicyVectorRepositoryDocsTest
+```
+
+Default gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+Default validation does not connect PostgreSQL / PGvector and does not run the live smoke. Optional live smoke remains:
+
+```bash
+mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true
+```
+
+PowerShell:
+
+```powershell
+mvn test "-Dtest=JdbcPolicyVectorRepositorySmokeTest" "-Dlive.rag=true"
+```
+
+V5.A does not complete production deployment, production auth / RBAC, production monitoring, Flyway / Liquibase
+migration management, RAG quality enhancement, real embedding quality validation, Spring AI `VectorStore` production
+use, public RAG HTTP endpoints, or real refund / exchange / payment / logistics integrations. V5.B remains planned for
+production hardening and migration management.
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

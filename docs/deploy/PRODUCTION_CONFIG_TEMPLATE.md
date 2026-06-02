@@ -87,8 +87,12 @@ opt-in `JdbcPolicyVectorRepository` adapter。默认路径不连接 PostgreSQL /
 
 V5.A.2 adds schema version baseline `2026-06-01-001` to `schema-rag-postgres.sql` as a reference for current manual
 initialization and future migration planning. It is not a production database migration framework. Flyway / Liquibase
-selection remains pending V5.B.2, live PGvector validation remains pending V5.A.3, and production DB migration /
-deployment is not completed.
+selection remains pending V5.B.2. V5.A.3 adds an explicit opt-in PGvector connectivity smoke for the JDBC adapter, but
+broader production live PGvector validation, production DB migration, and deployment hardening remain future work.
+
+V5.A completed the RAG production path foundation through opt-in JDBC adapter, schema baseline, opt-in connectivity
+smoke, and docs completion record. It does not make PGvector part of default validation, does not enable Spring AI
+`VectorStore` production use, does not validate RAG quality, and does not validate real embedding quality.
 
 ### Actuator / OpenAPI
 

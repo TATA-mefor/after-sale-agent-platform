@@ -271,7 +271,7 @@ after-sale-agent-platform/
 │   ├── exec-plans/
 │   ├── decisions/
 │   └── quality/
-├── src/main/java/com/example/aftersale/
+├── src/main/java/io/github/tatame/aftersale/
 │   ├── common/
 │   ├── order/
 │   ├── ticket/
@@ -280,7 +280,7 @@ after-sale-agent-platform/
 │   ├── tool/
 │   ├── trace/
 │   └── approval/
-├── src/test/java/com/example/aftersale/
+├── src/test/java/io/github/tatame/aftersale/
 └── pom.xml
 ```
 

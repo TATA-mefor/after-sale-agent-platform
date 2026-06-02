@@ -27,7 +27,7 @@ CRUD，并把分页、AgentRun status、异步执行、SSE / WebSocket、batch A
 - `docs/quality/PROJECT_REMEDIATION_PLAN.md` 标记阶段 3.1 completed。
 - `docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md` 标记阶段 3.1 completed。
 - `docs/quality/QUALITY_SCORE.md` 和 `docs/quality/VALIDATION_COMMANDS.md` 补充阶段 3.1 质量与验证说明。
-- `src/test/java/com/example/aftersale/docs/ApiCompletenessDecisionDocsTest.java` 增加只读文档校验。
+- `src/test/java/io/github/tatame/aftersale/docs/ApiCompletenessDecisionDocsTest.java` 增加只读文档校验。
 
 ## API Surface Audit Boundary
 

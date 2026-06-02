@@ -119,6 +119,13 @@ it does not enable live PGvector in default tests, does not change `search_after
 not validate RAG quality, does not enable Spring AI `VectorStore` production use, and does not complete Flyway /
 Liquibase migration management.
 
+V5.A completion addendum: V5.A completed the RAG production path foundation through V5.A.1 opt-in JDBC adapter,
+V5.A.2 schema baseline, V5.A.3 opt-in connectivity smoke, and V5.A.4 docs / completion record closure. This does not
+revise the V4 historical scope. Default tests still use fake / in-memory dependencies and do not connect PostgreSQL /
+PGvector. The Spring AI `VectorStore` production path is not enabled. RAG quality enhancement, real embedding quality
+validation, Flyway / Liquibase migration management, production deployment, and production auth / monitoring remain
+future work.
+
 推荐 profile：
 
 ```text

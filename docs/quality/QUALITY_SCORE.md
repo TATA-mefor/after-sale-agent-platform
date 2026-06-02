@@ -16,7 +16,7 @@ Score: 86 / 100.
 
 Strengths:
 
-- Modular monolith package layout is in place under `com.example.aftersale`.
+- Modular monolith package layout is in place under `io.github.tatame.aftersale`.
 - API classes call application services instead of repositories.
 - Domain models are independent from Spring Web.
 - Agent orchestration does not directly depend on business repositories.
@@ -580,7 +580,7 @@ Status: completed for V3 infrastructure closure review.
 
 Current validation baseline:
 
-- Test classes: 26 under `src/test/java/com/example/aftersale`.
+- Test classes: 26 under `src/test/java/io/github/tatame/aftersale`.
 - JUnit test methods: 130 discovered by the default Maven test run, with the live LLM smoke test skipped unless
   explicitly enabled.
 - Architecture test methods: 11.
@@ -1919,6 +1919,33 @@ Known limitations:
 - V5.A.3 does not validate RAG quality, real embedding recall, reranking, query rewriting, RRF, chunk window expansion,
   Spring AI `VectorStore` production path, Flyway / Liquibase migration management, Admin ingestion API, public RAG
   HTTP endpoints, production deployment, or production monitoring.
+
+### V5.A RAG Production Path Foundation (completed)
+
+Status: completed for documentation and validation closure of the V5.A RAG production path foundation.
+
+Current V5.A quality status:
+
+- Dual-path quality: the default path remains fake / in-memory through `InMemoryPolicyVectorRepository`, while the
+  JDBC PGvector path is explicit opt-in through `JdbcPolicyVectorRepository`.
+- Schema quality: `schema-rag-postgres.sql` carries schema version baseline `2026-06-01-001` for the opt-in PGvector
+  path.
+- Smoke quality: `JdbcPolicyVectorRepositorySmokeTest` validates opt-in SQL connectivity, persistence, lookup,
+  fixed-vector search ranking, cleanup, and sanitized failures only when `-Dlive.rag=true` is supplied.
+- Docs harness quality: `RagProductionPathCompletionDocsTest` verifies completion records, V5.A status, default
+  offline boundaries, smoke boundaries, ToolRegistry / evidence-only wording, and production overclaim safety.
+- Runtime non-change quality: V5.A.4 does not modify `src/main/java`, retrieval algorithms, ToolRegistry semantics,
+  RAG health, OpenAPI behavior, RAG evaluation, ingestion runtime, ToolCallTrace, Workspace, Execution Tree, or public
+  API behavior.
+
+Known limitations:
+
+- V5.A is a production path foundation only. Production deployment is not completed, production auth / RBAC is not
+  completed, production monitoring is not completed, Flyway / Liquibase migration management is not completed, Spring
+  AI `VectorStore` production path is not enabled, RAG quality enhancement is not completed, and real embedding quality
+  validation is not completed.
+- Reranking, query rewriting, RRF, chunk window expansion, production ingestion API / admin UI, and real refund /
+  exchange / payment / logistics integrations remain future work.
 
 Planned phases:
 

@@ -350,7 +350,7 @@ LLM Planner prompt 必须集中管理。
 允许位置：
 
 ```text
-src/main/java/com/example/aftersale/agent/prompt/
+src/main/java/io/github/tatame/aftersale/agent/prompt/
 docs/agent/
 ```
 

@@ -16,7 +16,7 @@ Score: 86 / 100.
 
 Strengths:
 
-- Modular monolith package layout is in place under `com.example.aftersale`.
+- Modular monolith package layout is in place under `io.github.tatame.aftersale`.
 - API classes call application services instead of repositories.
 - Domain models are independent from Spring Web.
 - Agent orchestration does not directly depend on business repositories.
@@ -580,7 +580,7 @@ Status: completed for V3 infrastructure closure review.
 
 Current validation baseline:
 
-- Test classes: 26 under `src/test/java/com/example/aftersale`.
+- Test classes: 26 under `src/test/java/io/github/tatame/aftersale`.
 - JUnit test methods: 130 discovered by the default Maven test run, with the live LLM smoke test skipped unless
   explicitly enabled.
 - Architecture test methods: 11.

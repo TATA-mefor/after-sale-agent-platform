@@ -42,6 +42,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.A.1 JdbcPolicyVectorRepository](docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md)
 - [V5.A.2 Schema Init / Version Baseline](docs/exec-plans/completed/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md)
 - [V5.A.3 PGvector Connectivity Smoke Test](docs/exec-plans/completed/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md)
+- [V5.A RAG Production Path Completion](docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md)
+- [V5.A RAG Production Path Summary](docs/release/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md)
 
 ## V4 事实口径
 
@@ -60,6 +62,10 @@ V4 completed 表示 foundation / demo / interview-grade 阶段完成，不表示
   `mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true` and the existing
   `AFTERSALE_PGVECTOR_URL`, `AFTERSALE_PGVECTOR_USERNAME`, `AFTERSALE_PGVECTOR_PASSWORD`, and optional
   `AFTERSALE_PGVECTOR_SCHEMA` variables. Default `mvn test` does not run live PGvector smoke.
+- V5.A completed the RAG production path foundation: V5.A.1 opt-in JDBC adapter, V5.A.2 schema baseline,
+  V5.A.3 opt-in connectivity smoke, and V5.A.4 docs / completion record closure. This is not production deployment,
+  RAG quality enhancement, real embedding quality validation, Flyway / Liquibase migration management, or Spring AI
+  `VectorStore` production enablement.
 - `docker-compose-rag.yml` 提供本地 PGvector infrastructure，不是完整 app + PGvector 生产部署方案。
 - 当前 HTTP API 是 demo/backend API surface：Ticket create/get/list pagination、AgentRun create/status read、
   trace / execution-tree 只读视图、Approval pending/get/approve/reject、Actuator health 和 OpenAPI docs；
@@ -122,6 +128,8 @@ Interview docs:
 - [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md)
 - [V5.A.1 JdbcPolicyVectorRepository](docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md)
 - [V5.A.3 PGvector Connectivity Smoke Test](docs/exec-plans/completed/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md)
+- [V5.A RAG Production Path Completion](docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md)
+- [V5.A RAG Production Path Summary](docs/release/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md)
 
 Fast validation:
 
@@ -240,6 +248,13 @@ The smoke uses `AFTERSALE_PGVECTOR_URL`, `AFTERSALE_PGVECTOR_USERNAME`, `AFTERSA
 fake / fixed vectors and validates SQL connectivity, persistence, lookup, vector search ranking, cleanup, and sanitized
 failure messages only. It does not call real LLMs, real embedding providers, Spring AI `VectorStore`, ToolRegistry, or
 `search_aftersale_policy`, and it does not validate RAG quality.
+
+V5.A closes the RAG production path foundation through V5.A.1 opt-in JDBC adapter, V5.A.2 schema baseline, V5.A.3
+opt-in connectivity smoke, and V5.A.4 docs completion record. See
+[V5.A RAG Production Path Completion](docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md) and
+[V5.A RAG Production Path Summary](docs/release/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md). V5.A does not make live PGvector
+part of the default gate, does not validate RAG retrieval quality, does not validate real embedding quality, does not
+enable Spring AI `VectorStore` production use, and does not add Flyway / Liquibase migration management.
 
 ## MySQL Profile
 

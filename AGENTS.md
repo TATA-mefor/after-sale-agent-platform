@@ -147,7 +147,7 @@ mvn test -Dtest=ArchitectureTest
 推荐包结构：
 
 ```text
-com.example.aftersale
+io.github.tatame.aftersale
 ├── common
 ├── order
 ├── ticket

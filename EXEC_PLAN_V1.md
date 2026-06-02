@@ -121,16 +121,16 @@ COMPLETED
 
 ```text
 pom.xml
-src/main/java/com/example/aftersale/AfterSaleAgentApplication.java
-src/main/java/com/example/aftersale/common/
-src/main/java/com/example/aftersale/order/
-src/main/java/com/example/aftersale/ticket/
-src/main/java/com/example/aftersale/policy/
-src/main/java/com/example/aftersale/agent/
-src/main/java/com/example/aftersale/tool/
-src/main/java/com/example/aftersale/trace/
-src/main/java/com/example/aftersale/approval/
-src/test/java/com/example/aftersale/
+src/main/java/io/github/tatame/aftersale/AfterSaleAgentApplication.java
+src/main/java/io/github/tatame/aftersale/common/
+src/main/java/io/github/tatame/aftersale/order/
+src/main/java/io/github/tatame/aftersale/ticket/
+src/main/java/io/github/tatame/aftersale/policy/
+src/main/java/io/github/tatame/aftersale/agent/
+src/main/java/io/github/tatame/aftersale/tool/
+src/main/java/io/github/tatame/aftersale/trace/
+src/main/java/io/github/tatame/aftersale/approval/
+src/test/java/io/github/tatame/aftersale/
 ```
 
 ### 5.4 验证命令

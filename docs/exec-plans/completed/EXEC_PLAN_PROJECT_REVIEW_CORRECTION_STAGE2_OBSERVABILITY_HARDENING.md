@@ -28,7 +28,7 @@ metrics / tracing 策略、Actuator 暴露边界、secret safety 和默认离线
 - `docs/quality/QUALITY_SCORE.md` 增加阶段 2 质量状态。
 - `docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md` 补充可观测性与 actuator 模板边界。
 - `README.md` 链接可观测性决策文档。
-- `src/test/java/com/example/aftersale/docs/ObservabilityHardeningDecisionDocsTest.java` 增加只读文档测试。
+- `src/test/java/io/github/tatame/aftersale/docs/ObservabilityHardeningDecisionDocsTest.java` 增加只读文档测试。
 
 ## Observability Decision Boundary
 

@@ -524,3 +524,23 @@ RAG evidence 不得声称：
 - 已修改物流；
 - 已关闭争议；
 - 已执行任何真实高风险业务动作。
+
+## 14. V5.A RAG Production Path Foundation
+
+V5.A completed the RAG production path foundation without changing the evidence-only contract:
+
+- V5.A.1 adds the opt-in `JdbcPolicyVectorRepository` adapter behind `PolicyVectorRepository`.
+- V5.A.2 records schema version baseline `2026-06-01-001` for the PGvector schema SQL.
+- V5.A.3 adds the opt-in `JdbcPolicyVectorRepositorySmokeTest` with `-Dlive.rag=true`.
+- V5.A.4 adds the V5.A completion record and release summary.
+
+Default tests continue to use fake / in-memory dependencies and do not connect PostgreSQL / PGvector. The optional
+smoke uses fake / fixed vectors and validates connectivity, persistence, lookup, ranking, cleanup, and sanitized
+failure handling only.
+
+V5.A does not change `search_aftersale_policy` retrieval algorithms, does not add a public RAG HTTP endpoint, does not
+enable Spring AI `VectorStore` production path, does not validate RAG quality, does not validate real embedding
+quality, and does not add Flyway / Liquibase migration management.
+
+`search_aftersale_policy` remains a LOW-risk read-only ToolRegistry tool. RAG evidence remains policy evidence only,
+and RAG score is not business decision confidence.

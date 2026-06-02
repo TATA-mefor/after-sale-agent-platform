@@ -24,7 +24,7 @@ completion records, README, quality notes, decision docs, agent contracts, demo 
   V4.6 facts, active V4.7 status, and future-only V4.8 / V4.9 boundaries.
 - Updated `README.md` with V4.7.1 audit status and a safer current demo-flow boundary.
 - Updated `docs/quality/QUALITY_SCORE.md` with the V4.7.1 quality summary and current planned-phase list.
-- Added `src/test/java/com/example/aftersale/docs/V4DocumentationConsistencyTest.java`.
+- Added `src/test/java/io/github/tatame/aftersale/docs/V4DocumentationConsistencyTest.java`.
 
 ## Documentation Consistency Boundary
 

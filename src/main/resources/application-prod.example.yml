@@ -57,7 +57,7 @@ springdoc:
 logging:
   level:
     root: ${LOG_LEVEL_ROOT:INFO}
-    com.example.aftersale: ${LOG_LEVEL_AFTERSALE:INFO}
+    io.github.tatame.aftersale: ${LOG_LEVEL_AFTERSALE:INFO}
   pattern:
     level: >-
       %5p requestId=%X{requestId:-} ticketId=%X{ticketId:-}

@@ -12,7 +12,9 @@ Status: Completed
 Ticket list/query pagination foundation；阶段 3.3 完成 AgentRun get/status polling read model；阶段 3.4 完成
 async AgentRun / SSE / WebSocket / batch API / cancel / retry / AgentRun list pagination 的决策评估；阶段 4 完成
 Spring AI ChatMemory / Advisors / Tool Calling API / bulk embedding 的深化评估；阶段 5 完成 RAG 检索质量改进评估；
-阶段 6 完成部署加固路线决策；V5.A.1 新增显式 opt-in `JdbcPolicyVectorRepository`。
+阶段 6 完成部署加固路线决策；V5.A completed RAG production path foundation。V5.A.1 新增显式 opt-in
+`JdbcPolicyVectorRepository`，V5.A.2 新增 schema baseline，V5.A.3 新增 opt-in PGvector connectivity smoke，
+V5.A.4 新增总完成记录。
 
 ## 总体结论
 
@@ -222,8 +224,9 @@ runtime。
 Kubernetes / Helm、secret manager、database migration、PGvector deployment、readiness/liveness、observability、
 security/auth 和 release/rollback 后续路线；本阶段不实现这些 runtime / deployment 能力。
 
-阶段 0-6 current correction scope completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成。后续 production
-hardening 仍未完成，需要作为 V5 或独立任务继续推进。
+阶段 0-6 current correction scope completed。V5.A completed RAG production path foundation：V5.A.1 opt-in
+JdbcPolicyVectorRepository、V5.A.2 schema baseline、V5.A.3 opt-in PGvector connectivity smoke、V5.A.4 docs /
+completion record 均已完成。后续 production hardening 仍未完成，需要作为 V5.B 或独立任务继续推进。
 
 ## 可观测性决策边界
 
@@ -401,6 +404,32 @@ infrastructure adapter。
 - 不新增 live PGvector validation；
 - 不新增 Flyway / Liquibase migration baseline；
 - 不新增 Admin ingestion API。
+
+## V5.A RAG Production Path Foundation 边界
+
+V5.A completed 表示 RAG production path foundation 已收口，不表示整个平台 production-ready。
+
+已完成范围：
+
+- V5.A.1：`JdbcPolicyVectorRepository` 作为显式 opt-in JDBC PGvector adapter；
+- V5.A.2：`schema-rag-postgres.sql` schema version baseline `2026-06-01-001`；
+- V5.A.3：`JdbcPolicyVectorRepositorySmokeTest` opt-in PGvector connectivity smoke；
+- V5.A.4：`docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` 总完成记录。
+
+默认路径仍使用 fake / in-memory dependencies，不连接 PostgreSQL / PGvector，不运行 live smoke，不调用真实
+LLM、真实 embedding provider 或 Spring AI `VectorStore`。
+
+V5.A 不完成：
+
+- production deployment；
+- production auth / RBAC；
+- production monitoring；
+- Flyway / Liquibase migration management；
+- RAG quality enhancement；
+- real embedding quality validation；
+- Spring AI `VectorStore` production path；
+- production ingestion API / admin UI；
+- 真实退款、换货、优惠券补偿、支付或物流系统接入。
 
 ## 生产配置模板边界
 

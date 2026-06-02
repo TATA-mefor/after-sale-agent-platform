@@ -20,10 +20,10 @@ providers.
 
 ## What Changed
 
-- `src/main/java/com/example/aftersale/policy/rag/health/` now contains the RAG health indicator package.
+- `src/main/java/io/github/tatame/aftersale/policy/rag/health/` now contains the RAG health indicator package.
 - `src/main/resources/application.yml` now configures `agent.rag.health` and limits management exposure to health.
-- `src/test/java/com/example/aftersale/policy/rag/health/` covers indicator behavior, Actuator endpoint output, and docs.
-- `src/test/java/com/example/aftersale/ArchitectureTest.java` includes V4.6.3 health boundary rules.
+- `src/test/java/io/github/tatame/aftersale/policy/rag/health/` covers indicator behavior, Actuator endpoint output, and docs.
+- `src/test/java/io/github/tatame/aftersale/ArchitectureTest.java` includes V4.6.3 health boundary rules.
 
 ## Health Indicator Boundary
 

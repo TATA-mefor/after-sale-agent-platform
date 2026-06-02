@@ -38,7 +38,7 @@ Infrastructure Layer ───► Database / Cache / Search / LLM Provider
 ## 3. 推荐包结构
 
 ```text
-com.example.aftersale
+io.github.tatame.aftersale
 ├── common
 │   ├── api
 │   ├── exception
@@ -1096,7 +1096,7 @@ ToolCallTrace 保留审计记录。
 ### V4 推荐包结构
 
 ```text
-com.example.aftersale
+io.github.tatame.aftersale
 ├── agent
 │   ├── application
 │   │   ├── planner

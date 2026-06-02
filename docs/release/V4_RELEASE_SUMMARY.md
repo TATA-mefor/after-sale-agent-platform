@@ -51,6 +51,11 @@ production auth、production monitoring、live PGvector validation 或真实外�
 - Current addendum: V5.A.3 later adds an explicit opt-in PGvector connectivity smoke test for the JDBC adapter. This
   smoke uses fake / fixed vectors and existing `AFTERSALE_PGVECTOR_*` environment variables, runs only with
   `-Dlive.rag=true`, and does not validate RAG quality or make live PGvector part of default validation.
+- Current addendum: V5.A later closes the RAG production path foundation. See
+  `docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` and
+  `docs/release/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md`. This addendum does not change V4 status and does not complete
+  production deployment, production auth, production monitoring, RAG quality enhancement, real embedding quality
+  validation, Flyway / Liquibase migration management, or Spring AI VectorStore production use.
 - Spring AI delivery means adapter foundation. It does not mean ChatMemory, Advisors, Tool Calling API, or bulk
   embedding are used in the default runtime.
 - RAG retrieval does not yet include reranking, query rewriting, RRF, or chunk window expansion.

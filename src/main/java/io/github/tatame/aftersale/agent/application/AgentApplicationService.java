@@ -1,0 +1,510 @@
+package io.github.tatame.aftersale.agent.application;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.tatame.aftersale.approval.application.ApprovalApplicationService;
+import io.github.tatame.aftersale.agent.application.handler.SpecialistAgentHandlerRegistry;
+import io.github.tatame.aftersale.agent.application.handler.SubtaskExecutionContext;
+import io.github.tatame.aftersale.agent.application.handler.SubtaskExecutionResult;
+import io.github.tatame.aftersale.agent.application.planner.AgentPlan;
+import io.github.tatame.aftersale.agent.application.planner.AgentPlanValidator;
+import io.github.tatame.aftersale.agent.application.planner.AgentPlanner;
+import io.github.tatame.aftersale.agent.application.planner.AgentPlanningContext;
+import io.github.tatame.aftersale.agent.application.planner.AgentSubtask;
+import io.github.tatame.aftersale.agent.application.planner.PlannedToolCall;
+import io.github.tatame.aftersale.agent.application.workspace.AgentWorkspace;
+import io.github.tatame.aftersale.agent.application.workspace.OrderFact;
+import io.github.tatame.aftersale.agent.application.workspace.PolicyEvidence;
+import io.github.tatame.aftersale.agent.application.workspace.ToolResultSummary;
+import io.github.tatame.aftersale.agent.domain.AgentRun;
+import io.github.tatame.aftersale.agent.domain.AgentRunRepository;
+import io.github.tatame.aftersale.common.exception.ResourceNotFoundException;
+import io.github.tatame.aftersale.common.observability.MdcScope;
+import io.github.tatame.aftersale.common.observability.ObservabilityConstants;
+import io.github.tatame.aftersale.ticket.application.TicketApplicationService;
+import io.github.tatame.aftersale.ticket.domain.IntentType;
+import io.github.tatame.aftersale.ticket.domain.Ticket;
+import io.github.tatame.aftersale.ticket.domain.TicketStatus;
+import io.github.tatame.aftersale.tool.application.ToolRegistry;
+import io.github.tatame.aftersale.tool.application.ToolTraceContext;
+import io.github.tatame.aftersale.tool.domain.ToolExecutionStatus;
+import io.github.tatame.aftersale.tool.domain.ToolInput;
+import io.github.tatame.aftersale.tool.domain.ToolOutput;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * 编排一次 AgentRun，从规划、Handler 或工具执行推进到最终摘要。
+ *
+ * <p>边界：本服务可以编排 Planner、专业 Handler、ToolRegistry、Workspace、Trace 上下文和审批创建，
+ * 但不能让 Planner 输出直接执行工具，也不能在未审批时执行高风险业务动作。
+ */
+@Service
+public class AgentApplicationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentApplicationService.class);
+
+    private static final String SEARCH_POLICY_TOOL = AgentExecutableToolPolicy.SEARCH_POLICY_TOOL;
+    private static final String GET_ORDER_BY_ID_TOOL = AgentExecutableToolPolicy.GET_ORDER_BY_ID_TOOL;
+    private static final String ADD_TICKET_NOTE_TOOL = AgentExecutableToolPolicy.ADD_TICKET_NOTE_TOOL;
+    private static final String RISK_POLICY_SUMMARY =
+            "LOW tools may execute directly. HIGH actions such as refund, compensation, payment mutation, "
+                    + "or dispute closure require human approval.";
+
+    private final AgentRunRepository agentRunRepository;
+    private final TicketApplicationService ticketApplicationService;
+    private final ToolRegistry toolRegistry;
+    private final SpecialistAgentHandlerRegistry specialistAgentHandlerRegistry;
+    private final AgentPlanner agentPlanner;
+    private final ObjectMapper objectMapper;
+    private final ApprovalApplicationService approvalApplicationService;
+    private final AgentExecutableToolPolicy executableToolPolicy;
+
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "Spring constructor injection intentionally stores application collaborators.")
+    public AgentApplicationService(
+            AgentRunRepository agentRunRepository,
+            TicketApplicationService ticketApplicationService,
+            ToolRegistry toolRegistry,
+            SpecialistAgentHandlerRegistry specialistAgentHandlerRegistry,
+            AgentPlanner agentPlanner,
+            ObjectMapper objectMapper,
+            ApprovalApplicationService approvalApplicationService,
+            AgentExecutableToolPolicy executableToolPolicy) {
+        this.agentRunRepository = agentRunRepository;
+        this.ticketApplicationService = ticketApplicationService;
+        this.toolRegistry = toolRegistry;
+        this.specialistAgentHandlerRegistry = specialistAgentHandlerRegistry;
+        this.agentPlanner = agentPlanner;
+        this.objectMapper = objectMapper;
+        this.approvalApplicationService = approvalApplicationService;
+        this.executableToolPolicy = executableToolPolicy;
+    }
+
+    /**
+     * 为一个工单运行一次 Agent 工作流，并持久化 AgentRun 结果。
+     *
+     * <p>Planner 只返回 AgentPlan。Java 校验和 ToolRegistry 仍是执行边界，高风险子任务只创建审批请求，
+     * 不直接退款、补偿或关闭争议。
+     */
+    public AgentRunResult runForTicket(String ticketId) {
+        Ticket ticket = ticketApplicationService.getTicket(ticketId);
+        AgentRun agentRun = AgentRun.start("RUN-" + UUID.randomUUID(), ticket.getTicketId(), Instant.now());
+        AgentWorkspace workspace = AgentWorkspace.start(
+                agentRun.getRunId(),
+                ticket.getTicketId(),
+                agentRun.getStartedAt());
+        agentRunRepository.save(agentRun);
+
+        try (MdcScope ignored = MdcScope.putAll(Map.of(
+                ObservabilityConstants.TICKET_ID, ticket.getTicketId(),
+                ObservabilityConstants.AGENT_RUN_ID, agentRun.getRunId()))) {
+            LOGGER.info("agent_run.started status={}", agentRun.getStatus());
+            IntentType intent = IntentType.UNKNOWN;
+            List<String> toolCalls = new ArrayList<>();
+            try {
+                AgentPlanningContext planningContext = planningContext(ticket);
+                AgentPlan plan = agentPlanner.plan(planningContext);
+                AgentPlanValidator.validate(plan, planningContext.availableTools());
+                intent = plan.intent();
+                LOGGER.info(
+                        "agent_run.plan_validated intent={} riskLevel={} subtaskCount={} plannedToolCount={}",
+                        plan.intent(),
+                        plan.riskLevel(),
+                        plan.subtasks().size(),
+                        plan.plannedTools().size());
+                ticketApplicationService.classifyTicketIntent(ticket.getTicketId(), intent);
+                ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.AGENT_RUNNING, null);
+
+                List<String> evidence = new ArrayList<>();
+                List<SubtaskExecutionResult> subtaskResults = List.of();
+                String finalSuggestion;
+                if (plan.hasSubtasks()) {
+                    subtaskResults = executeSubtasks(agentRun.getRunId(), ticket, plan, workspace, evidence, toolCalls);
+                    finalSuggestion = buildMultiIntentFinalSuggestion(plan, subtaskResults, workspace);
+                } else {
+                    for (PlannedToolCall plannedTool : plan.plannedTools()) {
+                        executePlannedTool(agentRun.getRunId(), ticket, plan, workspace, plannedTool, evidence,
+                                toolCalls);
+                    }
+                    finalSuggestion = buildFinalSuggestion(plan, workspace);
+                }
+
+                String completedPlanJson = completedPlanJson(
+                        plan,
+                        finalSuggestion,
+                        evidence,
+                        toolCalls,
+                        subtaskResults,
+                        workspace);
+                agentRun.succeed(completedPlanJson, finalSuggestion, Instant.now());
+                agentRunRepository.save(agentRun);
+                if (!requiresHumanApproval(subtaskResults)) {
+                    ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.RESOLVED,
+                            finalSuggestion);
+                }
+                LOGGER.info("agent_run.succeeded toolCallCount={} evidenceCount={} requiresHumanApproval={}",
+                        toolCalls.size(),
+                        evidence.size(),
+                        requiresHumanApproval(subtaskResults));
+                return new AgentRunResult(agentRun, intent, completedPlanJson, finalSuggestion, evidence, toolCalls);
+            } catch (RuntimeException exception) {
+                String failureMessage = failureMessage(exception);
+                agentRun.fail(failureMessage, Instant.now());
+                agentRunRepository.save(agentRun);
+                markTicketFailedIfAgentCanOwnFailure(ticket.getTicketId(), failureMessage);
+                LOGGER.warn("agent_run.failed intent={} toolCallCount={} errorType={}",
+                        intent,
+                        toolCalls.size(),
+                        exception.getClass().getSimpleName());
+                return new AgentRunResult(agentRun, intent, failurePlan(intent, failureMessage), failureMessage,
+                        List.of(), toolCalls);
+            }
+        }
+    }
+
+    /**
+     * 加载已持久化的 AgentRun，供 Trace 和执行树等读侧接口使用。
+     */
+    public AgentRun getAgentRun(String runId) {
+        return agentRunRepository.findById(runId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "AGENT_RUN_NOT_FOUND",
+                        "AgentRun not found: " + runId));
+    }
+
+    private AgentPlanningContext planningContext(Ticket ticket) {
+        return new AgentPlanningContext(
+                ticket.getTicketId(),
+                ticket.getUserId(),
+                ticket.getOrderId(),
+                ticket.getRawUserMessage(),
+                ticket.getStatus(),
+                availableToolNames(),
+                RISK_POLICY_SUMMARY,
+                ticket.getCreatedAt());
+    }
+
+    private List<String> availableToolNames() {
+        return executableToolPolicy.allowedToolNames();
+    }
+
+    private void executePlannedTool(
+            String runId,
+            Ticket ticket,
+            AgentPlan plan,
+            AgentWorkspace workspace,
+            PlannedToolCall plannedTool,
+            List<String> evidence,
+            List<String> toolCalls) {
+        executePlannedTool(runId, ticket, plan, null, workspace, plannedTool, evidence, toolCalls);
+    }
+
+    private void executePlannedTool(
+            String runId,
+            Ticket ticket,
+            AgentPlan plan,
+            AgentSubtask subtask,
+            AgentWorkspace workspace,
+            PlannedToolCall plannedTool,
+            List<String> evidence,
+            List<String> toolCalls) {
+        switch (plannedTool.toolName()) {
+            case GET_ORDER_BY_ID_TOOL -> executeOrderLookup(runId, ticket, subtask, workspace, evidence, toolCalls);
+            case SEARCH_POLICY_TOOL -> executePolicySearch(runId, plan, subtask, workspace, evidence, toolCalls);
+            case ADD_TICKET_NOTE_TOOL -> executeTicketNote(runId, ticket, plan, subtask, workspace, evidence,
+                    toolCalls);
+            default -> throw new IllegalArgumentException(
+                    "Tool is not allowed for current AgentRun: " + plannedTool.toolName());
+        }
+    }
+
+    private List<SubtaskExecutionResult> executeSubtasks(
+            String runId,
+            Ticket ticket,
+            AgentPlan plan,
+            AgentWorkspace workspace,
+            List<String> evidence,
+            List<String> toolCalls) {
+        List<SubtaskExecutionResult> results = new ArrayList<>();
+        List<AgentSubtask> sortedSubtasks = plan.subtasks().stream()
+                .sorted(Comparator.comparingInt(AgentSubtask::priority)
+                        .thenComparing(AgentSubtask::subtaskId))
+                .toList();
+        for (AgentSubtask subtask : sortedSubtasks) {
+            SubtaskExecutionContext context = new SubtaskExecutionContext(
+                    runId,
+                    ticket,
+                    plan,
+                    subtask,
+                    workspace,
+                    availableToolNames(),
+                    RISK_POLICY_SUMMARY,
+                    results);
+            SubtaskExecutionResult result = specialistAgentHandlerRegistry.handle(context);
+            evidence.addAll(result.evidence());
+            toolCalls.addAll(result.toolCalls());
+            if (result.requiresHumanApproval()) {
+                approvalApplicationService.createForHighRiskSubtask(
+                        ticket.getTicketId(),
+                        runId,
+                        subtask.subtaskId(),
+                        result.summary(),
+                        subtask.riskLevel());
+                try (MdcScope ignored = MdcScope.put(ObservabilityConstants.SUBTASK_ID, subtask.subtaskId())) {
+                    LOGGER.info("agent_run.subtask_approval_required type={} riskLevel={}",
+                            subtask.type(),
+                            subtask.riskLevel());
+                }
+            }
+            results.add(result);
+        }
+        return results;
+    }
+
+    private void executeOrderLookup(
+            String runId,
+            Ticket ticket,
+            AgentSubtask subtask,
+            AgentWorkspace workspace,
+            List<String> evidence,
+            List<String> toolCalls) {
+        ToolOutput orderOutput = executeTool(runId, GET_ORDER_BY_ID_TOOL, tracedInput(Map.of(
+                "orderId", ticket.getOrderId()), subtask));
+        toolCalls.add(GET_ORDER_BY_ID_TOOL);
+        workspace.addToolResultSummary(ToolResultSummary.fromToolOutput(
+                subtaskId(subtask),
+                orderOutput,
+                Instant.now()));
+        ensureToolSucceeded(orderOutput);
+        workspace.addOrderFact(OrderFact.fromToolData(
+                GET_ORDER_BY_ID_TOOL,
+                subtaskId(subtask),
+                orderOutput.data()));
+        evidence.add(evidencePrefix(subtask) + orderEvidence(orderOutput));
+    }
+
+    private void executePolicySearch(
+            String runId,
+            AgentPlan plan,
+            AgentSubtask subtask,
+            AgentWorkspace workspace,
+            List<String> evidence,
+            List<String> toolCalls) {
+        String policyQuery = subtask == null ? plan.policyQuery() : subtask.policyQuery();
+        ToolOutput policyOutput = executeTool(runId, SEARCH_POLICY_TOOL, tracedInput(Map.of(
+                "query", policyQuery), subtask));
+        toolCalls.add(SEARCH_POLICY_TOOL);
+        workspace.addToolResultSummary(ToolResultSummary.fromToolOutput(
+                subtaskId(subtask),
+                policyOutput,
+                Instant.now()));
+        ensureToolSucceeded(policyOutput);
+        workspace.addPolicyEvidence(PolicyEvidence.fromToolData(
+                SEARCH_POLICY_TOOL,
+                subtaskId(subtask),
+                policyOutput.data()));
+        evidence.addAll(extractEvidence(policyOutput).stream()
+                .map(item -> evidencePrefix(subtask) + item)
+                .toList());
+    }
+
+    private void executeTicketNote(
+            String runId,
+            Ticket ticket,
+            AgentPlan plan,
+            AgentSubtask subtask,
+            AgentWorkspace workspace,
+            List<String> evidence,
+            List<String> toolCalls) {
+        String note = subtask == null ? buildNoteToAdd(plan, evidence) : buildSubtaskNote(plan, subtask, evidence);
+        ToolOutput noteOutput = executeTool(runId, ADD_TICKET_NOTE_TOOL, tracedInput(Map.of(
+                "ticketId", ticket.getTicketId(),
+                "note", note), subtask));
+        toolCalls.add(ADD_TICKET_NOTE_TOOL);
+        workspace.addToolResultSummary(ToolResultSummary.fromToolOutput(
+                subtaskId(subtask),
+                noteOutput,
+                Instant.now()));
+        ensureToolSucceeded(noteOutput);
+    }
+
+    private static ToolInput tracedInput(Map<String, Object> arguments, AgentSubtask subtask) {
+        if (subtask == null) {
+            return ToolInput.of(arguments);
+        }
+        Map<String, Object> tracedArguments = new LinkedHashMap<>(arguments);
+        tracedArguments.put("subtaskId", subtask.subtaskId());
+        tracedArguments.put("subtaskType", subtask.type().name());
+        tracedArguments.put("subtaskTarget", subtask.target());
+        return ToolInput.of(tracedArguments);
+    }
+
+    private ToolOutput executeTool(String runId, String toolName, ToolInput input) {
+        List<ToolOutput> outputs = new ArrayList<>();
+        // ToolRegistry 是唯一工具执行入口；Trace 上下文负责把调用绑定到本次运行。
+        ToolTraceContext.runWith(runId, () -> outputs.add(toolRegistry.execute(toolName, input)));
+        return outputs.get(0);
+    }
+
+    private void markTicketFailedIfAgentCanOwnFailure(String ticketId, String failureMessage) {
+        Ticket latestTicket = ticketApplicationService.getTicket(ticketId);
+        if (latestTicket.getStatus() == TicketStatus.CREATED
+                || latestTicket.getStatus() == TicketStatus.AGENT_RUNNING) {
+            ticketApplicationService.updateTicketStatus(ticketId, TicketStatus.FAILED, failureMessage);
+        }
+    }
+
+    private static void ensureToolSucceeded(ToolOutput output) {
+        if (output.status() != ToolExecutionStatus.SUCCEEDED) {
+            throw new IllegalStateException(output.toolName() + " failed: " + output.message());
+        }
+    }
+
+    private static List<String> extractEvidence(ToolOutput policyOutput) {
+        List<PolicyEvidence> policyEvidence = PolicyEvidence.fromToolData(
+                SEARCH_POLICY_TOOL,
+                "",
+                policyOutput.data());
+        if (policyEvidence.isEmpty()) {
+            return List.of("No matching after-sale policy was found.");
+        }
+        return policyEvidence.stream()
+                .map(PolicyEvidence::summary)
+                .toList();
+    }
+
+    private static String orderEvidence(ToolOutput orderOutput) {
+        Map<String, Object> data = orderOutput.data();
+        return "Order " + data.get("orderId")
+                + ": " + data.get("productName")
+                + ", status=" + data.get("orderStatus")
+                + ", aftersaleWindow=" + data.get("whetherInAftersaleWindow")
+                + ", deadline=" + data.get("aftersaleDeadline");
+    }
+
+    private static String buildNoteToAdd(AgentPlan plan, List<String> evidence) {
+        if (evidence.isEmpty()) {
+            return plan.noteToAdd();
+        }
+        return plan.noteToAdd() + " Evidence: " + String.join("; ", evidence);
+    }
+
+    private static String buildSubtaskNote(AgentPlan plan, AgentSubtask subtask, List<String> evidence) {
+        String note = "Subtask " + subtask.subtaskId()
+                + " " + subtask.type().name()
+                + " target=" + subtask.target()
+                + ". " + plan.noteToAdd();
+        if (evidence.isEmpty()) {
+            return note;
+        }
+        return note + " Evidence: " + String.join("; ", evidence);
+    }
+
+    private static String buildFinalSuggestion(AgentPlan plan, AgentWorkspace workspace) {
+        List<String> workspaceEvidence = workspace.evidenceLines();
+        if (workspaceEvidence.isEmpty()) {
+            return plan.finalSuggestion();
+        }
+        return plan.finalSuggestion() + " Workspace summary: " + workspace.summary();
+    }
+
+    private static String buildMultiIntentFinalSuggestion(
+            AgentPlan plan,
+            List<SubtaskExecutionResult> subtaskResults,
+            AgentWorkspace workspace) {
+        String subtaskSummary = subtaskResults.stream()
+                .map(SubtaskExecutionResult::summary)
+                .toList()
+                .stream()
+                .reduce((left, right) -> left + " | " + right)
+                .orElse("No subtasks executed.");
+        if (workspace.evidenceLines().isEmpty() && workspace.subtaskMemories().isEmpty()) {
+            return plan.finalSuggestion() + " Subtask summary: " + subtaskSummary;
+        }
+        return plan.finalSuggestion()
+                + " Subtask summary: " + subtaskSummary
+                + " Workspace summary: " + workspace.summary();
+    }
+
+    private static String evidencePrefix(AgentSubtask subtask) {
+        if (subtask == null) {
+            return "";
+        }
+        return "[" + subtask.subtaskId() + " " + subtask.type().name() + "] ";
+    }
+
+    private static String subtaskId(AgentSubtask subtask) {
+        if (subtask == null) {
+            return "";
+        }
+        return subtask.subtaskId();
+    }
+
+    private static boolean requiresHumanApproval(List<SubtaskExecutionResult> subtaskResults) {
+        return subtaskResults.stream().anyMatch(SubtaskExecutionResult::requiresHumanApproval);
+    }
+
+    private String completedPlanJson(
+            AgentPlan plan,
+            String finalSuggestion,
+            List<String> evidence,
+            List<String> toolCalls,
+            List<SubtaskExecutionResult> subtaskResults,
+            AgentWorkspace workspace) {
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("intent", plan.intent().name());
+        value.put("riskLevel", plan.riskLevel().name());
+        value.put("policyQuery", plan.policyQuery());
+        value.put("noteToAdd", plan.noteToAdd());
+        value.put("finalSuggestion", finalSuggestion);
+        value.put("evidenceHints", plan.evidenceHints());
+        value.put("plannedTools", plan.plannedTools());
+        value.put("subtasks", plan.subtasks());
+        value.put("completedSubtasks", subtaskResults);
+        value.put("subtaskSummaries", subtaskResults.stream()
+                .map(SubtaskExecutionResult::summary)
+                .toList());
+        value.put("evidence", evidence);
+        value.put("toolCalls", toolCalls);
+        // Workspace 只作为本次运行的结构化工作记忆嵌入，审计来源仍是 ToolCallTrace。
+        value.put("workspace", workspace.toSnapshot());
+        return toJson(value);
+    }
+
+    private String failurePlan(IntentType intent, String failureMessage) {
+        return toJson(Map.of(
+                "intent", intent.name(),
+                "riskLevel", "UNKNOWN",
+                "plan", List.of(),
+                "finalSuggestion", failureMessage,
+                "evidence", List.of(),
+                "toolCalls", List.of()));
+    }
+
+    private String toJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Failed to serialize Agent plan", exception);
+        }
+    }
+
+    private static String failureMessage(RuntimeException exception) {
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            return exception.getClass().getSimpleName();
+        }
+        return message;
+    }
+}
