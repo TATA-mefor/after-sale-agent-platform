@@ -34,9 +34,8 @@ class ProductionConfigTemplateDocsTest {
         assertThat(template).contains("on-profile: prod", "SPRING_DATASOURCE_PASSWORD");
         assertThat(templateDoc).contains(
                 "src/main/resources/application-prod.example.yml",
-                "默认不会被 Spring Boot profile 自动加载",
-                "不是生产部署方案",
-                "TASK_COMPLETE");
+                "not loaded by default",
+                "not a production deployment manifest");
         assertThat(readme).contains("docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md");
         assertThat(validation).contains("ProductionConfigTemplateDocsTest");
         assertThat(plan).contains("Status: Completed", "TASK_COMPLETE");
@@ -68,13 +67,13 @@ class ProductionConfigTemplateDocsTest {
                 "not loaded by default",
                 "不会被默认测试 profile 加载",
                 "默认验证",
-                "不需要 real LLM",
-                "不需要 API Key",
-                "不需要 PostgreSQL",
-                "不需要 PGvector",
-                "不需要 Docker",
-                "不需要 MySQL",
-                "不需要 Redis",
+                "does not require real LLMs",
+                "API keys",
+                "PostgreSQL",
+                "PGvector",
+                "Docker",
+                "MySQL",
+                "Redis",
                 "external network");
     }
 

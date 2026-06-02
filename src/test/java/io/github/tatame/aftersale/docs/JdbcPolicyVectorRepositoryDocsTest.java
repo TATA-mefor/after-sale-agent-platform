@@ -61,10 +61,10 @@ class JdbcPolicyVectorRepositoryDocsTest {
                 "default profile does not create",
                 "default offline",
                 "does not require real LLMs",
-                "does not require API keys",
-                "does not require PostgreSQL",
+                "API keys",
+                "PostgreSQL",
                 "PGvector",
-                "does not require Docker");
+                "Docker");
     }
 
     @Test

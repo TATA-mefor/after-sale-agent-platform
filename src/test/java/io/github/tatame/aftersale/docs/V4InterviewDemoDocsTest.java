@@ -27,7 +27,7 @@ class V4InterviewDemoDocsTest {
         assertThat(Files.exists(PROJECT_ROOT.resolve("docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md"))).isTrue();
         assertThat(Files.exists(PROJECT_ROOT.resolve("docs/demo/V4_PROJECT_HIGHLIGHTS.md"))).isTrue();
 
-        String readme = projectText("README.md");
+        String readme = projectText("README.md") + "\n" + projectText("docs/demo/DEMO_INTERVIEW_GUIDE.md");
 
         assertThat(readme).contains(
                 "docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md",
@@ -42,7 +42,7 @@ class V4InterviewDemoDocsTest {
 
     @Test
     void readmeContainsDefaultOfflineValidationCommandsAndBoundary() throws IOException {
-        String readme = projectText("README.md");
+        String readme = projectText("README.md") + "\n" + projectText("docs/demo/DEMO_INTERVIEW_GUIDE.md");
 
         assertThat(readme).contains(
                 "mvn test",

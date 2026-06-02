@@ -100,7 +100,6 @@ class ObservabilityHardeningDecisionDocsTest {
     void actuatorExposureAndHealthBoundaryStaySafe() throws IOException {
         String decision = projectText(DECISION_DOC);
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
-        String deployDoc = projectText("docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md");
 
         assertThat(decision).contains(
                 "默认只暴露 `/actuator/health`",
@@ -120,7 +119,7 @@ class ObservabilityHardeningDecisionDocsTest {
                 "不写 ToolCallTrace",
                 "health details 必须 sanitize");
         assertThat(validation).contains("默认 actuator exposure 继续只包含 `/actuator/health`");
-        assertThat(deployDoc).contains("不默认暴露 prometheus、env、beans、configprops、heapdump");
+        assertThat(validation).contains("敏感 actuator endpoints 如 env、beans、configprops、heapdump、threaddump、prometheus 不默认暴露");
     }
 
     @Test
