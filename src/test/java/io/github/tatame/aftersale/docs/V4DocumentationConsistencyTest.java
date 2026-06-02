@@ -14,34 +14,34 @@ class V4DocumentationConsistencyTest {
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
 
     private static final List<String> V4_COMPLETED_PLANS = List.of(
-            "docs/exec-plans/completed/EXEC_PLAN_V4_PRE_FLIGHT_FIXES.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_TOOL_SKILL_LAYER_FOUNDATION.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_SPRING_AI_ADAPTER.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_PGVECTOR_PROFILE_BOUNDARY.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_VECTOR_SCHEMA_REPOSITORY_CONTRACT.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_FAKE_VECTOR_STORE_OFFLINE_TESTS.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_PGVECTOR_COMPOSE_DOCS.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_DOMAIN_MODEL.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_CHUNKING_CHECKSUM_DEDUP.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_EMBEDDING_PIPELINE_FAKE_PROVIDER.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_DEMO_SCRIPT.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_RAG_ACTUATOR_HEALTH.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_OPENAPI_API_DOCS.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md");
+            "version-updates/EXEC_PLAN_V4_PRE_FLIGHT_FIXES.md",
+            "version-updates/EXEC_PLAN_V4_TOOL_SKILL_LAYER_FOUNDATION.md",
+            "version-updates/EXEC_PLAN_V4_SPRING_AI_ADAPTER.md",
+            "version-updates/EXEC_PLAN_V4_PGVECTOR_PROFILE_BOUNDARY.md",
+            "version-updates/EXEC_PLAN_V4_VECTOR_SCHEMA_REPOSITORY_CONTRACT.md",
+            "version-updates/EXEC_PLAN_V4_FAKE_VECTOR_STORE_OFFLINE_TESTS.md",
+            "version-updates/EXEC_PLAN_V4_PGVECTOR_COMPOSE_DOCS.md",
+            "version-updates/EXEC_PLAN_V4_POLICY_INGESTION_DOMAIN_MODEL.md",
+            "version-updates/EXEC_PLAN_V4_POLICY_CHUNKING_CHECKSUM_DEDUP.md",
+            "version-updates/EXEC_PLAN_V4_POLICY_EMBEDDING_PIPELINE_FAKE_PROVIDER.md",
+            "version-updates/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md",
+            "version-updates/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md",
+            "version-updates/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md",
+            "version-updates/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md",
+            "version-updates/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md",
+            "version-updates/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md",
+            "version-updates/EXEC_PLAN_V4_RAG_DEMO_SCRIPT.md",
+            "version-updates/EXEC_PLAN_V4_RAG_ACTUATOR_HEALTH.md",
+            "version-updates/EXEC_PLAN_V4_OPENAPI_API_DOCS.md",
+            "version-updates/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md",
+            "version-updates/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md",
+            "version-updates/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md",
+            "version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md");
 
     private static final List<String> SELECTED_V4_DOCS = List.of(
             "README.md",
-            "EXEC_PLAN_V4.md",
-            "docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md",
+            "version-updates/EXEC_PLAN_V4.md",
+            "version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md",
             "docs/quality/QUALITY_SCORE.md",
             "docs/agent/TOOL_CONTRACTS.md",
             "docs/agent/SKILL_CONTRACTS.md",
@@ -59,7 +59,7 @@ class V4DocumentationConsistencyTest {
             "docs/demo/V4_PGVECTOR_LOCAL_SETUP.md",
             "docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md",
             "docs/demo/V4_PROJECT_HIGHLIGHTS.md",
-            "docs/release/V4_RELEASE_SUMMARY.md",
+            "version-updates/V4_RELEASE_SUMMARY.md",
             "docs/api/OPENAPI.md");
 
     @Test
@@ -76,10 +76,11 @@ class V4DocumentationConsistencyTest {
     @Test
     void v4RoadmapStatusIsConsistentAcrossPrimaryDocs() throws IOException {
         String readme = projectText("README.md");
-        String execPlan = projectText("EXEC_PLAN_V4.md");
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md");
+        String execPlan = projectText("version-updates/EXEC_PLAN_V4.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md");
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
-        String combined = readme + "\n" + execPlan + "\n" + activePlan + "\n" + quality;
+        String v4Roadmap = projectText("version-updates/V4_ROADMAP.md");
+        String combined = readme + "\n" + execPlan + "\n" + activePlan + "\n" + quality + "\n" + v4Roadmap;
 
         assertThat(combined).contains(
                 "V4.0",
@@ -150,7 +151,7 @@ class V4DocumentationConsistencyTest {
     @Test
     void v471CompletionRecordDefinesNonRuntimeAuditBoundary() throws IOException {
         String completed = projectText(
-                "docs/exec-plans/completed/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md");
+                "version-updates/EXEC_PLAN_V4_DOCUMENTATION_CONSISTENCY_AUDIT.md");
 
         assertThat(completed).contains(
                 "Status: Completed",
@@ -169,7 +170,7 @@ class V4DocumentationConsistencyTest {
     @Test
     void v472CompletionRecordDefinesArchitectureAndOfflineValidationBoundary() throws IOException {
         String completed = projectText(
-                "docs/exec-plans/completed/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md");
+                "version-updates/EXEC_PLAN_V4_ARCHITECTURE_OFFLINE_VALIDATION_CLOSURE.md");
 
         assertThat(completed).contains(
                 "Status: Completed",

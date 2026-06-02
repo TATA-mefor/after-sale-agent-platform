@@ -20,7 +20,7 @@ class DeploymentHardeningRoadmapDocsTest {
     private static final String ROADMAP_DOC = "docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md";
 
     private static final String COMPLETED_PLAN =
-            "docs/exec-plans/completed/"
+            "version-updates/"
                     + "EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md";
 
     private static final List<String> STAGE_SIX_DOCS = List.of(
@@ -29,8 +29,8 @@ class DeploymentHardeningRoadmapDocsTest {
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/quality/QUALITY_SCORE.md",
-            "docs/release/V4_RELEASE_SUMMARY.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/V4_RELEASE_SUMMARY.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             DECISION_DOC,
             ROADMAP_DOC,
             COMPLETED_PLAN);
@@ -107,10 +107,10 @@ class DeploymentHardeningRoadmapDocsTest {
         String readme = projectText("README.md");
         String productionConfig = projectText("docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md");
         String remediation = projectText("docs/quality/PROJECT_REMEDIATION_PLAN.md");
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
-        String releaseSummary = projectText("docs/release/V4_RELEASE_SUMMARY.md");
+        String releaseSummary = projectText("version-updates/V4_RELEASE_SUMMARY.md");
 
         assertThat(readme).contains(DECISION_DOC, ROADMAP_DOC, COMPLETED_PLAN);
         assertThat(productionConfig).contains(DECISION_DOC, ROADMAP_DOC);

@@ -4,8 +4,8 @@ This page summarizes AfterSale-Agent V4 for project review and interviews. It de
 capabilities and explicit boundaries; it is not a production rollout statement.
 
 V4 status: completed. The final completion record is
-`docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`; the concise release summary is
-`docs/release/V4_RELEASE_SUMMARY.md`.
+`version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`; the concise release summary is
+`version-updates/V4_RELEASE_SUMMARY.md`.
 
 ## Interview Summary
 

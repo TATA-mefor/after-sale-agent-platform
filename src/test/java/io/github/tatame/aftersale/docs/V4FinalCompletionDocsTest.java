@@ -15,10 +15,10 @@ class V4FinalCompletionDocsTest {
 
     private static final List<String> FINAL_DOCS = List.of(
             "README.md",
-            "EXEC_PLAN_V4.md",
-            "docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
-            "docs/release/V4_RELEASE_SUMMARY.md",
+            "version-updates/EXEC_PLAN_V4.md",
+            "version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md",
+            "version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
+            "version-updates/V4_RELEASE_SUMMARY.md",
             "docs/quality/QUALITY_SCORE.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md",
@@ -26,8 +26,8 @@ class V4FinalCompletionDocsTest {
 
     @Test
     void finalCompletionRecordAndReleaseSummaryExist() throws IOException {
-        String finalRecord = projectText("docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md");
-        String releaseSummary = projectText("docs/release/V4_RELEASE_SUMMARY.md");
+        String finalRecord = projectText("version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md");
+        String releaseSummary = projectText("version-updates/V4_RELEASE_SUMMARY.md");
 
         assertThat(finalRecord).contains(
                 "Status: Completed",
@@ -49,8 +49,8 @@ class V4FinalCompletionDocsTest {
     @Test
     void finalStatusAndLinksAreVisibleInPrimaryDocs() throws IOException {
         String readme = projectText("README.md");
-        String execPlan = projectText("EXEC_PLAN_V4.md");
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md");
+        String execPlan = projectText("version-updates/EXEC_PLAN_V4.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md");
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
         String interview = projectText("docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md");
@@ -63,8 +63,8 @@ class V4FinalCompletionDocsTest {
                 "V4 overall status is completed");
         assertThat(readme).contains(
                 "V4 status: completed",
-                "docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
-                "docs/release/V4_RELEASE_SUMMARY.md");
+                "version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
+                "version-updates/V4_RELEASE_SUMMARY.md");
         assertThat(quality).contains("V4 final quality closure", "V4.7.4 V4 Final Completion Record (completed)");
         assertThat(validation).contains(
                 "V4 Final Validation",
@@ -75,12 +75,12 @@ class V4FinalCompletionDocsTest {
                 "V4 final default validation gate");
         assertThat(interview).contains(
                 "V4 status: completed",
-                "docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
-                "docs/release/V4_RELEASE_SUMMARY.md");
+                "version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
+                "version-updates/V4_RELEASE_SUMMARY.md");
         assertThat(highlights).contains(
                 "V4 status: completed",
-                "docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
-                "docs/release/V4_RELEASE_SUMMARY.md");
+                "version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
+                "version-updates/V4_RELEASE_SUMMARY.md");
     }
 
     @Test

@@ -15,10 +15,11 @@ class ProjectReviewCorrectionDocsTest {
 
     private static final List<String> REVIEW_CORRECTION_DOCS = List.of(
             "README.md",
-            "EXEC_PLAN_V4.md",
-            "docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md",
-            "docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md",
-            "docs/release/V4_RELEASE_SUMMARY.md",
+            "version-updates/EXEC_PLAN_V4.md",
+            "version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md",
+            "version-updates/V4_RELEASE_SUMMARY.md",
+            "version-updates/V4_FACTS.md",
             "docs/quality/QUALITY_SCORE.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/demo/V4_PGVECTOR_LOCAL_SETUP.md",
@@ -30,14 +31,14 @@ class ProjectReviewCorrectionDocsTest {
     @Test
     void correctionCompletionRecordExistsAndIsLinked() throws IOException {
         String readme = projectText("README.md");
-        String execPlan = projectText("EXEC_PLAN_V4.md");
-        String release = projectText("docs/release/V4_RELEASE_SUMMARY.md");
+        String execPlan = projectText("version-updates/EXEC_PLAN_V4.md");
+        String release = projectText("version-updates/V4_RELEASE_SUMMARY.md");
         String completion = projectText(
-                "docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
+                "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
 
-        assertThat(readme).contains("docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
-        assertThat(execPlan).contains("docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
-        assertThat(release).contains("docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
+        assertThat(readme).contains("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
+        assertThat(execPlan).contains("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
+        assertThat(release).contains("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
         assertThat(completion).contains(
                 "Status: Completed",
                 "Documentation Fact Correction Boundary",

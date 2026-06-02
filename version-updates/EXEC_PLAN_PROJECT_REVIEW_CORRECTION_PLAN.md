@@ -71,10 +71,10 @@
 
 - `README.md`
 - `EXEC_PLAN_V4.md`
-- `docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md`
+- `version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md`
 - `docs/quality/QUALITY_SCORE.md`
 - `docs/quality/VALIDATION_COMMANDS.md`
-- `docs/release/V4_RELEASE_SUMMARY.md`
+- `version-updates/V4_RELEASE_SUMMARY.md`
 - `docs/demo/V4_PROJECT_HIGHLIGHTS.md`
 - `docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md`
 - `docs/api/OPENAPI.md`
@@ -115,7 +115,7 @@
 - 已新增 metrics / tracing 方向的 decision record：
   `docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md`。
 - 已新增完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md`。
 - 已明确当前保持 MDC-only，OpenTelemetry 是 future / opt-in path。
 - 已明确 Prometheus、Grafana、collector、metrics dashboard、provider latency / cost metrics 和 external logging
   platform 仍是 future / opt-in，不是阶段 2 runtime 实现。
@@ -145,7 +145,7 @@
 
 - 已新增 `docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md`。
 - 已新增完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_1_API_COMPLETENESS_DECISION.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_1_API_COMPLETENESS_DECISION.md`。
 - 已明确当前 HTTP API 是 demo/backend API surface，不是完整生产 CRUD。
 - 已记录当前 API：Ticket create/get、AgentRun create/start、ToolCallTrace read-only view、Execution Tree read-only
   view、Approval pending/get/approve/reject、health 和 OpenAPI docs。
@@ -175,7 +175,7 @@
 - 补 Controller / OpenAPI / docs harness tests。
 - 更新 README、OpenAPI docs、API completeness decision、整改方案和质量文档。
 - 完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md`。
 
 非目标：
 
@@ -199,7 +199,7 @@
 - 补 Controller / OpenAPI / docs harness tests。
 - 更新 README、OpenAPI docs、API completeness decision、整改方案、validation docs 和质量文档。
 - 完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_3_AGENT_RUN_STATUS_READ.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_3_AGENT_RUN_STATUS_READ.md`。
 
 非目标：
 
@@ -219,7 +219,7 @@
 
 - 新增 `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md`。
 - 新增完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_4_ASYNC_STREAMING_BATCH_EVALUATION.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_4_ASYNC_STREAMING_BATCH_EVALUATION.md`。
 - 评估 async AgentRun、status polling、SSE / WebSocket、batch API、cancel / retry 和 AgentRun list pagination。
 - 明确当前同步 create/start + `GET /api/agent-runs/{runId}` status polling 是当前安全路径。
 - 明确 AgentRun list pagination 是后续 read-only API 候选，优先级高于 streaming 和 batch。
@@ -265,7 +265,7 @@
 
 - 已新增 `docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md`。
 - 已新增完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md`。
 - 已评估 ChatMemory / Advisors 是否适合当前 Agent boundary。
 - 已评估 Spring AI Tool Calling API 与 ToolRegistry / Approval / Trace 边界的冲突风险。
 - 已评估 bulk embedding 必须保留在 `EmbeddingClient` abstraction 后。
@@ -295,7 +295,7 @@
 
 - 已新增 `docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md`。
 - 已新增完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE5_RAG_QUALITY_EVALUATION.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE5_RAG_QUALITY_EVALUATION.md`。
 - 已记录当前 KEYWORD / VECTOR / HYBRID RAG baseline。
 - 已记录 deterministic RAG evaluation baseline 和 no LLM-as-judge by default。
 - 已评估 reranking、query rewriting、RRF / hybrid scoring、chunk window expansion 的 future / opt-in 路线。
@@ -331,7 +331,7 @@
 - 新增 `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md`。
 - 新增 `docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md`。
 - 新增完成记录：
-  `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md`。
+  `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md`。
 - 记录 Dockerfile hardening、CI/CD、secret management、database migration、PGvector deployment、
   readiness/liveness、observability、security/auth 和 release/rollback 后续路线。
 - 更新 README、production config docs、整改方案、quality docs、validation docs 和 release summary。
@@ -374,7 +374,7 @@
 9. V5.A.2：schema init / version baseline `2026-06-01-001` 已完成，仅记录当前 schema 初始化口径。
 10. V5.A.3：PGvector connectivity smoke 已完成，必须显式 opt-in，不得进入默认验证。
 11. V5.A.4：PGvector profile / docs closure 已完成，收口记录为
-    `docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md`。
+    `version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md`。
 12. V5.B：Flyway / Liquibase migration framework、production hardening 和后续 production validation planned。
 
 ## 5. 风险控制

@@ -15,7 +15,7 @@ class JdbcPolicyVectorRepositoryDocsTest {
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
 
     private static final String COMPLETION_RECORD =
-            "docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md";
+            "version-updates/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md";
 
     private static final List<String> V5_A1_DOCS = List.of(
             "README.md",
@@ -24,11 +24,11 @@ class JdbcPolicyVectorRepositoryDocsTest {
             "docs/demo/V4_PGVECTOR_LOCAL_SETUP.md",
             "docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md",
             "docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/QUALITY_SCORE.md",
             "docs/quality/VALIDATION_COMMANDS.md",
-            "docs/release/V4_RELEASE_SUMMARY.md",
+            "version-updates/V4_RELEASE_SUMMARY.md",
             COMPLETION_RECORD);
 
     @Test

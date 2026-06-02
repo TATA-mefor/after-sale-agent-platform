@@ -414,7 +414,7 @@ V5.A completed 表示 RAG production path foundation 已收口，不表示整个
 - V5.A.1：`JdbcPolicyVectorRepository` 作为显式 opt-in JDBC PGvector adapter；
 - V5.A.2：`schema-rag-postgres.sql` schema version baseline `2026-06-01-001`；
 - V5.A.3：`JdbcPolicyVectorRepositorySmokeTest` opt-in PGvector connectivity smoke；
-- V5.A.4：`docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` 总完成记录。
+- V5.A.4：`version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` 总完成记录。
 
 默认路径仍使用 fake / in-memory dependencies，不连接 PostgreSQL / PGvector，不运行 live smoke，不调用真实
 LLM、真实 embedding provider 或 Spring AI `VectorStore`。

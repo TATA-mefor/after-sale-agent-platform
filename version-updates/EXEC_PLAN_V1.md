@@ -76,8 +76,8 @@ SPEC.md
 WORKFLOW.md
 AGENTS.md
 ARCHITECTURE.md
-docs/exec-plans/active/
-docs/exec-plans/completed/
+version-updates/
+version-updates/
 docs/decisions/
 docs/quality/QUALITY_SCORE.md
 docs/agent/TOOL_CONTRACTS.md
@@ -573,7 +573,7 @@ ARCHITECTURE.md
 docs/agent/TOOL_CONTRACTS.md
 docs/agent/RISK_POLICY.md
 docs/quality/QUALITY_SCORE.md
-docs/exec-plans/completed/EXEC_PLAN_V1_REVIEW.md
+version-updates/EXEC_PLAN_V1_REVIEW.md
 ```
 
 其中 SPEC.md 和 WORKFLOW.md 作为 V1 目标与流程基线检查；若未发现与当前收口冲突的内容，不做无意义改写。
@@ -679,7 +679,7 @@ V1 收口产物：
 
 ```text
 docs/quality/QUALITY_SCORE.md
-docs/exec-plans/completed/EXEC_PLAN_V1_REVIEW.md
+version-updates/EXEC_PLAN_V1_REVIEW.md
 README.md Demo Walkthrough
 最终 Review Packet
 ```

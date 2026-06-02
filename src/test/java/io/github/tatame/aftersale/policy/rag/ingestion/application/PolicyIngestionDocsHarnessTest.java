@@ -16,7 +16,7 @@ class PolicyIngestionDocsHarnessTest {
     void ingestionPipelineDocsAndCompletionRecordExist() throws IOException {
         String pipelineDoc = projectText("docs/demo/V4_POLICY_INGESTION_PIPELINE.md");
         String completionRecord = projectText(
-                "docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md");
+                "version-updates/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md");
 
         assertThat(pipelineDoc).contains("V4.4 provides the policy ingestion pipeline foundation");
         assertThat(pipelineDoc).contains("admin / offline pipeline");
@@ -36,6 +36,8 @@ class PolicyIngestionDocsHarnessTest {
     void ingestionDocsDescribeBoundariesAndNonGoals() throws IOException {
         String docs = projectText("README.md")
                 + "\n"
+                + projectText("version-updates/V4_ROADMAP.md")
+                + "\n"
                 + projectText("docs/demo/V4_POLICY_INGESTION_PIPELINE.md")
                 + "\n"
                 + projectText("docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md")
@@ -44,7 +46,7 @@ class PolicyIngestionDocsHarnessTest {
                 + "\n"
                 + projectText("docs/quality/QUALITY_SCORE.md")
                 + "\n"
-                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md");
+                + projectText("version-updates/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md");
 
         assertThat(docs).contains("V4.4 is an ingestion foundation");
         assertThat(docs).contains("V4.4 Policy Ingestion Foundation Quality Summary");
@@ -70,7 +72,7 @@ class PolicyIngestionDocsHarnessTest {
                 + "\n"
                 + projectText("docs/quality/QUALITY_SCORE.md")
                 + "\n"
-                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md");
+                + projectText("version-updates/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md");
 
         assertThat(docs).contains("does not require an API key");
         assertThat(docs).contains("PostgreSQL");
@@ -85,7 +87,7 @@ class PolicyIngestionDocsHarnessTest {
     @Test
     void ingestionDocsDoNotContainRealSecretsOrLocalPaths() throws IOException {
         assertSecretSafe(projectText("docs/demo/V4_POLICY_INGESTION_PIPELINE.md"));
-        assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md"));
+        assertSecretSafe(projectText("version-updates/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md"));
     }
 
     private static String projectText(String path) throws IOException {

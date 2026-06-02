@@ -19,8 +19,8 @@ class ProductionConfigTemplateDocsTest {
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/quality/QUALITY_SCORE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
-            "docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md");
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md");
 
     @Test
     void productionTemplateAndDocsExistAndAreLinked() throws IOException {
@@ -29,7 +29,7 @@ class ProductionConfigTemplateDocsTest {
         String readme = projectText("README.md");
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
         String plan = projectText(
-                "docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md");
+                "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md");
 
         assertThat(template).contains("on-profile: prod", "SPRING_DATASOURCE_PASSWORD");
         assertThat(templateDoc).contains(

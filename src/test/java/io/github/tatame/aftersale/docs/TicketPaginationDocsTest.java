@@ -15,7 +15,7 @@ class TicketPaginationDocsTest {
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
 
     private static final String COMPLETED_PLAN =
-            "docs/exec-plans/completed/"
+            "version-updates/"
                     + "EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md";
 
     private static final List<String> STAGE_THREE_TWO_DOCS = List.of(
@@ -25,14 +25,14 @@ class TicketPaginationDocsTest {
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/quality/QUALITY_SCORE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             COMPLETED_PLAN);
 
     @Test
     void ticketPaginationCompletionRecordExistsAndIsLinked() throws IOException {
         String readme = projectText("README.md");
         String completion = projectText(COMPLETED_PLAN);
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
         assertThat(completion).contains(
                 "Status: Completed",

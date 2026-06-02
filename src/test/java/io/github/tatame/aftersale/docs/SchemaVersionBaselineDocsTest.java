@@ -17,17 +17,18 @@ class SchemaVersionBaselineDocsTest {
     private static final String SCHEMA = "src/main/resources/schema-rag-postgres.sql";
 
     private static final String COMPLETION_RECORD =
-            "docs/exec-plans/completed/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md";
+            "version-updates/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md";
 
     private static final List<String> V5_A2_DOCS = List.of(
             SCHEMA,
             "README.md",
+            "version-updates/V4_FACTS.md",
             "docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md",
             "docs/decisions/DECISION_V4_RAG_VECTOR_STORE.md",
             "docs/demo/V4_PGVECTOR_LOCAL_SETUP.md",
             "docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md",
             "docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             "docs/quality/QUALITY_SCORE.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             COMPLETION_RECORD);
@@ -50,7 +51,7 @@ class SchemaVersionBaselineDocsTest {
         String docs = combinedDocs();
 
         assertThat(projectText(COMPLETION_RECORD)).contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(projectText("README.md")).contains(
+        assertThat(projectText("README.md") + "\n" + projectText("version-updates/V4_FACTS.md")).contains(
                 "V5.A.2",
                 "schema version baseline",
                 "2026-06-01-001",
@@ -81,7 +82,7 @@ class SchemaVersionBaselineDocsTest {
 
     @Test
     void activePlanMarksV5A2CompletedAndNextStepsPlanned() throws IOException {
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
         assertThat(activePlan).contains(
                 "V5.A.2 schema init / version baseline 已完成",

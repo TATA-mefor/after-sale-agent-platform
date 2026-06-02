@@ -13,12 +13,13 @@ class RagHealthDocsHarnessTest {
     @Test
     void docsMentionRagHealthBoundariesAndNoSecrets() throws IOException {
         String readme = fileText("README.md");
+        String v4Roadmap = fileText("version-updates/V4_ROADMAP.md");
         String quality = fileText("docs/quality/QUALITY_SCORE.md");
-        String activePlan = fileText("docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md");
-        String completed = fileText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_ACTUATOR_HEALTH.md");
+        String activePlan = fileText("version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md");
+        String completed = fileText("version-updates/EXEC_PLAN_V4_RAG_ACTUATOR_HEALTH.md");
         String decision = fileText("docs/decisions/DECISION_V4_SPRING_BOOT_COMPLETENESS.md");
 
-        assertThat(readme).contains("V4 RAG health indicators");
+        assertThat(v4Roadmap).contains("V4 RAG health indicators");
         assertThat(quality).contains("V4.6.3");
         assertThat(activePlan).contains("V4.6.3", "Completed");
         assertThat(decision).contains("offline readiness");
@@ -31,7 +32,7 @@ class RagHealthDocsHarnessTest {
                 "does not expose secrets",
                 "TASK_COMPLETE");
 
-        String combined = readme + quality + activePlan + completed + decision;
+        String combined = readme + quality + activePlan + completed + decision + v4Roadmap;
         assertThat(combined).doesNotContain(
                 "sk-",
                 "database password:",

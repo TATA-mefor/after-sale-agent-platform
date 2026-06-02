@@ -1,7 +1,7 @@
 
 # AfterSale-Agent V4 RAG & Spring AI Integration 执行计划
 
-Status: Completed
+Status: Completed / Closed
 
 ## 1. V4 总目标
 
@@ -41,14 +41,14 @@ Policy document ingestion
 → AgentRun final summary
 ```
 
-V4 completed 的事实边界：V4 是 foundation / demo / interview-grade completion，不是 production deployment
-completion。PGvector 当前完成 profile boundary、schema、compose docs、repository contract、fake / in-memory vector
-store 和默认离线测试；`JdbcPolicyVectorRepository`、默认 live PGvector write/search、Spring AI VectorStore
-production path 和 live PGvector integration validation 仍是 V5 / future / opt-in。当前 HTTP API 是 demo/backend
-API surface，不是完整生产 CRUD 平台。Spring AI 当前是 adapter foundation，不代表已使用 ChatMemory、Advisors、
-Tool Calling API 或 bulk embedding。RAG 当前不包含 reranking、query rewriting、RRF 或 chunk window expansion。
-production auth、production monitoring、production deployment、真实退款、真实换货、真实支付、真实物流和真实优惠券
-补偿集成均不属于 V4 已完成范围。
+V4 completed 的事实边界：本文件是 historical active V4 plan，当前已 Completed / Closed。V4 是 foundation /
+demo / interview-grade completion，不是 production deployment completion。PGvector 当前完成 profile boundary、
+schema、compose docs、repository contract、fake / in-memory vector store 和默认离线测试；`JdbcPolicyVectorRepository`、
+默认 live PGvector write/search、Spring AI VectorStore production path 和 live PGvector integration validation 仍是
+V5 / future / opt-in。当前 HTTP API 是 demo/backend API surface，不是完整生产 CRUD 平台。Spring AI 当前是
+adapter foundation，不代表已使用 ChatMemory、Advisors、Tool Calling API 或 bulk embedding。RAG 当前不包含
+reranking、query rewriting、RRF 或 chunk window expansion。production auth、production monitoring、production
+deployment、真实退款、真实换货、真实支付、真实物流和真实优惠券补偿集成均不属于 V4 已完成范围。
 
 ## 2. V4 核心原则
 
@@ -528,7 +528,7 @@ V4.4.4 只完成 ingestion docs / V4.4 completion record:
 
 - 新增 `docs/demo/V4_POLICY_INGESTION_PIPELINE.md`，说明 ingestion 目的、当前能力、当前不包含、pipeline flow、
   default offline example、future real path、failure handling 和 security / safety；
-- 新增 `docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md`，作为 V4.4 总收口记录；
+- 新增 `version-updates/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md`，作为 V4.4 总收口记录；
 - README、RAG policy retrieval contract、RAG vector store decision、quality summary 和 V4 主计划均标记
   V4.4.1 / V4.4.2 / V4.4.3 / V4.4.4 completed；
 - 新增 docs harness tests，验证 ingestion 文档存在、边界措辞完整、默认测试隔离说明完整、无真实 secret 或本地绝对路径。
@@ -779,7 +779,7 @@ ToolRegistry、ToolCallTrace schema、Workspace 写入逻辑、Execution Tree ru
 ### 10.3 V4.6.3 已完成边界
 
 ```text
-V4.6.3 -> Actuator health indicators (completed)
+V4.6.3 -> Actuator health indicators (Completed)
 ```
 
 V4.6.3 只完成 Actuator health indicator / health exposure / tests / docs：
@@ -827,8 +827,9 @@ API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、真实 embedding prov
 ## 11. V4.7 Documentation / Architecture / Final Closure
 
 Status: completed. V4.7.1 documentation consistency / secret safety audit, V4.7.2 architecture boundary / offline
-validation closure, V4.7.3 interview demo / README polish, and V4.7.4 final V4 completion record are completed. V4
-overall status is completed; future V5 / production hardening work is outside this V4 completion scope.
+validation closure, V4.7.3 interview demo / README polish, and V4.7.4 final V4 completion record are completed. This
+file is retained as the historical active V4 plan and is now closed. V4 overall status is completed; future V5 /
+production hardening work is outside this V4 completion scope.
 
 ### 11.1 V4.7.1 Documentation Consistency / Secret Safety Audit
 
@@ -886,12 +887,12 @@ Status: completed.
 
 V4.7.4 completes final V4 documentation closure only:
 
-- `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` records the completed V4.0 through V4.7.4 scope,
+- `version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` records the completed V4.0 through V4.7.4 scope,
   preserved architecture boundaries, default offline validation boundary, evidence-only safety boundary, known
   limitations, recommended demo path, and future work.
-- `docs/release/V4_RELEASE_SUMMARY.md` gives a concise reviewer-facing summary of what V4 delivered, how to validate,
+- `version-updates/V4_RELEASE_SUMMARY.md` gives a concise reviewer-facing summary of what V4 delivered, how to validate,
   how to demo, and what remains intentionally non-production / opt-in.
-- README, the historical active V4 plan, quality notes, validation commands, interview checklist, and project
+- README, this historical active V4 plan, quality notes, validation commands, interview checklist, and project
   highlights link the final record and release summary.
 - Final docs harness tests verify final completion links, status wording, offline validation claims, ToolRegistry and
   evidence-only boundaries, and no production / real external integration overclaims.
@@ -943,9 +944,10 @@ Production deployment documentation if explicitly scoped later
 ## 14. V4 Final Completion Status
 
 V4 overall status is completed. The final completion record is
-`docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`, and the reviewer-facing release summary is
-`docs/release/V4_RELEASE_SUMMARY.md`. The project review fact wording correction record is
-`docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md`.
+`version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`, and the reviewer-facing release summary is
+`version-updates/V4_RELEASE_SUMMARY.md`. The project review fact wording correction record is
+`version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md`. This active plan is retained as a closed
+historical plan and should not be used to mark new V4.7.4 work as pending.
 
 Future work is not part of the completed V4 scope:
 
@@ -997,7 +999,7 @@ completion signal
 完成文件应放入：
 
 ```text
-docs/exec-plans/completed/
+version-updates/
 ```
 
 ## 16. Completion Signal

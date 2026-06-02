@@ -16,9 +16,9 @@ class OpenApiDocsHarnessTest {
     void openApiDocsAndRoadmapDescribeV464Boundary() throws IOException {
         String openApi = projectText("docs/api/OPENAPI.md");
         String readme = projectText("README.md");
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md");
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
-        String completed = projectText("docs/exec-plans/completed/EXEC_PLAN_V4_OPENAPI_API_DOCS.md");
+        String completed = projectText("version-updates/EXEC_PLAN_V4_OPENAPI_API_DOCS.md");
         String activePlanV464 = sectionFrom(activePlan, "### 10.4 V4.6.4");
         String qualityV464 = sectionFrom(quality, "### V4.6.4");
 
@@ -43,7 +43,8 @@ class OpenApiDocsHarnessTest {
                 "TASK_COMPLETE");
 
         assertSecretSafe(openApi + activePlanV464 + qualityV464 + completed);
-        assertReadmeOpenApiSectionSecretSafe(readme);
+        String v4Roadmap = projectText("version-updates/V4_ROADMAP.md");
+        assertReadmeOpenApiSectionSecretSafe(v4Roadmap);
     }
 
     private static String projectText(String path) throws IOException {

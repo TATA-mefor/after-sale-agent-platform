@@ -63,7 +63,7 @@
 推荐位置：
 
 ```text
-docs/exec-plans/active/{task-name}.md
+version-updates/{task-name}.md
 ```
 
 ### Step 2：Read Context
@@ -147,7 +147,7 @@ mvn test -Dtest=ArchitectureTest
 推荐位置：
 
 ```text
-docs/exec-plans/completed/
+version-updates/
 docs/decisions/
 docs/quality/QUALITY_SCORE.md
 ```

@@ -20,7 +20,7 @@ class V4InterviewDemoDocsTest {
             "docs/demo/V4_RAG_DEMO_SCRIPT.md",
             "docs/api/OPENAPI.md",
             "docs/quality/VALIDATION_COMMANDS.md",
-            "docs/exec-plans/completed/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md");
+            "version-updates/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md");
 
     @Test
     void interviewDemoDocsExistAndAreLinkedFromReadme() throws IOException {
@@ -128,7 +128,7 @@ class V4InterviewDemoDocsTest {
     @Test
     void completedPlanContainsRequiredCompletionSignal() throws IOException {
         String completed = projectText(
-                "docs/exec-plans/completed/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md");
+                "version-updates/EXEC_PLAN_V4_INTERVIEW_DEMO_README_POLISH.md");
 
         assertThat(completed).contains(
                 "Status: Completed",

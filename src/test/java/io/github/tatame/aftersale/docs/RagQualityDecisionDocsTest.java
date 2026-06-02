@@ -18,7 +18,7 @@ class RagQualityDecisionDocsTest {
             "docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md";
 
     private static final String COMPLETED_PLAN =
-            "docs/exec-plans/completed/"
+            "version-updates/"
                     + "EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE5_RAG_QUALITY_EVALUATION.md";
 
     private static final List<String> STAGE_FIVE_DOCS = List.of(
@@ -30,7 +30,7 @@ class RagQualityDecisionDocsTest {
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/quality/QUALITY_SCORE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             COMPLETED_PLAN);
 
     @Test
@@ -44,7 +44,7 @@ class RagQualityDecisionDocsTest {
         String remediation = projectText("docs/quality/PROJECT_REMEDIATION_PLAN.md");
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
         assertThat(decision).contains(
                 "Status: Completed",

@@ -16,9 +16,9 @@ class RagEvaluationDocsHarnessTest {
     void ragEvaluationDocsDescribeV461Boundary() throws IOException {
         String docs = projectText("docs/evaluation/EVALUATION.md")
                 + "\n"
-                + projectText("EXEC_PLAN_V4.md")
+                + projectText("version-updates/EXEC_PLAN_V4.md")
                 + "\n"
-                + projectText("docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md")
+                + projectText("version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md")
                 + "\n"
                 + projectText("docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md")
                 + "\n"
@@ -26,7 +26,7 @@ class RagEvaluationDocsHarnessTest {
                 + "\n"
                 + projectText("README.md")
                 + "\n"
-                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md");
+                + projectText("version-updates/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md");
 
         assertThat(docs).contains("V4.6.1");
         assertThat(docs).contains("docs/evaluation/rag_policy_cases.jsonl");
@@ -52,7 +52,7 @@ class RagEvaluationDocsHarnessTest {
     @Test
     void ragEvaluationCompletionRecordExists() throws IOException {
         String completionRecord =
-                projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md");
+                projectText("version-updates/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md");
 
         assertThat(completionRecord).contains("Status: Completed");
         assertThat(completionRecord).contains("Dataset Boundary");
@@ -67,7 +67,7 @@ class RagEvaluationDocsHarnessTest {
     void ragEvaluationDocsDoNotContainRealSecretsOrLocalPaths() throws IOException {
         assertSecretSafe(projectText("docs/evaluation/rag_policy_cases.jsonl"));
         assertSecretSafe(projectText("docs/evaluation/EVALUATION.md"));
-        assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md"));
+        assertSecretSafe(projectText("version-updates/EXEC_PLAN_V4_RAG_EVALUATION_CASES_METRICS.md"));
     }
 
     private static String projectText(String path) throws IOException {

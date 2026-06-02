@@ -817,8 +817,8 @@ V4 质量目标聚焦 RAG、Spring AI、Tool / Skill 能力层和 Spring Boot �
 Status: completed. V4.0 pre-flight fixes, V4.1 Tool / Skill Layer Foundation, V4.2 Spring AI Adapter, V4.3 PGvector
 profile / schema / fake vector store / compose docs, V4.4 Policy Ingestion Foundation, V4.5 Hybrid RAG Policy Search
 Tool, V4.6 evaluation / demo / Actuator health / OpenAPI docs, and V4.7 documentation / architecture / final closure
-are completed. V4 final closure is recorded in `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` and
-summarized in `docs/release/V4_RELEASE_SUMMARY.md`.
+are completed. V4 final closure is recorded in `version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` and
+summarized in `version-updates/V4_RELEASE_SUMMARY.md`.
 
 ### V4.0 Pre-flight Fixes Quality Summary
 
@@ -1500,10 +1500,10 @@ Status: completed for V4 final quality closure, release summary, final roadmap s
 
 Current V4.7.4 quality status:
 
-- Final completion quality: `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` summarizes V4.0
+- Final completion quality: `version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md` summarizes V4.0
   through V4.7.4 scope, preserved architecture boundaries, default offline validation, evidence-only safety, known
   limitations, recommended demo path, and future work.
-- Release summary quality: `docs/release/V4_RELEASE_SUMMARY.md` gives reviewers a concise V4 summary, validation path,
+- Release summary quality: `version-updates/V4_RELEASE_SUMMARY.md` gives reviewers a concise V4 summary, validation path,
   demo path, non-production boundaries, and roadmap.
 - Roadmap quality: `EXEC_PLAN_V4.md`, the historical active V4 plan, README, and this quality score now mark V4
   overall and V4.7.4 as completed while keeping V5 / production hardening as future work.

@@ -5,8 +5,8 @@ review guide, not a production deployment guide.
 
 V4 status: completed. Use the final record and release summary as the closing references:
 
-- `docs/exec-plans/completed/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`
-- `docs/release/V4_RELEASE_SUMMARY.md`
+- `version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md`
+- `version-updates/V4_RELEASE_SUMMARY.md`
 
 ## Demo Goal
 

@@ -18,7 +18,7 @@ class SpringAiDeepeningDecisionDocsTest {
             "docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md";
 
     private static final String COMPLETED_PLAN =
-            "docs/exec-plans/completed/"
+            "version-updates/"
                     + "EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md";
 
     private static final List<String> STAGE_FOUR_DOCS = List.of(
@@ -28,7 +28,7 @@ class SpringAiDeepeningDecisionDocsTest {
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/quality/QUALITY_SCORE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             COMPLETED_PLAN);
 
     @Test
@@ -40,7 +40,7 @@ class SpringAiDeepeningDecisionDocsTest {
         String remediation = projectText("docs/quality/PROJECT_REMEDIATION_PLAN.md");
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
         assertThat(decision).contains(
                 "Status: Completed",

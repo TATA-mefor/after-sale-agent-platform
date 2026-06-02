@@ -17,7 +17,7 @@ class ObservabilityHardeningDecisionDocsTest {
             "docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md";
 
     private static final String COMPLETED_PLAN =
-            "docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md";
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md";
 
     private static final List<String> STAGE_TWO_DOCS = List.of(
             "README.md",
@@ -25,7 +25,7 @@ class ObservabilityHardeningDecisionDocsTest {
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/VALIDATION_COMMANDS.md",
             "docs/quality/QUALITY_SCORE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             DECISION_DOC,
             COMPLETED_PLAN);
 
@@ -35,7 +35,7 @@ class ObservabilityHardeningDecisionDocsTest {
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
         String remediation = projectText("docs/quality/PROJECT_REMEDIATION_PLAN.md");
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
-        String activePlan = projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
+        String activePlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
         String completedPlan = projectText(COMPLETED_PLAN);
 
         assertThat(projectText(DECISION_DOC)).contains("Status: Completed");

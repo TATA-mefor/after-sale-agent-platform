@@ -237,7 +237,7 @@ Agent 不得直接执行以下动作：
 * WORKFLOW.md：任务执行流程；
 * AGENTS.md：智能体入口导航；
 * ARCHITECTURE.md：架构分层与依赖规则；
-* docs/exec-plans/：执行计划；
+* version-updates/：执行计划；
 * docs/decisions/：决策日志；
 * docs/quality/QUALITY_SCORE.md：质量评分；
 * ArchUnit 测试：机械化架构约束；

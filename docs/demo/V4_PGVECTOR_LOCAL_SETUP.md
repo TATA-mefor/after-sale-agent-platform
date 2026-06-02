@@ -186,8 +186,8 @@ future approval.
 
 V5.A completion: V5.A completed the RAG production path foundation by closing V5.A.1 opt-in JDBC adapter, V5.A.2 schema
 baseline, V5.A.3 opt-in connectivity smoke, and V5.A.4 docs / completion record. See
-`docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` and
-`docs/release/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md`.
+`version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` and
+`version-updates/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md`.
 
 This completion does not make PGvector part of default validation, does not validate RAG retrieval quality, does not
 validate real embedding quality, does not enable Spring AI `VectorStore` production use, and does not add Flyway /

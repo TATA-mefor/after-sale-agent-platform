@@ -52,8 +52,8 @@ production auth、production monitoring、live PGvector validation 或真实外�
   smoke uses fake / fixed vectors and existing `AFTERSALE_PGVECTOR_*` environment variables, runs only with
   `-Dlive.rag=true`, and does not validate RAG quality or make live PGvector part of default validation.
 - Current addendum: V5.A later closes the RAG production path foundation. See
-  `docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` and
-  `docs/release/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md`. This addendum does not change V4 status and does not complete
+  `version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md` and
+  `version-updates/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md`. This addendum does not change V4 status and does not complete
   production deployment, production auth, production monitoring, RAG quality enhancement, real embedding quality
   validation, Flyway / Liquibase migration management, or Spring AI VectorStore production use.
 - Spring AI delivery means adapter foundation. It does not mean ChatMemory, Advisors, Tool Calling API, or bulk
@@ -118,7 +118,7 @@ create/get, AgentRun create, ToolCallTrace and Execution Tree read-only views, A
 Actuator health, and OpenAPI docs.
 
 The project review correction record is
-`docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md`.
+`version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md`.
 
 系统性补丁阶段 0-6 current correction scope completed：阶段 0 修正文档事实口径，阶段 1 补生产配置模板，
 阶段 2 补可观测性加固决策，阶段 3 补 API 完整性路线与最小只读 API 改进，阶段 4 补 Spring AI 深化评估，
@@ -130,7 +130,7 @@ Deployment hardening docs:
 
 - `docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md`
 - `docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md`
-- `docs/exec-plans/completed/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md`
+- `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md`
 
 ## Future Roadmap
 

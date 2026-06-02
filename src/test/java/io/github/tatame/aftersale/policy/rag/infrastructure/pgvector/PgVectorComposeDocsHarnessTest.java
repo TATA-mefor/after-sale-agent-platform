@@ -63,8 +63,9 @@ class PgVectorComposeDocsHarnessTest {
     @Test
     void pgVectorDocsDescribeOptInBoundaryAndKnownNonGoals() throws IOException {
         String readme = projectText("README.md");
+        String v4Roadmap = projectText("version-updates/V4_ROADMAP.md");
         String setupDoc = projectText("docs/demo/V4_PGVECTOR_LOCAL_SETUP.md");
-        String docs = readme + "\n" + setupDoc;
+        String docs = readme + "\n" + v4Roadmap + "\n" + setupDoc;
 
         assertThat(docs).contains("opt-in");
         assertThat(docs).contains("local development only");

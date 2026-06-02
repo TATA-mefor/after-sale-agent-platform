@@ -15,32 +15,33 @@ class RagProductionPathCompletionDocsTest {
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
 
     private static final String V5_A_COMPLETION =
-            "docs/exec-plans/completed/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md";
+            "version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md";
 
-    private static final String V5_A_SUMMARY = "docs/release/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md";
+    private static final String V5_A_SUMMARY = "version-updates/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md";
 
     private static final List<String> V5_A_COMPLETION_DOCS = List.of(
             "README.md",
+            "version-updates/V4_FACTS.md",
             "docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md",
             "docs/decisions/DECISION_V4_RAG_VECTOR_STORE.md",
             "docs/demo/V4_PGVECTOR_LOCAL_SETUP.md",
             "docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md",
             "docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md",
-            "docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
+            "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md",
             "docs/quality/PROJECT_REMEDIATION_PLAN.md",
             "docs/quality/QUALITY_SCORE.md",
             "docs/quality/VALIDATION_COMMANDS.md",
-            "docs/release/V4_RELEASE_SUMMARY.md",
+            "version-updates/V4_RELEASE_SUMMARY.md",
             V5_A_COMPLETION,
             V5_A_SUMMARY);
 
     @Test
     void completionRecordsAndSummaryExist() throws IOException {
-        assertThat(projectText("docs/exec-plans/completed/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md"))
+        assertThat(projectText("version-updates/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md"))
                 .contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(projectText("docs/exec-plans/completed/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md"))
+        assertThat(projectText("version-updates/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md"))
                 .contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(projectText("docs/exec-plans/completed/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md"))
+        assertThat(projectText("version-updates/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md"))
                 .contains("Status: Completed", "TASK_COMPLETE");
         assertThat(projectText(V5_A_COMPLETION))
                 .contains("Status: Completed", "V5.A completed", "Completion Signal", "TASK_COMPLETE");
@@ -51,12 +52,12 @@ class RagProductionPathCompletionDocsTest {
     void docsMarkV5ACompletedAndV5BPlanned() throws IOException {
         String docs = combinedDocs();
 
-        assertThat(projectText("README.md")).contains(
+        assertThat(projectText("README.md") + "\n" + projectText("version-updates/V4_FACTS.md")).contains(
                 "V5.A RAG Production Path Completion",
                 "V5.A completed the RAG production path foundation",
                 V5_A_COMPLETION,
                 V5_A_SUMMARY);
-        assertThat(projectText("docs/exec-plans/active/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md")).contains(
+        assertThat(projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md")).contains(
                 "V5.A RAG production path foundation completed",
                 "V5.A.4 docs / completion record 已完成",
                 "V5.B planned");

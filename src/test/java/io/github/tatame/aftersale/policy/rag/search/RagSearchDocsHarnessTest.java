@@ -22,7 +22,7 @@ class RagSearchDocsHarnessTest {
                 + "\n"
                 + projectText("docs/quality/QUALITY_SCORE.md")
                 + "\n"
-                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md");
+                + projectText("version-updates/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md");
 
         assertThat(docs).contains("retrievalMode");
         assertThat(docs).contains("V4.5.1");
@@ -45,7 +45,7 @@ class RagSearchDocsHarnessTest {
                 + "\n"
                 + projectText("docs/quality/QUALITY_SCORE.md")
                 + "\n"
-                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md");
+                + projectText("version-updates/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md");
 
         assertThat(docs).contains("V4.5.2");
         assertThat(docs).contains("keyword + vector merge service");
@@ -61,7 +61,7 @@ class RagSearchDocsHarnessTest {
 
     @Test
     void ragSearchCompletionRecordExists() throws IOException {
-        String completionRecord = projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md");
+        String completionRecord = projectText("version-updates/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md");
 
         assertThat(completionRecord).contains("Status: Completed");
         assertThat(completionRecord).contains("Retrieval Mode Boundary");
@@ -72,7 +72,7 @@ class RagSearchDocsHarnessTest {
 
     @Test
     void ragMergeServiceCompletionRecordExists() throws IOException {
-        String completionRecord = projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md");
+        String completionRecord = projectText("version-updates/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md");
 
         assertThat(completionRecord).contains("Status: Completed");
         assertThat(completionRecord).contains("Merge Service Boundary");
@@ -92,7 +92,7 @@ class RagSearchDocsHarnessTest {
                 + "\n"
                 + projectText("docs/quality/QUALITY_SCORE.md")
                 + "\n"
-                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md");
+                + projectText("version-updates/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md");
 
         assertThat(docs).contains("V4.5.3");
         assertThat(docs).contains("search_aftersale_policy");
@@ -113,7 +113,7 @@ class RagSearchDocsHarnessTest {
     @Test
     void ragHybridRuntimeCompletionRecordExists() throws IOException {
         String completionRecord =
-                projectText("docs/exec-plans/completed/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md");
+                projectText("version-updates/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md");
 
         assertThat(completionRecord).contains("Status: Completed");
         assertThat(completionRecord).contains("Runtime Mode Boundary");
@@ -135,7 +135,7 @@ class RagSearchDocsHarnessTest {
                 + "\n"
                 + projectText("docs/quality/QUALITY_SCORE.md")
                 + "\n"
-                + projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md");
+                + projectText("version-updates/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md");
 
         assertThat(docs).contains("V4.5.4");
         assertThat(docs).contains("ToolCallTrace / Workspace evidence");
@@ -154,7 +154,7 @@ class RagSearchDocsHarnessTest {
     @Test
     void ragTraceWorkspaceEvidenceCompletionRecordExists() throws IOException {
         String completionRecord =
-                projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md");
+                projectText("version-updates/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md");
 
         assertThat(completionRecord).contains("Status: Completed");
         assertThat(completionRecord).contains("ToolCallTrace Evidence Boundary");
@@ -171,11 +171,11 @@ class RagSearchDocsHarnessTest {
     void ragSearchDocsDoNotContainRealSecretsOrLocalPaths() throws IOException {
         assertSecretSafe(projectText("docs/agent/TOOL_CONTRACTS.md"));
         assertSecretSafe(projectText("docs/agent/RAG_POLICY_RETRIEVAL_CONTRACT.md"));
-        assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md"));
-        assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md"));
+        assertSecretSafe(projectText("version-updates/EXEC_PLAN_V4_RAG_SEARCH_CONTRACT.md"));
+        assertSecretSafe(projectText("version-updates/EXEC_PLAN_V4_RAG_EVIDENCE_MERGE_SERVICE.md"));
         assertSecretSafe(
-                projectText("docs/exec-plans/completed/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md"));
-        assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md"));
+                projectText("version-updates/EXEC_PLAN_V4_SEARCH_AFTERSALE_POLICY_HYBRID_RUNTIME.md"));
+        assertSecretSafe(projectText("version-updates/EXEC_PLAN_V4_RAG_TRACE_WORKSPACE_EVIDENCE.md"));
     }
 
     private static String projectText(String path) throws IOException {

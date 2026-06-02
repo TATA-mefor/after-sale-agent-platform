@@ -38,14 +38,15 @@ class RagDemoDocsHarnessTest {
     @Test
     void ragDemoDocsAreLinkedFromReadmeAndEvaluationDocs() throws IOException {
         String readme = projectText("README.md");
+        String v4Roadmap = projectText("version-updates/V4_ROADMAP.md");
         String evaluationDocs = projectText("docs/evaluation/EVALUATION.md");
 
         assertThat(readme).contains("docs/demo/V4_RAG_DEMO_SCRIPT.md");
         assertThat(readme).contains("docs/demo/V4_POLICY_INGESTION_PIPELINE.md");
         assertThat(readme).contains("docs/demo/V4_PGVECTOR_LOCAL_SETUP.md");
         assertThat(readme).contains("docs/evaluation/EVALUATION.md");
-        assertThat(readme).contains("default V4 RAG demo does not require API keys, Docker, or PGvector");
-        assertThat(readme).contains("local interview / project review demo");
+        assertThat(v4Roadmap).contains("default V4 RAG demo does not require API keys, Docker, or PGvector");
+        assertThat(v4Roadmap).contains("local interview / project review demo");
 
         assertThat(evaluationDocs).contains("Scenario D");
         assertThat(evaluationDocs).contains("docs/demo/V4_RAG_DEMO_SCRIPT.md");
@@ -56,11 +57,11 @@ class RagDemoDocsHarnessTest {
 
     @Test
     void ragDemoPlanAndRoadmapDescribeV462Completion() throws IOException {
-        String docs = projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_DEMO_SCRIPT.md")
+        String docs = projectText("version-updates/EXEC_PLAN_V4_RAG_DEMO_SCRIPT.md")
                 + "\n"
-                + projectText("EXEC_PLAN_V4.md")
+                + projectText("version-updates/EXEC_PLAN_V4.md")
                 + "\n"
-                + projectText("docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md")
+                + projectText("version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md")
                 + "\n"
                 + projectText("docs/quality/QUALITY_SCORE.md");
 
@@ -83,7 +84,7 @@ class RagDemoDocsHarnessTest {
     @Test
     void ragDemoDocsDoNotContainSecretsLocalPathsOrCompletedActionClaims() throws IOException {
         assertSecretSafe(projectText("docs/demo/V4_RAG_DEMO_SCRIPT.md"));
-        assertSecretSafe(projectText("docs/exec-plans/completed/EXEC_PLAN_V4_RAG_DEMO_SCRIPT.md"));
+        assertSecretSafe(projectText("version-updates/EXEC_PLAN_V4_RAG_DEMO_SCRIPT.md"));
     }
 
     private static String projectText(String path) throws IOException {

@@ -57,7 +57,7 @@ state, calls the `EmbeddingClient` abstraction in offline tests with `FakeEmbedd
 
 V4.4.4 implementation status: the ingestion documentation and V4.4 completion record are completed.
 `docs/demo/V4_POLICY_INGESTION_PIPELINE.md` documents the V4.4 ingestion foundation, default offline path, failure
-handling, safety boundary, and future real-provider path. `docs/exec-plans/completed/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md`
+handling, safety boundary, and future real-provider path. `version-updates/EXEC_PLAN_V4_POLICY_INGESTION_FOUNDATION.md`
 records the total V4.4 completion. There is still no Admin Controller, `ingest_policy_document` tool, ToolRegistry
 wiring, real Spring AI embedding default path, JDBC repository, PGvector live write, HYBRID retrieval, RAG runtime, or
 `search_aftersale_policy` vector wiring.

@@ -399,8 +399,8 @@ V3.4 已完成：
   Docker Compose、Observability、核心 API、demo flow、execution tree、approval APIs、evaluation dataset、
   验证命令和已知限制；
 - `docs/quality/QUALITY_SCORE.md` 增加 V3 final quality summary；
-- `docs/exec-plans/active/EXEC_PLAN_V3_INFRASTRUCTURE_CLOSURE.md` 标记为 completed；
-- 新增 `docs/exec-plans/completed/EXEC_PLAN_V3_FINAL_REVIEW.md`；
+- `version-updates/EXEC_PLAN_V3_INFRASTRUCTURE_CLOSURE.md` 标记为 completed；
+- 新增 `version-updates/EXEC_PLAN_V3_FINAL_REVIEW.md`；
 - 复跑默认质量门禁，确认默认测试仍不依赖 MySQL、Docker、Redis、真实 LLM、API Key 或外部网络。
 
 V3.4 未做：

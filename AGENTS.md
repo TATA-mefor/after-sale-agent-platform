@@ -42,7 +42,7 @@ ARCHITECTURE.md
 ```text
 docs/product/
 docs/decisions/
-docs/exec-plans/active/
+version-updates/
 ```
 
 ### 3.3 涉及 Agent 行为时继续读
@@ -375,7 +375,7 @@ Hybrid Retrieval
 
 ```text
 EXEC_PLAN_V4.md
-docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md
+version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md
 docs/decisions/DECISION_V4_TOOL_SKILL_LAYER.md
 docs/decisions/DECISION_V4_SPRING_AI_ADAPTER.md
 docs/decisions/DECISION_V4_RAG_VECTOR_STORE.md

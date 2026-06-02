@@ -20,7 +20,7 @@ completion records, README, quality notes, decision docs, agent contracts, demo 
 
 ## What Changed
 
-- Updated `EXEC_PLAN_V4.md` and `docs/exec-plans/active/EXEC_PLAN_V4_RAG_SPRING_AI.md` to reflect completed V4.5 and
+- Updated `EXEC_PLAN_V4.md` and `version-updates/EXEC_PLAN_V4_RAG_SPRING_AI.md` to reflect completed V4.5 and
   V4.6 facts, active V4.7 status, and future-only V4.8 / V4.9 boundaries.
 - Updated `README.md` with V4.7.1 audit status and a safer current demo-flow boundary.
 - Updated `docs/quality/QUALITY_SCORE.md` with the V4.7.1 quality summary and current planned-phase list.
