@@ -10,10 +10,10 @@ See [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md) for 
 secret placeholder boundary, and default offline validation boundary.
 
 This template is not loaded by default, is not a production deployment manifest, and does not add production auth,
-production monitoring, secret-manager integration, live PGvector validation, or real payment / logistics / refund
-integrations. Do not commit real API keys, database passwords, tokens, private endpoints, local absolute paths, raw
-prompts, or raw datasets. Default validation still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker,
-MySQL, Redis, real embedding providers, Spring AI live calls, or external network.
+production monitoring, secret-manager integration, live PGvector validation, live dependency readiness checks, or real
+payment / logistics / refund integrations. Do not commit real API keys, database passwords, tokens, private endpoints,
+local absolute paths, raw prompts, or raw datasets. Default validation still does not require real LLMs, API keys,
+PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live calls, or external network.
 
 Stage 6 of the project review correction records the deployment hardening route in
 [Deployment Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md) and
@@ -44,8 +44,8 @@ V5.B.2.1 records the configuration and secret boundary in
 `docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md`.
 
 `application-prod.example.yml` remains a template only. It is not loaded by default, does not deploy the application,
-and does not imply production auth, production monitoring, readiness / liveness runtime changes, or real external
-business integrations.
+and does not imply production auth, production monitoring, live dependency readiness checks, or real external business
+integrations.
 
 Secrets must be supplied through environment variables, the deployment platform, or a future secret manager. The
 current Docker image does not contain secrets, and the CI default gate does not inject live secrets or run live LLM,
@@ -94,6 +94,21 @@ AFTERSALE_RAG_FLYWAY_ENABLED:false
 Secret manager is not implemented, production deployment is not completed, production auth / RBAC is not completed,
 production monitoring is not completed, and real refund / exchange / payment / logistics integrations are not
 connected.
+
+## V5.B.3.1 Readiness / Liveness Boundary
+
+V5.B.3.1 readiness / liveness actuator probe boundary completed. See
+`docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md` and
+`docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md`.
+
+The default Actuator exposure remains health-only. `/actuator/health`, `/actuator/health/liveness`, and
+`/actuator/health/readiness` are available. `/actuator/env`, `/actuator/beans`, `/actuator/configprops`,
+`/actuator/heapdump`, `/actuator/threaddump`, and `/actuator/prometheus` remain unavailable by default.
+
+This does not add Prometheus registry, Micrometer business metrics, OpenTelemetry, collector configuration, production
+monitoring, or live DB / PGvector / LLM / embedding readiness checks. V5.B.3.2 planned metrics, V5.B.3.3 planned
+tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned auth / Kubernetes / release hardening
+remain future work.
 
 V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile. This is an
 infrastructure adapter behind `PolicyVectorRepository`, not a new Agent tool, not a public RAG HTTP endpoint, and not a

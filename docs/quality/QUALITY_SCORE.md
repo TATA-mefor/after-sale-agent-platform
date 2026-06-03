@@ -2069,6 +2069,36 @@ Known limitations:
   readiness / liveness runtime changes, or external business integrations.
 - Real refund / exchange / payment / logistics integrations are not connected.
 
+### V5.B.3.1 Readiness / Liveness Boundary (completed)
+
+Status: completed for readiness / liveness actuator probe boundary. V5.B.3.2 planned metrics, V5.B.3.3 planned
+tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned auth / Kubernetes / release hardening
+remain future work.
+
+Current V5.B.3.1 quality status:
+
+- Probe configuration quality: `application.yml` enables `management.endpoint.health.probes.enabled=true` and defines
+  explicit `liveness` and `readiness` health groups.
+- Actuator exposure quality: Actuator web exposure remains health-only. `/actuator/health`,
+  `/actuator/health/liveness`, and `/actuator/health/readiness` are available, while `/actuator/env`,
+  `/actuator/beans`, `/actuator/configprops`, `/actuator/heapdump`, `/actuator/threaddump`, and
+  `/actuator/prometheus` remain unavailable by default.
+- Default offline quality: `ReadinessLivenessBoundaryTest` verifies the default context does not create `DataSource`,
+  Spring AI live model, Spring AI `VectorStore`, or `JdbcPolicyVectorRepository` beans.
+- Docs harness quality: `ReadinessLivenessBoundaryDocsTest` checks status docs, validation commands, secret safety,
+  actuator exposure boundaries, live dependency boundaries, and future-work boundaries.
+- Runtime non-change quality: V5.B.3.1 does not modify `src/main/java`, ToolRegistry, `search_aftersale_policy`,
+  RAG retrieval, ingestion, health indicator internals, OpenAPI config, ToolCallTrace, Workspace, Execution Tree,
+  Ticket, AgentRun, Approval, or production application service behavior.
+
+Known limitations:
+
+- V5.B.3.1 does not implement Micrometer business metrics, Prometheus registry, `/actuator/prometheus`, Grafana
+  dashboards, OpenTelemetry, collector configuration, production monitoring, live DB / PGvector / LLM / embedding
+  readiness checks, production auth / RBAC, Kubernetes / Helm, release / rollback hardening, or external business
+  integrations.
+- Real refund / exchange / payment / logistics integrations are not connected.
+
 Planned phases:
 
 ```text

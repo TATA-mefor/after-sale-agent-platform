@@ -15,8 +15,10 @@ Spring AI ChatMemory / Advisors / Tool Calling API / bulk embedding 的深化评
 阶段 6 完成部署加固路线决策；V5.A completed RAG production path foundation。V5.A.1 新增显式 opt-in
 `JdbcPolicyVectorRepository`，V5.A.2 新增 schema baseline，V5.A.3 新增 opt-in PGvector connectivity smoke，
 V5.A.4 新增总完成记录。V5.B.1 完成 container + CI foundation：新增 multi-stage Dockerfile、
-`.dockerignore`、GitHub Actions 默认质量门禁和 Docker build validation 文档。V5.B.1 仍不是生产部署、
-CD、registry release、Kubernetes / Helm、secret manager、production auth 或 production monitoring。
+`.dockerignore`、GitHub Actions 默认质量门禁和 Docker build validation 文档。V5.B.3.1 完成 readiness /
+liveness actuator probe boundary：启用 health probes，增加 liveness/readiness health groups，并保持 Actuator
+exposure 只包含 health。V5.B.1 和 V5.B.3.1 仍不是生产部署、CD、registry release、Kubernetes / Helm、
+secret manager、production auth、production monitoring、Prometheus 或 OpenTelemetry 集成。
 
 ## 总体结论
 
@@ -230,8 +232,9 @@ security/auth 和 release/rollback 后续路线；本阶段不实现这些 runti
 JdbcPolicyVectorRepository、V5.A.2 schema baseline、V5.A.3 opt-in PGvector connectivity smoke、V5.A.4 docs /
 completion record 均已完成。V5.B.1 completed container + CI foundation：新增 Dockerfile foundation、
 `.dockerignore` secret safety、GitHub Actions Maven quality gate 和 Docker build validation。V5.B.2+ 的
-config / secret / migration hardening、observability runtime hardening、auth、Kubernetes / Helm、release /
-rollback 和 production deployment 仍是后续任务。
+config / secret / migration hardening 已推进到 V5.B.2 current scope completed。V5.B.3.1 readiness / liveness
+actuator probe boundary completed。V5.B.3.2 metrics、V5.B.3.3 tracing、V5.B.3.4 production monitoring roadmap、
+auth、Kubernetes / Helm、release / rollback 和 production deployment 仍是后续任务。
 
 ## 可观测性决策边界
 
@@ -507,10 +510,45 @@ V5.A 不完成：
 - V5.B.2.1：已完成。Config + Secret Boundary / Profile Matrix Plan。
 - V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
 - V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
-- V5.B.3：planned。Observability runtime hardening。
+- V5.B.3.1：已完成。Readiness / Liveness Boundary；readiness / liveness actuator probe boundary completed。
+- V5.B.3.2：planned。Micrometer metrics / optional registry strategy。
+- V5.B.3.3：planned。Tracing / cross-service propagation strategy。
+- V5.B.3.4：planned。Production monitoring roadmap。
 - V5.B.4：planned。Auth、Kubernetes / Helm、release / rollback hardening。
 
 V5.B.1 的完成不等于 V5.B overall completed，也不表示 production deployment 已完成。
+
+## V5.B.3.1 Readiness / Liveness Boundary
+
+V5.B.3.1 完成最小 Actuator readiness / liveness probe 边界。
+
+已完成范围：
+
+- `application.yml` 启用 `management.endpoint.health.probes.enabled=true`；
+- 增加 `liveness` 和 `readiness` health groups；
+- Actuator web exposure remains health-only；
+- `/actuator/health`、`/actuator/health/liveness`、`/actuator/health/readiness` 可用；
+- `/actuator/env`、`/actuator/beans`、`/actuator/configprops`、`/actuator/heapdump`、
+  `/actuator/threaddump` 和 `/actuator/prometheus` 默认不可用；
+- 新增 `ReadinessLivenessBoundaryTest` 和 `ReadinessLivenessBoundaryDocsTest`；
+- 新增 `docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md`；
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md`。
+
+V5.B.3.1 不完成：
+
+- Micrometer business metrics；
+- Prometheus registry 或 `/actuator/prometheus`；
+- Grafana dashboard；
+- OpenTelemetry 或 collector configuration；
+- production monitoring；
+- live DB / PGvector / LLM / embedding readiness checks；
+- production auth / RBAC；
+- Kubernetes / Helm；
+- release / rollback hardening；
+- 真实退款、换货、优惠券补偿、支付或物流系统接入。
+
+默认验证仍不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
+Spring AI live calls、secret manager、Docker Compose、Prometheus、OpenTelemetry collector 或 external network。
 
 ## 生产配置模板边界
 

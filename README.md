@@ -56,6 +56,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.B.2.2 Flyway Migration Foundation](docs/deploy/MIGRATION_FOUNDATION.md)
 - [V5.B.2.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md)
 - [V5.B.2.3 Profile Matrix Validation](docs/exec-plans/completed/EXEC_PLAN_V5_B2_3_PROFILE_MATRIX_VALIDATION.md)
+- [V5.B.3.1 Readiness / Liveness Boundary](docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md)
+- [V5.B.3.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -166,8 +168,9 @@ docker run --rm -p 8080:8080 after-sale-agent-platform:local
 
 See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment.
 V5.B.2.1 config / secret boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile Matrix Validation are
-completed. V5.B.2 current scope completed. V5.B.3 observability hardening and V5.B.4 auth / Kubernetes / release
-hardening remain planned.
+completed. V5.B.2 current scope completed. V5.B.3.1 readiness / liveness actuator probe boundary completed.
+V5.B.3.2 planned metrics, V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4
+planned auth / Kubernetes / release hardening remain future work.
 
 ## V5.B.2 Config / Secret / Migration Boundary
 
@@ -190,6 +193,21 @@ behavior was not changed.
 
 V5.B.2 does not implement secret manager, production deployment, production auth, production monitoring, or external
 business integrations. Real refund / exchange / payment / logistics integrations are not connected.
+
+## V5.B.3.1 Readiness / Liveness Boundary
+
+V5.B.3.1 enables Spring Boot Actuator health probes and documents the minimal readiness / liveness boundary.
+`/actuator/health`, `/actuator/health/liveness`, and `/actuator/health/readiness` are available. Actuator web exposure
+remains health-only; `/actuator/env`, `/actuator/beans`, `/actuator/configprops`, `/actuator/heapdump`,
+`/actuator/threaddump`, and `/actuator/prometheus` are not exposed by default.
+
+See [Readiness / Liveness Boundary](docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md) and
+[V5.B.3.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md).
+
+This is not production monitoring. It does not add Prometheus, OpenTelemetry, Micrometer business metrics, live DB /
+PGvector / LLM / embedding readiness checks, production auth, or deployment hardening. The default profile remains
+offline and does not create `DataSource`, Spring AI live model, Spring AI `VectorStore`, or
+`JdbcPolicyVectorRepository` beans.
 
 ## Observability
 

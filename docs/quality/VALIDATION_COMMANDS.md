@@ -582,6 +582,44 @@ mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true
 Default validation still does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
 provider, Spring AI live provider calls, secret manager, Docker Compose, or external network.
 
+## V5.B.3.1 Readiness / Liveness Boundary Validation
+
+V5.B.3.1 readiness / liveness actuator probe boundary completed. It enables Spring Boot health probes and adds explicit
+`liveness` and `readiness` health groups while keeping Actuator web exposure limited to `health`.
+
+Targeted runtime/docs harness:
+
+```bash
+mvn test -Dtest=ReadinessLivenessBoundaryTest
+mvn test -Dtest=ReadinessLivenessBoundaryDocsTest
+```
+
+The runtime test verifies:
+
+- `/actuator/health` is available;
+- `/actuator/health/liveness` is available;
+- `/actuator/health/readiness` is available;
+- `/actuator/env`, `/actuator/beans`, `/actuator/configprops`, `/actuator/heapdump`, `/actuator/threaddump`, and
+  `/actuator/prometheus` remain unavailable by default;
+- the default context does not create `DataSource`, Spring AI live model, Spring AI `VectorStore`, or
+  `JdbcPolicyVectorRepository` beans.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.B.3.1 validation does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+provider, Spring AI live provider calls, secret manager, Docker Compose, Prometheus, OpenTelemetry collector, or
+external network.
+
+V5.B.3.2 planned metrics, V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned
+auth / Kubernetes / release hardening remain future work.
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

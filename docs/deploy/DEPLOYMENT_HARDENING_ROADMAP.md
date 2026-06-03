@@ -4,6 +4,7 @@ Date: 2026-06-01
 
 Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config / secret boundary completed;
 V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 Profile Matrix Validation completed; V5.B.3 through V5.B.4
+roadmap remains planned; V5.B.3.1 readiness / liveness actuator probe boundary completed; V5.B.3.2 through V5.B.4
 planned
 
 ## 目的
@@ -55,8 +56,9 @@ V5.B.1 已完成 container + CI foundation：
 
 V5.B.1 不等于 production deployment。V5.B.2.1 Config + Secret Boundary 已完成文档基线；V5.B.2.2
 Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix Validation 已完成 file-based harness。
-V5.B.2 current scope completed。V5.B.3 Observability runtime hardening、V5.B.4 Auth + Kubernetes / Helm + Release /
-Rollback 仍为 planned。
+V5.B.2 current scope completed。V5.B.3.1 Readiness / Liveness Boundary 已完成最小 Actuator probe 边界。
+V5.B.3.2 metrics、V5.B.3.3 tracing、V5.B.3.4 production monitoring roadmap 和 V5.B.4 Auth + Kubernetes / Helm +
+Release / Rollback 仍为 planned。
 
 ## V5.B.2.1 Config + Secret Boundary status
 
@@ -107,15 +109,34 @@ V5.B.2.3 已完成 Profile Matrix Validation：
 V5.B.2.3 不修改 runtime profile behavior，不连接 MySQL / PostgreSQL / PGvector，不运行 Docker，不调用 real LLM、
 real embedding provider 或 Spring AI live provider。
 
+## V5.B.3.1 Readiness / Liveness Boundary status
+
+V5.B.3.1 已完成 readiness / liveness actuator probe boundary：
+
+- `application.yml` 启用 `management.endpoint.health.probes.enabled=true`。
+- 增加 `liveness` 和 `readiness` health groups。
+- Actuator web exposure remains health-only。
+- `/actuator/health`、`/actuator/health/liveness` 和 `/actuator/health/readiness` 可用。
+- `/actuator/env`、`/actuator/beans`、`/actuator/configprops`、`/actuator/heapdump`、
+  `/actuator/threaddump` 和 `/actuator/prometheus` 默认不可用。
+- 新增 `ReadinessLivenessBoundaryTest` 和 `ReadinessLivenessBoundaryDocsTest`。
+- 新增 `docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md` 和
+  `docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md`。
+
+V5.B.3.1 不实现 Prometheus registry、Micrometer business metrics、OpenTelemetry、collector、Grafana dashboard、
+production monitoring、live DB / PGvector / LLM / embedding readiness checks、production auth、Kubernetes / Helm 或
+release / rollback hardening。
+
 ## 推荐后续里程碑
 
 1. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
 2. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 broader opt-in live
    validation。
-3. V5.B.3 Readiness / liveness：区分 liveness 与 readiness。
-4. V5.B.3 Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
-5. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
-6. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
+3. V5.B.3.2 planned metrics：Micrometer low-cardinality metrics 和 optional registry strategy。
+4. V5.B.3.3 planned tracing：OpenTelemetry / cross-service propagation strategy。
+5. V5.B.3.4 planned monitoring：Prometheus / Grafana / log aggregation roadmap。
+6. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
+7. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
 
 ## Dockerfile checklist
 
@@ -173,8 +194,9 @@ real embedding provider 或 Spring AI live provider。
 
 ## readiness/liveness checklist
 
-- liveness 只判断应用进程健康。
-- readiness 判断部署环境依赖是否满足当前 profile。
+- V5.B.3.1 已完成最小 probe 边界：liveness 只判断应用进程和 lifecycle state。
+- V5.B.3.1 已完成默认 profile 基础 readiness：用于当前 offline / local profile 的基本 traffic readiness。
+- live dependency readiness checks 仍是 future / opt-in，不属于默认 readiness。
 - readiness details 必须 sanitize。
 - 不暴露 API Key、数据库密码、tokens、raw prompts、raw provider responses 或 local paths。
 - 默认 actuator exposure 仍保持最小化。

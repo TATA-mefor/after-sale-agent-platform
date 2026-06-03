@@ -72,6 +72,10 @@ logistics integrations.
 - V5.B.2.2 Flyway migration foundation is now completed; Liquibase is not introduced.
 - V5.B.2.3 Profile Matrix Validation is now completed through file-based harness coverage; V5.B.2 current scope
   completed.
+- V5.B.3.1 Readiness / Liveness Boundary is now completed; readiness / liveness actuator probe boundary completed and
+  Actuator web exposure remains health-only.
+- V5.B.3.2 planned metrics, V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4
+  planned auth / Kubernetes / release hardening remain future work.
 - Optional Spring AI `VectorStore` production path decision.
 - RAG quality enhancements and real embedding evaluation.
 - Production auth / RBAC, deployment, monitoring, and external business integrations.
