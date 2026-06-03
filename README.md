@@ -53,6 +53,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.B.2 Config / Secret / Migration Plan](docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md)
 - [V5.B.2 Config / Secret Decision](docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md)
 - [V5.B.2.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_1_CONFIG_SECRET_BOUNDARY.md)
+- [V5.B.2.2 Flyway Migration Foundation](docs/deploy/MIGRATION_FOUNDATION.md)
+- [V5.B.2.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -161,20 +163,27 @@ docker build -t after-sale-agent-platform:local .
 docker run --rm -p 8080:8080 after-sale-agent-platform:local
 ```
 
-See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment. V5.B.2
-config / secret / migration hardening, V5.B.3 observability hardening, and V5.B.4 auth / Kubernetes / release hardening
-remain planned.
+See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment.
+V5.B.2.1 config / secret boundary and V5.B.2.2 Flyway migration foundation are completed; V5.B.2.3 profile matrix
+runtime validation, V5.B.3 observability hardening, and V5.B.4 auth / Kubernetes / release hardening remain planned.
 
-## V5.B.2.1 Config / Secret Boundary
+## V5.B.2 Config / Secret / Migration Boundary
 
 V5.B.2.1 documents the configuration baseline, profile matrix, secret boundary, and migration follow-up plan. It keeps
 `application.yml` as the default offline / local baseline, keeps `application-prod.example.yml` as a template only, and
 records `mysql` and `rag-postgres` as explicit opt-in profiles.
 
 See [Config / Secret / Migration Plan](docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md) and
-[Config / Secret Decision](docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md). V5.B.2.1 does not implement
-Flyway / Liquibase, secret manager, profile matrix runtime validation, production deployment, production auth,
-production monitoring, or external business integrations. V5.B.2.2 and V5.B.2.3 remain planned.
+[Config / Secret Decision](docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md).
+
+V5.B.2.2 adds the [Flyway Migration Foundation](docs/deploy/MIGRATION_FOUNDATION.md): Flyway dependencies,
+default-disabled configuration, profile-specific migration locations, and MySQL / PGvector schema-only baseline
+migrations. Liquibase is not introduced. Flyway remains disabled by default, and default validation still does not
+connect to MySQL, PostgreSQL, PGvector, Docker, Redis, real LLMs, real embedding providers, or external network.
+
+V5.B.2 does not implement secret manager, profile matrix runtime validation, production deployment, production auth,
+production monitoring, or external business integrations. V5.B.2.3 remains planned for profile matrix runtime
+validation.
 
 ## Observability
 

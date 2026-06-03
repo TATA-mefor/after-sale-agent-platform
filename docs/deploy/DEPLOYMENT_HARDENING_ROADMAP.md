@@ -3,7 +3,7 @@
 Date: 2026-06-01
 
 Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config / secret boundary completed;
-V5.B.2.2 through V5.B.4 planned
+V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 through V5.B.4 planned
 
 ## 目的
 
@@ -35,8 +35,8 @@ V5.B.2.2 through V5.B.4 planned
 阶段 6 不实现 runtime，不新增 Dockerfile，不新增 CI/CD，不新增 Kubernetes / Helm，不接入 secret manager，
 不接入 production monitoring，不做 production live PGvector validation。V5.A.1 后续新增了显式 opt-in
 `JdbcPolicyVectorRepository`，V5.A.2 记录了 schema version baseline `2026-06-01-001`，V5.A.3 新增了显式
-opt-in PGvector connectivity smoke，V5.A.4 完成 V5.A 总收口。Flyway / Liquibase migration framework 和
-production deployment 仍未完成。
+opt-in PGvector connectivity smoke，V5.A.4 完成 V5.A 总收口。V5.B.2.2 后续选择 Flyway 并新增默认关闭的
+migration foundation；Liquibase、profile matrix runtime validation 和 production deployment 仍未完成。
 
 ## V5.B.1 Container + CI status
 
@@ -52,8 +52,8 @@ V5.B.1 已完成 container + CI foundation：
   `version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md`。
 
 V5.B.1 不等于 production deployment。V5.B.2.1 Config + Secret Boundary 已完成文档基线；V5.B.2.2
-Flyway / Liquibase migration framework、V5.B.2.3 Profile Matrix Validation、V5.B.3 Observability runtime hardening、
-V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。
+Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix Validation、V5.B.3 Observability runtime
+hardening、V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。
 
 ## V5.B.2.1 Config + Secret Boundary status
 
@@ -63,23 +63,41 @@ V5.B.2.1 已完成配置、密钥和迁移治理的文档基线：
 - 新增 `docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md`。
 - 明确 default / mysql / rag-postgres / prod-template profile matrix。
 - 明确 Dockerfile 不 bake secrets，CI default gate 不注入 live secrets。
-- 明确 Flyway / Liquibase 和 profile matrix runtime validation 仍为后续任务。
+- 明确 Flyway migration foundation 已在 V5.B.2.2 完成，Liquibase 未引入，profile matrix runtime validation
+  仍为后续任务。
 - 默认验证仍保持离线、确定性。
 
 V5.B.2.1 不修改 application yml runtime 语义，不修改 Dockerfile / CI / compose，不实现 secret manager，不实现
 Flyway / Liquibase，不实现 production deployment。
 
+## V5.B.2.2 Flyway Migration Foundation status
+
+V5.B.2.2 已完成 Flyway migration foundation：
+
+- `pom.xml` 新增 Flyway 依赖，版本由 Spring Boot dependency management 管理。
+- `application.yml` 默认关闭 Flyway。
+- `application-mysql.yml` 通过 `AFTERSALE_FLYWAY_ENABLED:false` 显式 opt-in MySQL migration location。
+- `application-rag-postgres.yml` 通过 `AFTERSALE_RAG_FLYWAY_ENABLED:false` 显式 opt-in PGvector migration
+  location。
+- 新增 MySQL schema-only baseline migration，不包含 `data-mysql.sql` demo seed。
+- 新增 PGvector schema-only baseline migration，复制 `schema-rag-postgres.sql` version `2026-06-01-001` 的
+  schema 语义。
+- 新增 `docs/deploy/MIGRATION_FOUNDATION.md` 和
+  `docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md`。
+
+V5.B.2.2 不引入 Liquibase，不默认启用 Flyway，不实现 profile matrix runtime validation，不修改 Dockerfile /
+CI / compose，不修改业务 runtime，不完成 production deployment。
+
 ## 推荐后续里程碑
 
-1. V5.B.2.2 Database migration：选择 Flyway 或 Liquibase。
-2. V5.B.2.3 Profile / config matrix：default / mysql / rag-postgres / prod-template 的 runtime validation。
-3. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
-4. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 schema migration 和 opt-in live
+1. V5.B.2.3 Profile / config matrix：default / mysql / rag-postgres / prod-template 的 runtime validation。
+2. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
+3. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 broader opt-in live
    validation。
-5. V5.B.3 Readiness / liveness：区分 liveness 与 readiness。
-6. V5.B.3 Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
-7. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
-8. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
+4. V5.B.3 Readiness / liveness：区分 liveness 与 readiness。
+5. V5.B.3 Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
+6. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
+7. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
 
 ## Dockerfile checklist
 
@@ -117,8 +135,8 @@ Flyway / Liquibase，不实现 production deployment。
 
 ## database migration checklist
 
-- 使用 V5.A.2 schema version baseline `2026-06-01-001` 作为后续 migration framework 的参考起点。
-- 选择 Flyway 或 Liquibase。
+- 使用 V5.B.2.2 Flyway migration foundation 作为当前版本化 schema 起点。
+- Liquibase 未引入；如后续确需 changeset DSL 或 rollback DSL，再独立评估。
 - 区分 schema migration、demo seed 和 production data migration。
 - 定义 migration rollback strategy。
 - migration 不得成为默认离线测试的外部依赖。

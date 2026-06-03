@@ -2,13 +2,13 @@
 
 Date: 2026-06-03
 
-Status: V5.B.2.1 completed for documentation boundary.
+Status: V5.B.2.1 completed for documentation boundary; V5.B.2.2 completed for Flyway migration foundation.
 
 ## 目标
 
-本方案用于固定 AfterSale-Agent 当前配置基线、profile matrix、secret boundary 和 migration follow-up。它是
-V5.B.2 的第一步，只做文档事实口径和后续任务拆分，不修改 runtime，不引入 Flyway / Liquibase，不接入
-secret manager。
+本方案用于固定 AfterSale-Agent 当前配置基线、profile matrix、secret boundary 和 migration follow-up。V5.B.2.1
+完成文档事实口径和后续任务拆分；V5.B.2.2 后续补充了 Flyway migration foundation。V5.B.2 仍不接入
+secret manager，不完成 profile matrix runtime validation，也不改变业务 runtime。
 
 ## 当前配置文件说明
 
@@ -18,8 +18,10 @@ secret manager。
 - `src/main/resources/application-rag-postgres.yml`：显式 `rag-postgres` profile，使用 `AFTERSALE_PGVECTOR_*`
   变量。
 - `.env.rag.example`：本地 PGvector placeholder 示例，真实 `.env` 不得提交。
-- `src/main/resources/schema-rag-postgres.sql`：PGvector schema baseline reference，版本
+- `src/main/resources/schema-rag-postgres.sql`：PGvector manual / Docker init baseline reference，版本
   `2026-06-01-001`。
+- `src/main/resources/db/migration/mysql`：V5.B.2.2 Flyway MySQL schema-only baseline migration location。
+- `src/main/resources/db/migration/pgvector`：V5.B.2.2 Flyway PGvector schema-only baseline migration location。
 
 ## Profile Matrix
 
@@ -69,29 +71,50 @@ future secret manager 注入。V5.B.2.1 不修改 Dockerfile、compose 文件或
 默认 CI gate 只运行离线 Maven 验证和 Docker image build validation，不注入 live secrets，不运行 live LLM、
 live Spring AI、live PGvector、live MySQL、Redis、Docker Compose 或外部业务服务。
 
-## Migration Follow-up
+## Migration Foundation
 
-当前没有 Flyway / Liquibase migration framework。V5.B.2.2 需要选择 migration framework，并把当前 schema
-baseline 拆成可版本化 migration。
+V5.B.2.2 选择 Flyway 作为迁移基础，原因是当前 schema 已经是 SQL-first baseline，且 Spring Boot dependency
+management 可以管理 Flyway 依赖版本。Liquibase 未引入；后续如果需要 changeset DSL 或 rollback DSL，可再做
+future evaluation。
+
+Flyway 默认关闭：
+
+```yaml
+spring:
+  flyway:
+    enabled: false
+```
+
+profile-specific migration locations：
+
+```text
+src/main/resources/db/migration/mysql
+src/main/resources/db/migration/pgvector
+```
+
+详细说明见 `docs/deploy/MIGRATION_FOUNDATION.md`。
 
 ## MySQL Migration Plan
 
 - 当前参考基线：`schema-mysql.sql` 和 `data-mysql.sql`。
-- 后续需要区分 schema migration、demo seed、production data migration。
+- V5.B.2.2 已新增 schema-only Flyway baseline migration，不包含 `data-mysql.sql` demo seed。
+- 后续仍需要区分 demo seed、production data migration 和 rollback strategy。
 - 默认验证不得因为 migration 连接 MySQL。
 
 ## PGvector Migration Plan
 
 - 当前参考基线：`schema-rag-postgres.sql`，schema version `2026-06-01-001`。
-- 后续 migration 需要覆盖 PGvector extension、policy documents / chunks / embeddings tables、indexes、vector
-  dimension、rollback 和 smoke setup。
-- `CREATE EXTENSION IF NOT EXISTS vector` 可能需要较高权限；现阶段仍以 docker-compose-rag fresh-volume init、
-  手动预安装 extension 或 V5.A.3 smoke skip 作为边界。
+- V5.B.2.2 已新增 PGvector schema-only Flyway baseline migration，覆盖 extension、policy documents /
+  chunks / embeddings tables 和 indexes。
+- `CREATE EXTENSION IF NOT EXISTS vector` 可能需要较高权限；docker-compose-rag fresh-volume init、手动预安装
+  extension 或 opt-in live smoke skip 仍是当前操作边界。
+- V5.B.2.2 不实现 broader profile matrix runtime validation；该任务留到 V5.B.2.3。
 
 ## What Is Not Completed
 
 - secret manager 未实现。
-- Flyway / Liquibase 未实现。
+- Liquibase 未引入。
+- Flyway 未默认启用。
 - production deployment 未完成。
 - production auth / RBAC 未完成。
 - production monitoring 未完成。
@@ -118,7 +141,7 @@ baseline 拆成可版本化 migration。
 
 ## Follow-up Task Split
 
-- V5.B.2.2：Flyway / Liquibase migration framework。
+- V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
 - V5.B.2.3：profile matrix runtime validation。
 - V5.B.3：observability runtime hardening。
 - V5.B.4：auth、Kubernetes / Helm、release / rollback hardening。

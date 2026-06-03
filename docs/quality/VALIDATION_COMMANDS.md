@@ -508,11 +508,35 @@ mvn test -Dtest=ArchitectureTest
 V5.B.2.1 validation is docs-only and offline. It checks that `application.yml` remains documented as the default
 offline/local baseline, `application-prod.example.yml` remains template-only, `application-mysql.yml` and
 `application-rag-postgres.yml` remain explicit opt-in profiles, Docker and CI do not bake or inject live secrets, and
-Flyway / Liquibase remains pending V5.B.2.2.
+V5.B.2.2 later adds the Flyway migration foundation while keeping Flyway disabled by default. Liquibase is not
+introduced. Profile matrix runtime validation is planned for V5.B.2.3. Default validation still does not require real
+LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live calls, secret
+manager, Docker Compose, or external network.
 
-Migration runtime validation is planned for V5.B.2.2. Profile matrix runtime validation is planned for V5.B.2.3.
-Default validation still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real
-embedding providers, Spring AI live calls, secret manager, Docker Compose, or external network.
+## V5.B.2.2 Flyway Migration Foundation Validation
+
+V5.B.2.2 adds Flyway dependencies, default-disabled configuration, explicit `mysql` and `rag-postgres` migration
+locations, and schema-only MySQL / PGvector baseline migration files. It does not run migrations by default and does
+not implement profile matrix runtime validation.
+
+Targeted docs/config harness:
+
+```bash
+mvn test -Dtest=FlywayMigrationFoundationDocsTest
+```
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+This validation is offline. It reads `pom.xml`, Spring profile config, migration SQL files, and docs only. It does not
+start Spring, create a `DataSource`, connect to MySQL / PostgreSQL / PGvector, run Docker, call real LLMs, call real
+embedding providers, invoke Spring AI live providers, or use external network.
 
 ## Interview Safe Validation Commands
 

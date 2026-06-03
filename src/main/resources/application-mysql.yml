@@ -2,6 +2,9 @@ spring:
   config:
     activate:
       on-profile: mysql
+  flyway:
+    enabled: ${AFTERSALE_FLYWAY_ENABLED:false}
+    locations: classpath:db/migration/mysql
 
 aftersale:
   persistence:

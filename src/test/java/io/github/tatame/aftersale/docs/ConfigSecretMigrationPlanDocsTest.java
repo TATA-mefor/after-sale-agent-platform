@@ -22,6 +22,11 @@ class ConfigSecretMigrationPlanDocsTest {
     private static final String COMPLETED_PLAN =
             "docs/exec-plans/completed/EXEC_PLAN_V5_B2_1_CONFIG_SECRET_BOUNDARY.md";
 
+    private static final String MIGRATION_DOC = "docs/deploy/MIGRATION_FOUNDATION.md";
+
+    private static final String MIGRATION_COMPLETED_PLAN =
+            "docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md";
+
     private static final List<String> V5_B2_1_DOCS = List.of(
             "README.md",
             "docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md",
@@ -34,7 +39,9 @@ class ConfigSecretMigrationPlanDocsTest {
             "version-updates/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md",
             DECISION_DOC,
             PLAN_DOC,
-            COMPLETED_PLAN);
+            COMPLETED_PLAN,
+            MIGRATION_DOC,
+            MIGRATION_COMPLETED_PLAN);
 
     @Test
     void configSecretMigrationDocsAndCompletionRecordExist() throws IOException {
@@ -96,15 +103,16 @@ class ConfigSecretMigrationPlanDocsTest {
     }
 
     @Test
-    void migrationFrameworkRemainsFollowUp() throws IOException {
+    void flywayMigrationFoundationIsDocumentedWithRemainingRuntimeFollowUp() throws IOException {
         String docs = combinedDocs();
 
         assertThat(docs).contains(
                 "schema-rag-postgres.sql",
                 "2026-06-01-001",
                 "baseline reference",
-                "Flyway / Liquibase remains pending V5.B.2.2",
-                "Flyway / Liquibase 未实现",
+                "Flyway migration foundation",
+                "Liquibase 未引入",
+                "spring.flyway.enabled: false",
                 "schema-mysql.sql",
                 "data-mysql.sql",
                 "V5.B.2.3",
@@ -119,21 +127,25 @@ class ConfigSecretMigrationPlanDocsTest {
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
         String correctionPlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
-        assertThat(readme).contains(PLAN_DOC, DECISION_DOC, COMPLETED_PLAN);
+        assertThat(readme).contains(PLAN_DOC, DECISION_DOC, COMPLETED_PLAN, MIGRATION_DOC, MIGRATION_COMPLETED_PLAN);
         assertThat(roadmap).contains(
                 "V5.B.2.1 Config + Secret Boundary 已完成文档基线",
                 "V5.B.2.2",
-                "planned",
+                "Flyway migration foundation 已完成",
                 "V5.B.2.3");
         assertThat(validation).contains(
                 "V5.B.2.1 Config / Secret / Migration Plan Validation",
-                "mvn test -Dtest=ConfigSecretMigrationPlanDocsTest");
+                "mvn test -Dtest=ConfigSecretMigrationPlanDocsTest",
+                "V5.B.2.2 Flyway Migration Foundation Validation",
+                "mvn test -Dtest=FlywayMigrationFoundationDocsTest");
         assertThat(quality).contains(
                 "V5.B.2.1 Config / Secret Boundary",
+                "V5.B.2.2 Flyway Migration Foundation",
                 "Runtime non-change quality");
         assertThat(correctionPlan).contains(
                 "V5.B.2.1 Config + Secret Boundary 已完成",
-                "V5.B.2.2 / V5.B.2.3 planned");
+                "V5.B.2.2 Flyway migration foundation 已完成",
+                "V5.B.2.3 planned");
     }
 
     @Test
@@ -184,8 +196,9 @@ class ConfigSecretMigrationPlanDocsTest {
                 "secret=",
                 "sk-",
                 "secret manager completed",
-                "flyway completed",
                 "liquibase completed",
+                "flyway enabled by default",
+                "profile matrix runtime validation completed",
                 "production deployment completed",
                 "production auth completed",
                 "production monitoring completed",

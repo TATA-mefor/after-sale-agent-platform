@@ -2003,6 +2003,38 @@ Known limitations:
   liveness runtime changes, production auth / RBAC, production monitoring, production deployment, or external business
   integrations.
 
+### V5.B.2.2 Flyway Migration Foundation (completed)
+
+Status: completed for Flyway migration foundation, default-disabled migration configuration, and schema-only baseline
+documentation.
+
+Current V5.B.2.2 quality status:
+
+- Flyway selection quality: `pom.xml` adds Flyway dependencies managed by Spring Boot dependency management. Liquibase
+  is not introduced.
+- Default disabled quality: `application.yml` keeps `spring.flyway.enabled: false`, so default Maven validation does
+  not run migrations or create database connections.
+- Profile-specific quality: `application-mysql.yml` points to `classpath:db/migration/mysql` behind
+  `AFTERSALE_FLYWAY_ENABLED:false`, and `application-rag-postgres.yml` points to
+  `classpath:db/migration/pgvector` behind `AFTERSALE_RAG_FLYWAY_ENABLED:false`.
+- PGvector baseline quality: the PGvector migration copies `schema-rag-postgres.sql` version `2026-06-01-001`
+  semantics for the explicit opt-in `JdbcPolicyVectorRepository` path.
+- MySQL baseline quality: the MySQL migration is schema-only and intentionally excludes `data-mysql.sql` demo seed.
+- Docs harness quality: `FlywayMigrationFoundationDocsTest` reads files only and does not start Spring, connect to
+  MySQL / PostgreSQL / PGvector, run Docker, call real LLMs, call real embedding providers, invoke Spring AI live
+  providers, or use external network.
+- Runtime non-change quality: V5.B.2.2 does not modify `src/main/java`, Dockerfile, compose files, GitHub Actions
+  workflow, ToolRegistry, `search_aftersale_policy`, RAG runtime, ingestion, health indicators, OpenAPI config,
+  ToolCallTrace, Workspace, Execution Tree, or AgentApplicationService.
+
+Known limitations:
+
+- V5.B.2.2 does not implement Liquibase, secret manager, profile matrix runtime validation, readiness / liveness
+  runtime changes, production auth / RBAC, production monitoring, production deployment, or external business
+  integrations.
+- `CREATE EXTENSION IF NOT EXISTS vector` may require elevated PostgreSQL privileges. Existing docker init, preinstalled
+  extension, or opt-in live smoke skip behavior remains the current operational boundary.
+
 Planned phases:
 
 ```text

@@ -51,8 +51,25 @@ Secrets must be supplied through environment variables, the deployment platform,
 current Docker image does not contain secrets, and the CI default gate does not inject live secrets or run live LLM,
 live Spring AI, live PGvector, live MySQL, Redis, Docker Compose, or external service checks.
 
-Flyway / Liquibase migration management remains pending V5.B.2.2. The current PGvector schema baseline is
-`schema-rag-postgres.sql` with version `2026-06-01-001`; it is a baseline reference, not a migration framework.
+V5.B.2.2 adds a Flyway migration foundation while keeping Flyway disabled by default. Liquibase is not introduced.
+The current PGvector manual / Docker init baseline remains `schema-rag-postgres.sql` with version `2026-06-01-001`;
+the Flyway PGvector migration is a schema-only versioned copy for explicit opt-in migration usage.
+
+## V5.B.2.2 Flyway Migration Foundation
+
+V5.B.2.2 adds:
+
+- Flyway dependencies managed by Spring Boot dependency management.
+- Default `spring.flyway.enabled: false` in `application.yml`.
+- MySQL migration location `classpath:db/migration/mysql`, guarded by `AFTERSALE_FLYWAY_ENABLED:false`.
+- PGvector migration location `classpath:db/migration/pgvector`, guarded by `AFTERSALE_RAG_FLYWAY_ENABLED:false`.
+- Schema-only MySQL and PGvector baseline migrations.
+
+See `docs/deploy/MIGRATION_FOUNDATION.md`.
+
+This does not enable migrations in the default profile, does not add Liquibase, does not add profile matrix runtime
+validation, and does not connect default validation to MySQL, PostgreSQL, PGvector, Docker, Redis, real LLMs, real
+embedding providers, Spring AI live providers, or external network.
 
 V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile. This is an
 infrastructure adapter behind `PolicyVectorRepository`, not a new Agent tool, not a public RAG HTTP endpoint, and not a

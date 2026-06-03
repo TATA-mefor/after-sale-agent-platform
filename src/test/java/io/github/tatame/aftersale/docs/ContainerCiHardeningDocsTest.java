@@ -129,14 +129,18 @@ class ContainerCiHardeningDocsTest {
         String completedPlan = projectText(COMPLETED_PLAN);
 
         assertThat(readme).contains("V5.B.1 Container + CI", CONTAINER_DOC, CANONICAL_COMPLETION);
-        assertThat(roadmap).contains("V5.B.1", "foundation completed", "V5.B.2", "planned");
+        assertThat(roadmap).contains(
+                "V5.B.1",
+                "foundation completed",
+                "V5.B.2.2 Flyway migration foundation completed",
+                "V5.B.2.3 through V5.B.4 planned");
         assertThat(productionConfig).contains("Container / CI Usage", "does not contain secrets");
         assertThat(validation).contains("V5.B.1 Container + CI Validation", "Docker build validation");
         assertThat(quality).contains("V5.B.1 Container + CI Foundation", "Dockerfile", "CI quality gate");
         assertThat(remediation).contains(
                 "V5.B.1：已完成",
                 "V5.B.2.1：已完成",
-                "V5.B.2.2：planned",
+                "V5.B.2.2：已完成",
                 "V5.B.2.3：planned");
         assertThat(containerDoc).contains("io.github.tatame.aftersale", "Default Offline Boundary");
         assertThat(completion).contains("Status: Completed", "TASK_COMPLETE");

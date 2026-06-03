@@ -2,6 +2,9 @@ spring:
   config:
     activate:
       on-profile: rag-postgres
+  flyway:
+    enabled: ${AFTERSALE_RAG_FLYWAY_ENABLED:false}
+    locations: classpath:db/migration/pgvector
 
 agent:
   rag:
