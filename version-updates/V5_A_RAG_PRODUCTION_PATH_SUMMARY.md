@@ -68,7 +68,9 @@ logistics integrations.
 
 - V5.B.1 Container + CI foundation is now completed through Dockerfile hardening, `.dockerignore`, CI Maven quality
   gate, and Docker build validation.
-- V5.B.2 Flyway / Liquibase migration management.
+- V5.B.2.1 Config + Secret Boundary / Profile Matrix Plan is now completed through docs and docs harness only.
+- V5.B.2.2 Flyway / Liquibase migration management.
+- V5.B.2.3 profile matrix runtime validation.
 - Optional Spring AI `VectorStore` production path decision.
 - RAG quality enhancements and real embedding evaluation.
 - Production auth / RBAC, deployment, monitoring, and external business integrations.

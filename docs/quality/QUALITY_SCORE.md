@@ -1974,6 +1974,35 @@ Known limitations:
   RBAC, production monitoring, Flyway / Liquibase migration management, readiness / liveness runtime changes, or live
   PGvector checks in the default gate.
 
+### V5.B.2.1 Config / Secret Boundary and Profile Matrix Plan (completed)
+
+Status: completed for configuration baseline documentation, secret boundary documentation, and migration follow-up
+planning.
+
+Current V5.B.2.1 quality status:
+
+- Configuration baseline quality: docs now identify `application.yml` as the default offline / local baseline,
+  `application-prod.example.yml` as a template only, `application-mysql.yml` as explicit MySQL opt-in, and
+  `application-rag-postgres.yml` as explicit PostgreSQL / PGvector opt-in.
+- Profile matrix quality: default / mysql / rag-postgres / prod-template profiles are documented with purpose,
+  external dependency boundary, and default validation boundary.
+- Secret boundary quality: docs state that Docker images do not contain secrets, CI default gates do not inject live
+  secrets, and real secrets must come from environment variables, deployment platforms, or a future secret manager.
+- Migration boundary quality: `schema-rag-postgres.sql` remains the schema version `2026-06-01-001` baseline
+  reference. Flyway / Liquibase migration framework remains planned for V5.B.2.2.
+- Default offline quality: V5.B.2.1 docs harness reads files only and does not require real LLMs, API keys,
+  PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live calls, secret manager, Docker
+  Compose, or external network.
+- Runtime non-change quality: V5.B.2.1 does not modify `src/main/java`, `pom.xml`, Dockerfile, compose files,
+  GitHub Actions workflow, application yml runtime semantics, ToolRegistry, `search_aftersale_policy`, RAG runtime,
+  ingestion, health indicators, OpenAPI config, ToolCallTrace, Workspace, Execution Tree, or AgentApplicationService.
+
+Known limitations:
+
+- V5.B.2.1 does not implement Flyway / Liquibase, secret manager, profile matrix runtime validation, readiness /
+  liveness runtime changes, production auth / RBAC, production monitoring, production deployment, or external business
+  integrations.
+
 Planned phases:
 
 ```text

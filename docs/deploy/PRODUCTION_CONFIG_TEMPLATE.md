@@ -37,6 +37,23 @@ It does not push an image or deploy the application.
 `application-prod.example.yml` remains a production configuration template only. It is not loaded by default and is
 not a production deployment manifest.
 
+## V5.B.2.1 Config / Secret / Migration Boundary
+
+V5.B.2.1 records the configuration and secret boundary in
+`docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md` and
+`docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md`.
+
+`application-prod.example.yml` remains a template only. It is not loaded by default, does not deploy the application,
+and does not imply production auth, production monitoring, readiness / liveness runtime changes, or real external
+business integrations.
+
+Secrets must be supplied through environment variables, the deployment platform, or a future secret manager. The
+current Docker image does not contain secrets, and the CI default gate does not inject live secrets or run live LLM,
+live Spring AI, live PGvector, live MySQL, Redis, Docker Compose, or external service checks.
+
+Flyway / Liquibase migration management remains pending V5.B.2.2. The current PGvector schema baseline is
+`schema-rag-postgres.sql` with version `2026-06-01-001`; it is a baseline reference, not a migration framework.
+
 V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile. This is an
 infrastructure adapter behind `PolicyVectorRepository`, not a new Agent tool, not a public RAG HTTP endpoint, and not a
 retrieval algorithm change. Default validation still uses fake / in-memory dependencies and does not connect to

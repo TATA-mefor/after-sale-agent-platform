@@ -2,7 +2,8 @@
 
 Date: 2026-06-01
 
-Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2 through V5.B.4 planned
+Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config / secret boundary completed;
+V5.B.2.2 through V5.B.4 planned
 
 ## 目的
 
@@ -50,14 +51,29 @@ V5.B.1 已完成 container + CI foundation：
 - 详细说明见 `docs/deploy/CONTAINER_CI_HARDENING.md` 和
   `version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md`。
 
-V5.B.1 不等于 production deployment。V5.B.2 Config + Secret + Migration、V5.B.3 Observability runtime hardening、
+V5.B.1 不等于 production deployment。V5.B.2.1 Config + Secret Boundary 已完成文档基线；V5.B.2.2
+Flyway / Liquibase migration framework、V5.B.2.3 Profile Matrix Validation、V5.B.3 Observability runtime hardening、
 V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。
+
+## V5.B.2.1 Config + Secret Boundary status
+
+V5.B.2.1 已完成配置、密钥和迁移治理的文档基线：
+
+- 新增 `docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md`。
+- 新增 `docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md`。
+- 明确 default / mysql / rag-postgres / prod-template profile matrix。
+- 明确 Dockerfile 不 bake secrets，CI default gate 不注入 live secrets。
+- 明确 Flyway / Liquibase 和 profile matrix runtime validation 仍为后续任务。
+- 默认验证仍保持离线、确定性。
+
+V5.B.2.1 不修改 application yml runtime 语义，不修改 Dockerfile / CI / compose，不实现 secret manager，不实现
+Flyway / Liquibase，不实现 production deployment。
 
 ## 推荐后续里程碑
 
-1. V5.B.2 Profile / config matrix：default / mysql / rag-postgres / prod-template 的验证矩阵。
-2. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
-3. V5.B.2 Database migration：选择 Flyway 或 Liquibase。
+1. V5.B.2.2 Database migration：选择 Flyway 或 Liquibase。
+2. V5.B.2.3 Profile / config matrix：default / mysql / rag-postgres / prod-template 的 runtime validation。
+3. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
 4. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 schema migration 和 opt-in live
    validation。
 5. V5.B.3 Readiness / liveness：区分 liveness 与 readiness。

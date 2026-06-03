@@ -50,6 +50,9 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.A RAG Production Path Summary](version-updates/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md)
 - [V5.B.1 Container + CI](version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md)
 - [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md)
+- [V5.B.2 Config / Secret / Migration Plan](docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md)
+- [V5.B.2 Config / Secret Decision](docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md)
+- [V5.B.2.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_1_CONFIG_SECRET_BOUNDARY.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -161,6 +164,17 @@ docker run --rm -p 8080:8080 after-sale-agent-platform:local
 See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment. V5.B.2
 config / secret / migration hardening, V5.B.3 observability hardening, and V5.B.4 auth / Kubernetes / release hardening
 remain planned.
+
+## V5.B.2.1 Config / Secret Boundary
+
+V5.B.2.1 documents the configuration baseline, profile matrix, secret boundary, and migration follow-up plan. It keeps
+`application.yml` as the default offline / local baseline, keeps `application-prod.example.yml` as a template only, and
+records `mysql` and `rag-postgres` as explicit opt-in profiles.
+
+See [Config / Secret / Migration Plan](docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md) and
+[Config / Secret Decision](docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md). V5.B.2.1 does not implement
+Flyway / Liquibase, secret manager, profile matrix runtime validation, production deployment, production auth,
+production monitoring, or external business integrations. V5.B.2.2 and V5.B.2.3 remain planned.
 
 ## Observability
 

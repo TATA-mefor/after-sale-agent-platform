@@ -483,6 +483,37 @@ or deploy.
 Default CI and default Maven validation do not run live smoke tests. Live LLM, live Spring AI, live embedding, live
 PGvector, live MySQL, Redis, and external service validation remain explicit opt-in paths.
 
+## V5.B.2.1 Config / Secret / Migration Plan Validation
+
+V5.B.2.1 adds documentation for the configuration baseline, profile matrix, secret boundary, Docker / CI secret
+boundary, and migration follow-up split. It does not modify runtime configuration semantics, Dockerfile, CI workflow,
+compose files, `src/main/java`, Flyway / Liquibase, secret manager, ToolRegistry, RAG runtime, ingestion, health, or
+OpenAPI behavior.
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=ConfigSecretMigrationPlanDocsTest
+```
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.B.2.1 validation is docs-only and offline. It checks that `application.yml` remains documented as the default
+offline/local baseline, `application-prod.example.yml` remains template-only, `application-mysql.yml` and
+`application-rag-postgres.yml` remain explicit opt-in profiles, Docker and CI do not bake or inject live secrets, and
+Flyway / Liquibase remains pending V5.B.2.2.
+
+Migration runtime validation is planned for V5.B.2.2. Profile matrix runtime validation is planned for V5.B.2.3.
+Default validation still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real
+embedding providers, Spring AI live calls, secret manager, Docker Compose, or external network.
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

@@ -417,6 +417,35 @@ V5.B.1 不完成：
 默认 Maven 验证仍不需要 Docker。Docker build validation 是 CI / maintainer 可执行的容器构建检查，不改变
 Spring Boot runtime、ToolRegistry、RAG retrieval、health indicator 或 OpenAPI runtime 行为。
 
+## V5.B.2.1 Config + Secret Boundary / Profile Matrix Plan 边界
+
+V5.B.2.1 完成配置、密钥和迁移治理的文档基线。它只做 documentation-first correction，不修改 runtime。
+
+已完成范围：
+
+- 新增 `docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md`；
+- 新增 `docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md`；
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V5_B2_1_CONFIG_SECRET_BOUNDARY.md`；
+- 明确 `application.yml` 是 default offline / local baseline；
+- 明确 `application-prod.example.yml` 是模板，不默认加载；
+- 明确 `application-mysql.yml` 和 `application-rag-postgres.yml` 是显式 opt-in profiles；
+- 明确 Docker image 不包含 secret，CI default gate 不注入 live secrets；
+- 明确 Flyway / Liquibase 仍留到 V5.B.2.2，profile matrix runtime validation 留到 V5.B.2.3。
+
+V5.B.2.1 不完成：
+
+- secret manager；
+- Flyway / Liquibase migration framework；
+- profile matrix runtime validation；
+- readiness / liveness runtime changes；
+- production deployment；
+- production auth / RBAC；
+- production monitoring；
+- 真实退款、换货、优惠券补偿、支付或物流系统接入。
+
+默认 Maven 验证仍不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding
+provider、Spring AI live calls、secret manager、Docker Compose 或 external network。
+
 ## V5.A.1 JdbcPolicyVectorRepository 边界
 
 V5.A.1 新增 `JdbcPolicyVectorRepository`，作为 `PolicyVectorRepository` 的显式 opt-in PostgreSQL / PGvector
@@ -473,7 +502,9 @@ V5.A 不完成：
 当前 V5.B 状态：
 
 - V5.B.1：已完成。Container + CI foundation。
-- V5.B.2：planned。Config / secret / migration hardening。
+- V5.B.2.1：已完成。Config + Secret Boundary / Profile Matrix Plan。
+- V5.B.2.2：planned。Flyway / Liquibase migration framework。
+- V5.B.2.3：planned。Profile matrix runtime validation。
 - V5.B.3：planned。Observability runtime hardening。
 - V5.B.4：planned。Auth、Kubernetes / Helm、release / rollback hardening。
 

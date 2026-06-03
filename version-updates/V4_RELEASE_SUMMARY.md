@@ -136,9 +136,15 @@ Current addendum: V5.B.1 later adds container + CI foundation through Dockerfile
 quality gate, and Docker build validation. This does not change the V4 release boundary and does not make V4 or V5 a
 production deployment.
 
+Current addendum: V5.B.2.1 later adds config / secret boundary and profile matrix documentation. This records
+`application.yml`, `application-prod.example.yml`, `application-mysql.yml`, `application-rag-postgres.yml`, Docker, CI,
+and migration follow-up boundaries only. It does not implement Flyway / Liquibase, secret manager, profile runtime
+validation, production deployment, production auth, or production monitoring.
+
 ## Future Roadmap
 
-- V5.B.2 config / secret / migration hardening.
+- V5.B.2.2 Flyway / Liquibase migration framework.
+- V5.B.2.3 profile matrix runtime validation.
 - V5.B.3 observability hardening.
 - V5.B.4 auth, Kubernetes / Helm, release, and rollback hardening.
 - Production auth and security.
