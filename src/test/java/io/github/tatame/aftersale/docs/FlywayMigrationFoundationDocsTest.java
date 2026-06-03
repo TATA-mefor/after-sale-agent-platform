@@ -131,7 +131,7 @@ class FlywayMigrationFoundationDocsTest {
                 "classpath:db/migration/mysql",
                 "classpath:db/migration/pgvector",
                 "V5.B.2.3",
-                "profile matrix runtime validation",
+                "profile matrix validation harness",
                 "TASK_COMPLETE");
     }
 

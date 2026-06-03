@@ -1999,7 +1999,7 @@ Current V5.B.2.1 quality status:
 
 Known limitations:
 
-- V5.B.2.1 does not implement Flyway / Liquibase, secret manager, profile matrix runtime validation, readiness /
+- V5.B.2.1 does not implement Flyway / Liquibase, secret manager, profile matrix validation harness, readiness /
   liveness runtime changes, production auth / RBAC, production monitoring, production deployment, or external business
   integrations.
 
@@ -2029,11 +2029,45 @@ Current V5.B.2.2 quality status:
 
 Known limitations:
 
-- V5.B.2.2 does not implement Liquibase, secret manager, profile matrix runtime validation, readiness / liveness
+- V5.B.2.2 does not implement Liquibase, secret manager, profile matrix validation harness, readiness / liveness
   runtime changes, production auth / RBAC, production monitoring, production deployment, or external business
   integrations.
 - `CREATE EXTENSION IF NOT EXISTS vector` may require elevated PostgreSQL privileges. Existing docker init, preinstalled
   extension, or opt-in live smoke skip behavior remains the current operational boundary.
+
+### V5.B.2.3 Profile Matrix Validation (completed)
+
+Status: completed for file-based profile matrix validation harness and docs harness closure. V5.B.2 current scope
+completed.
+
+Current V5.B.2.3 quality status:
+
+- Profile matrix quality: `ProfileMatrixValidationTest` verifies default, `mysql`, `rag-postgres`, production
+  template, Flyway, CI, and live PGvector smoke boundaries by reading repository files only.
+- Default profile quality: `application.yml` remains the default offline / local baseline with Flyway disabled,
+  DataSource auto-configuration excluded, actuator health-only exposure, and live RAG / PGvector / Spring AI paths
+  disabled by default.
+- MySQL profile quality: `application-mysql.yml` remains explicit opt-in, uses `AFTERSALE_MYSQL_URL`,
+  `AFTERSALE_MYSQL_USERNAME`, `AFTERSALE_MYSQL_PASSWORD`, and guards Flyway with `AFTERSALE_FLYWAY_ENABLED:false`.
+- RAG PGvector profile quality: `application-rag-postgres.yml` remains explicit opt-in, keeps the existing
+  `AFTERSALE_PGVECTOR_URL`, `AFTERSALE_PGVECTOR_USERNAME`, `AFTERSALE_PGVECTOR_PASSWORD`,
+  `AFTERSALE_PGVECTOR_SCHEMA` variable convention, and guards Flyway with `AFTERSALE_RAG_FLYWAY_ENABLED:false`.
+- Production template quality: `application-prod.example.yml` remains template only and does not claim production
+  deployment, production auth, production monitoring, secret manager, or real external business integrations.
+- Live test quality: `JdbcPolicyVectorRepositorySmokeTest` remains `@Tag("live")`, gated by `-Dlive.rag=true`, and can
+  skip sanitized setup failures such as `CREATE EXTENSION IF NOT EXISTS vector` permission issues.
+- Docs harness quality: `ProfileMatrixValidationDocsTest` checks completion status, validation commands, secret
+  safety, default offline guarantees, and future-work boundaries.
+- Runtime non-change quality: runtime profile behavior was not changed. V5.B.2.3 does not modify `src/main/java`,
+  `pom.xml`, application config files, Dockerfile, compose files, migration SQL, ToolRegistry, `search_aftersale_policy`,
+  RAG runtime, ingestion, health indicators, OpenAPI config, ToolCallTrace, Workspace, Execution Tree, or
+  AgentApplicationService.
+
+Known limitations:
+
+- V5.B.2.3 does not implement secret manager, production deployment, production auth / RBAC, production monitoring,
+  readiness / liveness runtime changes, or external business integrations.
+- Real refund / exchange / payment / logistics integrations are not connected.
 
 Planned phases:
 

@@ -430,15 +430,15 @@ V5.B.2.1 完成配置、密钥和迁移治理的文档基线。它只做 documen
 - 明确 `application-prod.example.yml` 是模板，不默认加载；
 - 明确 `application-mysql.yml` 和 `application-rag-postgres.yml` 是显式 opt-in profiles；
 - 明确 Docker image 不包含 secret，CI default gate 不注入 live secrets；
-- 明确 V5.B.2.2 后续完成 Flyway migration foundation，Liquibase 未引入，profile matrix runtime validation
-  留到 V5.B.2.3。
+- 明确 V5.B.2.2 后续完成 Flyway migration foundation，Liquibase 未引入，V5.B.2.3 后续完成 profile matrix
+  validation harness。
 
 V5.B.2.1 不完成：
 
 - secret manager；
 - Liquibase；
 - Flyway 默认启用或 migration runtime validation；
-- profile matrix runtime validation；
+- runtime profile behavior changes；
 - readiness / liveness runtime changes；
 - production deployment；
 - production auth / RBAC；
@@ -506,7 +506,7 @@ V5.A 不完成：
 - V5.B.1：已完成。Container + CI foundation。
 - V5.B.2.1：已完成。Config + Secret Boundary / Profile Matrix Plan。
 - V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
-- V5.B.2.3：planned。Profile matrix runtime validation。
+- V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
 - V5.B.3：planned。Observability runtime hardening。
 - V5.B.4：planned。Auth、Kubernetes / Helm、release / rollback hardening。
 

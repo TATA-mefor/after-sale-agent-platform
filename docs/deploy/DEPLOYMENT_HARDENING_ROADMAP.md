@@ -3,7 +3,8 @@
 Date: 2026-06-01
 
 Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config / secret boundary completed;
-V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 through V5.B.4 planned
+V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 Profile Matrix Validation completed; V5.B.3 through V5.B.4
+planned
 
 ## 目的
 
@@ -36,7 +37,8 @@ V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 through V5.B.4 planned
 不接入 production monitoring，不做 production live PGvector validation。V5.A.1 后续新增了显式 opt-in
 `JdbcPolicyVectorRepository`，V5.A.2 记录了 schema version baseline `2026-06-01-001`，V5.A.3 新增了显式
 opt-in PGvector connectivity smoke，V5.A.4 完成 V5.A 总收口。V5.B.2.2 后续选择 Flyway 并新增默认关闭的
-migration foundation；Liquibase、profile matrix runtime validation 和 production deployment 仍未完成。
+migration foundation；V5.B.2.3 后续完成 file-based profile matrix validation harness。Liquibase 和 production
+deployment 仍未完成。
 
 ## V5.B.1 Container + CI status
 
@@ -52,8 +54,9 @@ V5.B.1 已完成 container + CI foundation：
   `version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md`。
 
 V5.B.1 不等于 production deployment。V5.B.2.1 Config + Secret Boundary 已完成文档基线；V5.B.2.2
-Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix Validation、V5.B.3 Observability runtime
-hardening、V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。
+Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix Validation 已完成 file-based harness。
+V5.B.2 current scope completed。V5.B.3 Observability runtime hardening、V5.B.4 Auth + Kubernetes / Helm + Release /
+Rollback 仍为 planned。
 
 ## V5.B.2.1 Config + Secret Boundary status
 
@@ -63,8 +66,8 @@ V5.B.2.1 已完成配置、密钥和迁移治理的文档基线：
 - 新增 `docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md`。
 - 明确 default / mysql / rag-postgres / prod-template profile matrix。
 - 明确 Dockerfile 不 bake secrets，CI default gate 不注入 live secrets。
-- 明确 Flyway migration foundation 已在 V5.B.2.2 完成，Liquibase 未引入，profile matrix runtime validation
-  仍为后续任务。
+- 明确 Flyway migration foundation 已在 V5.B.2.2 完成，Liquibase 未引入，profile matrix validation harness 已在
+  V5.B.2.3 完成。
 - 默认验证仍保持离线、确定性。
 
 V5.B.2.1 不修改 application yml runtime 语义，不修改 Dockerfile / CI / compose，不实现 secret manager，不实现
@@ -85,19 +88,34 @@ V5.B.2.2 已完成 Flyway migration foundation：
 - 新增 `docs/deploy/MIGRATION_FOUNDATION.md` 和
   `docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md`。
 
-V5.B.2.2 不引入 Liquibase，不默认启用 Flyway，不实现 profile matrix runtime validation，不修改 Dockerfile /
-CI / compose，不修改业务 runtime，不完成 production deployment。
+V5.B.2.2 不引入 Liquibase，不默认启用 Flyway，不修改 Dockerfile / CI / compose，不修改业务 runtime，不完成
+production deployment。V5.B.2.3 后续补充 profile matrix validation harness，runtime profile behavior was not
+changed。
+
+## V5.B.2.3 Profile Matrix Validation status
+
+V5.B.2.3 已完成 Profile Matrix Validation：
+
+- 新增 `ProfileMatrixValidationTest`，只读取配置、CI、迁移文件和 live smoke 测试源码。
+- 新增 `ProfileMatrixValidationDocsTest`，只读取文档和完成记录。
+- 覆盖 default offline / local baseline、`mysql`、`rag-postgres`、`application-prod.example.yml` template only、
+  Flyway disabled-by-default、CI default offline gate 和 live PGvector smoke opt-in 边界。
+- 保持 `AFTERSALE_PGVECTOR_URL`、`AFTERSALE_PGVECTOR_USERNAME`、`AFTERSALE_PGVECTOR_PASSWORD`、
+  `AFTERSALE_PGVECTOR_SCHEMA` 现有变量命名。
+- 记录 `CREATE EXTENSION IF NOT EXISTS vector` 权限限制和 live smoke skip 边界。
+
+V5.B.2.3 不修改 runtime profile behavior，不连接 MySQL / PostgreSQL / PGvector，不运行 Docker，不调用 real LLM、
+real embedding provider 或 Spring AI live provider。
 
 ## 推荐后续里程碑
 
-1. V5.B.2.3 Profile / config matrix：default / mysql / rag-postgres / prod-template 的 runtime validation。
-2. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
-3. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 broader opt-in live
+1. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
+2. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 broader opt-in live
    validation。
-4. V5.B.3 Readiness / liveness：区分 liveness 与 readiness。
-5. V5.B.3 Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
-6. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
-7. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
+3. V5.B.3 Readiness / liveness：区分 liveness 与 readiness。
+4. V5.B.3 Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
+5. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
+6. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
 
 ## Dockerfile checklist
 

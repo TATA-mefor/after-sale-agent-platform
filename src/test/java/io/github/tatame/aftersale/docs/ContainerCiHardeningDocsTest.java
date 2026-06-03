@@ -133,7 +133,8 @@ class ContainerCiHardeningDocsTest {
                 "V5.B.1",
                 "foundation completed",
                 "V5.B.2.2 Flyway migration foundation completed",
-                "V5.B.2.3 through V5.B.4 planned");
+                "V5.B.2.3 Profile Matrix Validation completed",
+                "V5.B.3 through V5.B.4");
         assertThat(productionConfig).contains("Container / CI Usage", "does not contain secrets");
         assertThat(validation).contains("V5.B.1 Container + CI Validation", "Docker build validation");
         assertThat(quality).contains("V5.B.1 Container + CI Foundation", "Dockerfile", "CI quality gate");
@@ -141,7 +142,7 @@ class ContainerCiHardeningDocsTest {
                 "V5.B.1：已完成",
                 "V5.B.2.1：已完成",
                 "V5.B.2.2：已完成",
-                "V5.B.2.3：planned");
+                "V5.B.2.3：已完成");
         assertThat(containerDoc).contains("io.github.tatame.aftersale", "Default Offline Boundary");
         assertThat(completion).contains("Status: Completed", "TASK_COMPLETE");
         assertThat(completedPlan).contains("Status: Completed", "TASK_COMPLETE");

@@ -27,6 +27,9 @@ class ConfigSecretMigrationPlanDocsTest {
     private static final String MIGRATION_COMPLETED_PLAN =
             "docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md";
 
+    private static final String PROFILE_MATRIX_COMPLETED_PLAN =
+            "docs/exec-plans/completed/EXEC_PLAN_V5_B2_3_PROFILE_MATRIX_VALIDATION.md";
+
     private static final List<String> V5_B2_1_DOCS = List.of(
             "README.md",
             "docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md",
@@ -41,7 +44,8 @@ class ConfigSecretMigrationPlanDocsTest {
             PLAN_DOC,
             COMPLETED_PLAN,
             MIGRATION_DOC,
-            MIGRATION_COMPLETED_PLAN);
+            MIGRATION_COMPLETED_PLAN,
+            PROFILE_MATRIX_COMPLETED_PLAN);
 
     @Test
     void configSecretMigrationDocsAndCompletionRecordExist() throws IOException {
@@ -116,7 +120,7 @@ class ConfigSecretMigrationPlanDocsTest {
                 "schema-mysql.sql",
                 "data-mysql.sql",
                 "V5.B.2.3",
-                "profile matrix runtime validation");
+                "profile matrix validation harness");
     }
 
     @Test
@@ -127,7 +131,13 @@ class ConfigSecretMigrationPlanDocsTest {
         String quality = projectText("docs/quality/QUALITY_SCORE.md");
         String correctionPlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
-        assertThat(readme).contains(PLAN_DOC, DECISION_DOC, COMPLETED_PLAN, MIGRATION_DOC, MIGRATION_COMPLETED_PLAN);
+        assertThat(readme).contains(
+                PLAN_DOC,
+                DECISION_DOC,
+                COMPLETED_PLAN,
+                MIGRATION_DOC,
+                MIGRATION_COMPLETED_PLAN,
+                PROFILE_MATRIX_COMPLETED_PLAN);
         assertThat(roadmap).contains(
                 "V5.B.2.1 Config + Secret Boundary 已完成文档基线",
                 "V5.B.2.2",
@@ -145,7 +155,7 @@ class ConfigSecretMigrationPlanDocsTest {
         assertThat(correctionPlan).contains(
                 "V5.B.2.1 Config + Secret Boundary 已完成",
                 "V5.B.2.2 Flyway migration foundation 已完成",
-                "V5.B.2.3 planned");
+                "V5.B.2.3 Profile Matrix Validation 已完成");
     }
 
     @Test

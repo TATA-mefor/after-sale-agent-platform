@@ -71,6 +71,30 @@ This does not enable migrations in the default profile, does not add Liquibase, 
 validation, and does not connect default validation to MySQL, PostgreSQL, PGvector, Docker, Redis, real LLMs, real
 embedding providers, Spring AI live providers, or external network.
 
+## V5.B.2.3 Profile Matrix Validation
+
+V5.B.2.3 Profile Matrix Validation adds file-based harness coverage for default, `mysql`, `rag-postgres`, production
+template, Flyway, CI, and live smoke boundaries. Profile matrix validation harness completed; V5.B.2 current scope
+completed. Runtime profile behavior was not changed.
+
+The production template remains template only. The harness verifies that profile-specific variables stay explicit:
+
+```text
+AFTERSALE_MYSQL_URL
+AFTERSALE_MYSQL_USERNAME
+AFTERSALE_MYSQL_PASSWORD
+AFTERSALE_FLYWAY_ENABLED:false
+AFTERSALE_PGVECTOR_URL
+AFTERSALE_PGVECTOR_USERNAME
+AFTERSALE_PGVECTOR_PASSWORD
+AFTERSALE_PGVECTOR_SCHEMA
+AFTERSALE_RAG_FLYWAY_ENABLED:false
+```
+
+Secret manager is not implemented, production deployment is not completed, production auth / RBAC is not completed,
+production monitoring is not completed, and real refund / exchange / payment / logistics integrations are not
+connected.
+
 V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile. This is an
 infrastructure adapter behind `PolicyVectorRepository`, not a new Agent tool, not a public RAG HTTP endpoint, and not a
 retrieval algorithm change. Default validation still uses fake / in-memory dependencies and does not connect to

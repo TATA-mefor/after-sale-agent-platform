@@ -509,15 +509,15 @@ V5.B.2.1 validation is docs-only and offline. It checks that `application.yml` r
 offline/local baseline, `application-prod.example.yml` remains template-only, `application-mysql.yml` and
 `application-rag-postgres.yml` remain explicit opt-in profiles, Docker and CI do not bake or inject live secrets, and
 V5.B.2.2 later adds the Flyway migration foundation while keeping Flyway disabled by default. Liquibase is not
-introduced. Profile matrix runtime validation is planned for V5.B.2.3. Default validation still does not require real
-LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding providers, Spring AI live calls, secret
-manager, Docker Compose, or external network.
+introduced. V5.B.2.3 Profile Matrix Validation later adds the file-based profile matrix validation harness. Default
+validation still does not require real LLMs, API keys, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+providers, Spring AI live calls, secret manager, Docker Compose, or external network.
 
 ## V5.B.2.2 Flyway Migration Foundation Validation
 
 V5.B.2.2 adds Flyway dependencies, default-disabled configuration, explicit `mysql` and `rag-postgres` migration
-locations, and schema-only MySQL / PGvector baseline migration files. It does not run migrations by default and does
-not implement profile matrix runtime validation.
+locations, and schema-only MySQL / PGvector baseline migration files. It does not run migrations by default and leaves
+profile matrix validation harness coverage to V5.B.2.3.
 
 Targeted docs/config harness:
 
@@ -537,6 +537,50 @@ mvn test -Dtest=ArchitectureTest
 This validation is offline. It reads `pom.xml`, Spring profile config, migration SQL files, and docs only. It does not
 start Spring, create a `DataSource`, connect to MySQL / PostgreSQL / PGvector, run Docker, call real LLMs, call real
 embedding providers, invoke Spring AI live providers, or use external network.
+
+## V5.B.2.3 Profile Matrix Validation
+
+V5.B.2.3 profile matrix validation harness completed. V5.B.2 current scope completed. The tests read repository files
+only and verify default, `mysql`, `rag-postgres`, production template, Flyway, CI, live smoke, and secret boundaries.
+Runtime profile behavior was not changed.
+
+Targeted config/docs harness:
+
+```bash
+mvn test -Dtest=ProfileMatrixValidationTest
+mvn test -Dtest=ProfileMatrixValidationDocsTest
+```
+
+The harness verifies:
+
+- default offline / local baseline stays in `application.yml`;
+- `application-mysql.yml` uses `AFTERSALE_MYSQL_URL`, `AFTERSALE_MYSQL_USERNAME`,
+  `AFTERSALE_MYSQL_PASSWORD`, and `AFTERSALE_FLYWAY_ENABLED:false`;
+- `application-rag-postgres.yml` uses `AFTERSALE_PGVECTOR_URL`, `AFTERSALE_PGVECTOR_USERNAME`,
+  `AFTERSALE_PGVECTOR_PASSWORD`, `AFTERSALE_PGVECTOR_SCHEMA`, and `AFTERSALE_RAG_FLYWAY_ENABLED:false`;
+- `application-prod.example.yml` remains template only;
+- Flyway remains disabled by default while profile locations remain `classpath:db/migration/mysql` and
+  `classpath:db/migration/pgvector`;
+- live PGvector smoke stays explicit opt-in through `-Dlive.rag=true` and sanitized skip behavior, including
+  `CREATE EXTENSION IF NOT EXISTS vector` setup limitations.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+Optional live PGvector smoke remains outside the default gate:
+
+```bash
+mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true
+```
+
+Default validation still does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+provider, Spring AI live provider calls, secret manager, Docker Compose, or external network.
 
 ## Interview Safe Validation Commands
 

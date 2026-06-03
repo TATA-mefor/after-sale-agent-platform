@@ -2,14 +2,15 @@
 
 Date: 2026-06-03
 
-Status: Completed for V5.B.2.1 documentation boundary and V5.B.2.2 Flyway migration foundation.
+Status: Completed for V5.B.2.1 documentation boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile
+Matrix Validation.
 
 ## Context
 
 V5.B.1 已完成 Dockerfile、`.dockerignore`、CI Maven quality gate 和 Docker build validation。V5.B.2 进入
 配置、密钥和迁移治理。V5.B.2.1 只做事实基线、profile matrix、secret boundary 和 migration follow-up 方案。
-V5.B.2.2 后续选择 Flyway 并新增默认关闭的迁移基础。V5.B.2 仍不接入 secret manager，不完成 profile matrix
-runtime validation，也不改变业务 runtime。
+V5.B.2.2 后续选择 Flyway 并新增默认关闭的迁移基础。V5.B.2.3 后续完成 file-based profile matrix validation
+harness。V5.B.2 current scope completed。V5.B.2 仍不接入 secret manager，也不改变业务 runtime。
 
 ## Current Configuration Baseline
 
@@ -74,7 +75,8 @@ fresh-volume init、手动 SQL 导入和 V5.A.3 live smoke 的 schema setup。Fl
   和 vector dimension。
 - `CREATE EXTENSION IF NOT EXISTS vector` 可能需要较高权限；docker init、预安装 extension 或 opt-in smoke skip
   仍是当前操作边界。
-- V5.B.2 不改变 `JdbcPolicyVectorRepository`，也不实现 profile matrix runtime validation。
+- V5.B.2 不改变 `JdbcPolicyVectorRepository`。V5.B.2.3 只实现 file-based profile matrix validation harness；
+  runtime profile behavior was not changed。
 
 ## CI / Validation Boundary
 
@@ -84,6 +86,8 @@ fresh-volume init、手动 SQL 导入和 V5.A.3 live smoke 的 schema setup。Fl
   provider 或外部网络。
 - `FlywayMigrationFoundationDocsTest` 只读配置、迁移文件和文档，不启动 Spring，不连接数据库，不运行
   migration。
+- `ProfileMatrixValidationTest` 和 `ProfileMatrixValidationDocsTest` 只读配置、CI、迁移文件、live smoke 测试源码和
+  文档，不启动 Spring，不连接数据库，不运行 Docker。
 - live PGvector smoke 仍需显式 `-Dlive.rag=true`，缺配置应 skip。
 
 ## Docker / Runtime Config Boundary
@@ -112,7 +116,7 @@ fresh-volume init、手动 SQL 导入和 V5.A.3 live smoke 的 schema setup。Fl
 ## Follow-ups
 
 - V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
-- V5.B.2.3：profile matrix runtime validation。
+- V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
 - V5.B.3：observability runtime hardening。
 - V5.B.4：auth、Kubernetes / Helm、release / rollback hardening。
 

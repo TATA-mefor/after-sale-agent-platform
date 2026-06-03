@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned 历史口径已推进为 V5.B.1 Container + CI foundation 已完成，V5.B.2.1 Config + Secret Boundary 已完成，V5.B.2.2 Flyway migration foundation 已完成，V5.B.2.3 planned
+状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned 历史口径已推进为 V5.B.1 Container + CI foundation 已完成，V5.B.2.1 Config + Secret Boundary 已完成，V5.B.2.2 Flyway migration foundation 已完成，V5.B.2.3 Profile Matrix Validation 已完成，V5.B.2 current scope completed
 
 历史状态记录：阶段 5 收口时状态为“状态：阶段 0-5 已完成，阶段 6 planned”；当前状态已推进为阶段 0-6 已完成。
 
@@ -380,7 +380,8 @@
 13. V5.B.2.1：Config + Secret Boundary / Profile Matrix Plan 已完成，新增配置基线、profile matrix、secret
     boundary 和 migration follow-up 文档；不修改 runtime。
 14. V5.B.2.2：Flyway migration foundation 已完成；Liquibase 未引入，Flyway 默认关闭。
-15. V5.B.2.3：Profile matrix runtime validation planned。
+15. V5.B.2.3：V5.B.2.3 Profile Matrix Validation 已完成；profile matrix validation harness completed，runtime
+    profile behavior was not changed。
 
 ## 5. 风险控制
 

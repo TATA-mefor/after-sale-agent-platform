@@ -55,6 +55,7 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.B.2.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_1_CONFIG_SECRET_BOUNDARY.md)
 - [V5.B.2.2 Flyway Migration Foundation](docs/deploy/MIGRATION_FOUNDATION.md)
 - [V5.B.2.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md)
+- [V5.B.2.3 Profile Matrix Validation](docs/exec-plans/completed/EXEC_PLAN_V5_B2_3_PROFILE_MATRIX_VALIDATION.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -164,8 +165,9 @@ docker run --rm -p 8080:8080 after-sale-agent-platform:local
 ```
 
 See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment.
-V5.B.2.1 config / secret boundary and V5.B.2.2 Flyway migration foundation are completed; V5.B.2.3 profile matrix
-runtime validation, V5.B.3 observability hardening, and V5.B.4 auth / Kubernetes / release hardening remain planned.
+V5.B.2.1 config / secret boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile Matrix Validation are
+completed. V5.B.2 current scope completed. V5.B.3 observability hardening and V5.B.4 auth / Kubernetes / release
+hardening remain planned.
 
 ## V5.B.2 Config / Secret / Migration Boundary
 
@@ -181,9 +183,13 @@ default-disabled configuration, profile-specific migration locations, and MySQL 
 migrations. Liquibase is not introduced. Flyway remains disabled by default, and default validation still does not
 connect to MySQL, PostgreSQL, PGvector, Docker, Redis, real LLMs, real embedding providers, or external network.
 
-V5.B.2 does not implement secret manager, profile matrix runtime validation, production deployment, production auth,
-production monitoring, or external business integrations. V5.B.2.3 remains planned for profile matrix runtime
-validation.
+V5.B.2.3 adds a file-based profile matrix validation harness for default, `mysql`, `rag-postgres`, production
+template, Flyway, CI, and live smoke boundaries. It verifies `AFTERSALE_FLYWAY_ENABLED:false`,
+`AFTERSALE_RAG_FLYWAY_ENABLED:false`, and the existing `AFTERSALE_PGVECTOR_*` variable convention. Runtime profile
+behavior was not changed.
+
+V5.B.2 does not implement secret manager, production deployment, production auth, production monitoring, or external
+business integrations. Real refund / exchange / payment / logistics integrations are not connected.
 
 ## Observability
 

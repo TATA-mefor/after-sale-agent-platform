@@ -2,13 +2,15 @@
 
 Date: 2026-06-03
 
-Status: V5.B.2.1 completed for documentation boundary; V5.B.2.2 completed for Flyway migration foundation.
+Status: V5.B.2.1 completed for documentation boundary; V5.B.2.2 completed for Flyway migration foundation;
+V5.B.2.3 Profile Matrix Validation completed.
 
 ## 目标
 
 本方案用于固定 AfterSale-Agent 当前配置基线、profile matrix、secret boundary 和 migration follow-up。V5.B.2.1
-完成文档事实口径和后续任务拆分；V5.B.2.2 后续补充了 Flyway migration foundation。V5.B.2 仍不接入
-secret manager，不完成 profile matrix runtime validation，也不改变业务 runtime。
+完成文档事实口径和后续任务拆分；V5.B.2.2 后续补充了 Flyway migration foundation；V5.B.2.3 后续补充了
+profile matrix validation harness。V5.B.2 current scope completed。V5.B.2 仍不接入 secret manager，也不改变
+业务 runtime。
 
 ## 当前配置文件说明
 
@@ -108,7 +110,7 @@ src/main/resources/db/migration/pgvector
   chunks / embeddings tables 和 indexes。
 - `CREATE EXTENSION IF NOT EXISTS vector` 可能需要较高权限；docker-compose-rag fresh-volume init、手动预安装
   extension 或 opt-in live smoke skip 仍是当前操作边界。
-- V5.B.2.2 不实现 broader profile matrix runtime validation；该任务留到 V5.B.2.3。
+- V5.B.2.3 已完成 file-based profile matrix validation harness；runtime profile behavior was not changed。
 
 ## What Is Not Completed
 
@@ -119,7 +121,7 @@ src/main/resources/db/migration/pgvector
 - production auth / RBAC 未完成。
 - production monitoring 未完成。
 - readiness / liveness runtime changes 未实现。
-- profile matrix runtime validation 留到 V5.B.2.3。
+- profile matrix runtime behavior changes 未实现；V5.B.2.3 只完成 file-based validation harness。
 - 真实退款、换货、补偿、支付、物流外部系统未接入。
 
 ## Default Offline Boundary
@@ -142,7 +144,7 @@ src/main/resources/db/migration/pgvector
 ## Follow-up Task Split
 
 - V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
-- V5.B.2.3：profile matrix runtime validation。
+- V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
 - V5.B.3：observability runtime hardening。
 - V5.B.4：auth、Kubernetes / Helm、release / rollback hardening。
 

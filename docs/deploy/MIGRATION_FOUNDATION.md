@@ -147,8 +147,10 @@ PGvector migrations unless a future explicit profile validation task adds opt-in
 
 ## Live Validation Boundary
 
-V5.B.2.2 does not implement profile matrix runtime validation. That remains V5.B.2.3. Live migration validation must be
-explicit opt-in and must skip or fail clearly when database configuration is absent.
+V5.B.2.3 Profile Matrix Validation later completes the file-based profile matrix validation harness for default,
+`mysql`, `rag-postgres`, production template, Flyway, CI, and live smoke boundaries. Runtime profile behavior was not
+changed. Live migration validation must remain explicit opt-in and must skip or fail clearly when database
+configuration is absent.
 
 ## Rollback / Repeatable Future Plan
 
@@ -157,14 +159,14 @@ Future migration work should define:
 - repeatable seed strategy for demo data;
 - migration repair policy for local development;
 - rollback strategy for production releases;
-- profile matrix validation for MySQL and PGvector;
+- optional live profile validation for MySQL and PGvector;
 - separation between schema migration, demo seed data, and production data migration.
 
 ## What Is Not Completed
 
 - Liquibase is not introduced.
 - Flyway is not enabled by default.
-- Profile matrix runtime validation is not implemented.
+- Profile matrix runtime behavior changes are not implemented; V5.B.2.3 only adds file-based harness coverage.
 - Production deployment is not completed.
 - Production auth / RBAC is not completed.
 - Production monitoring is not completed.
