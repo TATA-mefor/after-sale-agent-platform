@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-Status: Completed
+Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2 through V5.B.4 planned
 
 ## 目的
 
@@ -37,19 +37,33 @@ Status: Completed
 opt-in PGvector connectivity smoke，V5.A.4 完成 V5.A 总收口。Flyway / Liquibase migration framework 和
 production deployment 仍未完成。
 
+## V5.B.1 Container + CI status
+
+V5.B.1 已完成 container + CI foundation：
+
+- `Dockerfile` 使用 Java 17 multi-stage build 和非 root runtime 用户。
+- `.dockerignore` 排除 `.env*`、key/certificate 文件、`target`、Git metadata、IDE 文件、logs、temp 和本地数据目录。
+- `.github/workflows/ci.yml` 运行 `mvn test`、`mvn checkstyle:check`、`mvn spotbugs:check` 和
+  `mvn test -Dtest=ArchitectureTest`。
+- CI 额外执行 `docker build -t after-sale-agent-platform:ci .`，但不 push image、不 registry login、不部署。
+- 默认 CI 不运行 live LLM、live Spring AI、live PGvector、live MySQL、Redis、Docker Compose 或外部业务服务。
+- 详细说明见 `docs/deploy/CONTAINER_CI_HARDENING.md` 和
+  `version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md`。
+
+V5.B.1 不等于 production deployment。V5.B.2 Config + Secret + Migration、V5.B.3 Observability runtime hardening、
+V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。
+
 ## 推荐后续里程碑
 
-1. Dockerfile hardening：多阶段构建、非 root 用户、镜像分层、local smoke check。
-2. CI quality gate：运行默认离线验证命令。
-3. Profile matrix：default / mysql / rag-postgres / prod-template 的验证矩阵。
-4. Secret management：选择 secret manager 或部署注入策略。
-5. Database migration：选择 Flyway 或 Liquibase。
-6. PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 schema migration 和 opt-in live
+1. V5.B.2 Profile / config matrix：default / mysql / rag-postgres / prod-template 的验证矩阵。
+2. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
+3. V5.B.2 Database migration：选择 Flyway 或 Liquibase。
+4. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 schema migration 和 opt-in live
    validation。
-7. Readiness / liveness：区分 liveness 与 readiness。
-8. Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
-9. Security / auth：production auth/RBAC 和 trace access control。
-10. Release / rollback：版本、迁移、配置和健康检查回滚方案。
+5. V5.B.3 Readiness / liveness：区分 liveness 与 readiness。
+6. V5.B.3 Observability：Prometheus / Grafana / OpenTelemetry / log aggregation。
+7. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
+8. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
 
 ## Dockerfile checklist
 
@@ -162,8 +176,7 @@ default offline validation 不需要：
 
 ## 什么不是当前已完成能力
 
-- Dockerfile is not implemented。
-- CI/CD is not implemented。
+- CD / release automation is not implemented。
 - Kubernetes / Helm is not implemented。
 - secret manager is not implemented。
 - production deployment is not completed。

@@ -1,14 +1,14 @@
-name: CI
+name: quality-gate
 
 on:
   push:
-    branches: [master]
+    branches: [main, master]
   pull_request:
-    branches: [master]
+    branches: [main, master]
 
 jobs:
-  test:
-    name: Java 17 / Maven Test
+  quality:
+    name: Maven quality gate
     runs-on: ubuntu-latest
 
     steps:
@@ -22,4 +22,24 @@ jobs:
           cache: 'maven'
 
       - name: Run tests
-        run: mvn test --batch-mode --no-transfer-progress
+        run: mvn -B --no-transfer-progress test
+
+      - name: Run Checkstyle
+        run: mvn -B --no-transfer-progress checkstyle:check
+
+      - name: Run SpotBugs
+        run: mvn -B --no-transfer-progress spotbugs:check
+
+      - name: Run ArchitectureTest
+        run: mvn -B --no-transfer-progress test -Dtest=ArchitectureTest
+
+  docker-build:
+    name: Docker image build
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build local CI image
+        run: docker build -t after-sale-agent-platform:ci .

@@ -1947,6 +1947,33 @@ Known limitations:
 - Reranking, query rewriting, RRF, chunk window expansion, production ingestion API / admin UI, and real refund /
   exchange / payment / logistics integrations remain future work.
 
+### V5.B.1 Container + CI Foundation (completed)
+
+Status: completed for container build foundation and CI quality gate.
+
+Current V5.B.1 quality status:
+
+- Dockerfile foundation quality: the image build uses a Java 17 Maven build stage and a Java 17 JRE runtime stage.
+- Non-root runtime quality: the runtime image creates and uses an `aftersale` system user.
+- Build-context safety quality: `.dockerignore` excludes `.env*`, key material, `target`, Git metadata, IDE files,
+  logs, temporary folders, local data folders, and common generated outputs.
+- CI quality: `.github/workflows/ci.yml` runs `mvn test`, `mvn checkstyle:check`, `mvn spotbugs:check`, and
+  `mvn test -Dtest=ArchitectureTest`.
+- Docker build quality: CI validates `docker build -t after-sale-agent-platform:ci .` without image push, registry
+  login, Docker Compose, release, or deployment.
+- Default offline quality: default validation still does not require real LLMs, API keys, PostgreSQL, PGvector,
+  Docker, MySQL, Redis, real embedding providers, Spring AI live calls, registry secrets, or external business
+  services.
+- Runtime non-change quality: V5.B.1 does not modify `src/main/java`, application runtime semantics, ToolRegistry,
+  `search_aftersale_policy`, RAG retrieval, RAG evidence merge, ingestion, health indicators, OpenAPI, ToolCallTrace,
+  Workspace, Execution Tree, or AgentApplicationService.
+
+Known limitations:
+
+- V5.B.1 does not add CD / release automation, registry push, Kubernetes / Helm, secret manager, production auth /
+  RBAC, production monitoring, Flyway / Liquibase migration management, readiness / liveness runtime changes, or live
+  PGvector checks in the default gate.
+
 Planned phases:
 
 ```text

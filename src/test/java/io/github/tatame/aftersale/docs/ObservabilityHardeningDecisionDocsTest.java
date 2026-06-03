@@ -119,7 +119,8 @@ class ObservabilityHardeningDecisionDocsTest {
                 "不写 ToolCallTrace",
                 "health details 必须 sanitize");
         assertThat(validation).contains("默认 actuator exposure 继续只包含 `/actuator/health`");
-        assertThat(validation).contains("敏感 actuator endpoints 如 env、beans、configprops、heapdump、threaddump、prometheus 不默认暴露");
+        assertThat(validation).contains("敏感 actuator endpoints 如 env、beans、configprops");
+        assertThat(validation).contains("heapdump、threaddump、prometheus 不默认暴露");
     }
 
     @Test

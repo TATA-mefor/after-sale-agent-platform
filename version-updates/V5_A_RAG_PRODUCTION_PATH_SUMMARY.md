@@ -66,7 +66,8 @@ logistics integrations.
 
 ## Future Roadmap
 
-- V5.B production hardening route.
+- V5.B.1 Container + CI foundation is now completed through Dockerfile hardening, `.dockerignore`, CI Maven quality
+  gate, and Docker build validation.
 - V5.B.2 Flyway / Liquibase migration management.
 - Optional Spring AI `VectorStore` production path decision.
 - RAG quality enhancements and real embedding evaluation.

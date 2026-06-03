@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned
+状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned 历史口径已推进为 V5.B.1 Container + CI foundation 已完成，V5.B.2 planned
 
 历史状态记录：阶段 5 收口时状态为“状态：阶段 0-5 已完成，阶段 6 planned”；当前状态已推进为阶段 0-6 已完成。
 
@@ -375,7 +375,9 @@
 10. V5.A.3：PGvector connectivity smoke 已完成，必须显式 opt-in，不得进入默认验证。
 11. V5.A.4：PGvector profile / docs closure 已完成，收口记录为
     `version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md`。
-12. V5.B：Flyway / Liquibase migration framework、production hardening 和后续 production validation planned。
+12. V5.B.1：Container + CI foundation 已完成，新增 Dockerfile、`.dockerignore`、CI quality gate 和 Docker build
+    validation；不代表 production deployment。
+13. V5.B.2：Flyway / Liquibase migration framework、config / secret hardening 和后续 production validation planned。
 
 ## 5. 风险控制
 

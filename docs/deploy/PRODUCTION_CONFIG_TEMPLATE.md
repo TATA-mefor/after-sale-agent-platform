@@ -21,6 +21,22 @@ Stage 6 of the project review correction records the deployment hardening route 
 Dockerfile, CI/CD, Kubernetes / Helm, secret manager, production auth/RBAC, production monitoring, live PGvector
 validation, and production deployment remain future work.
 
+## Container / CI Usage
+
+V5.B.1 adds a Dockerfile, `.dockerignore`, CI Maven quality gate, and Docker build validation. See
+`docs/deploy/CONTAINER_CI_HARDENING.md` and `version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md`.
+
+The image does not contain secrets. Runtime configuration must still be supplied through environment variables,
+Spring profiles, or the deployment platform. Do not bake API keys, database passwords, tokens, private keys, or
+provider configuration into the image.
+
+The CI default gate runs Maven tests, Checkstyle, SpotBugs, ArchitectureTest, and Docker image build validation. It
+does not run live LLM, live Spring AI, live PGvector, live MySQL, Redis, Docker Compose, or external service checks.
+It does not push an image or deploy the application.
+
+`application-prod.example.yml` remains a production configuration template only. It is not loaded by default and is
+not a production deployment manifest.
+
 V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile. This is an
 infrastructure adapter behind `PolicyVectorRepository`, not a new Agent tool, not a public RAG HTTP endpoint, and not a
 retrieval algorithm change. Default validation still uses fake / in-memory dependencies and does not connect to

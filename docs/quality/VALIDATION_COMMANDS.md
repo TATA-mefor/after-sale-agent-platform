@@ -450,6 +450,39 @@ migration management, RAG quality enhancement, real embedding quality validation
 use, public RAG HTTP endpoints, or real refund / exchange / payment / logistics integrations. V5.B remains planned for
 production hardening and migration management.
 
+## V5.B.1 Container + CI Validation
+
+V5.B.1 adds Dockerfile hardening, `.dockerignore` secret-safety exclusions, GitHub Actions Maven quality gate, and a
+Docker image build validation job.
+
+Default Maven gate:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=ContainerCiHardeningDocsTest
+```
+
+Optional local Docker validation:
+
+```bash
+docker build -t after-sale-agent-platform:local .
+```
+
+Docker build validation is optional for local development and does not replace the Maven quality gate. CI may run
+`docker build -t after-sale-agent-platform:ci .`, but it does not push images, log in to a registry, run Docker Compose,
+or deploy.
+
+Default CI and default Maven validation do not run live smoke tests. Live LLM, live Spring AI, live embedding, live
+PGvector, live MySQL, Redis, and external service validation remain explicit opt-in paths.
+
 ## Interview Safe Validation Commands
 
 Use this command set before or during an interview when the goal is to show the repository can be verified locally

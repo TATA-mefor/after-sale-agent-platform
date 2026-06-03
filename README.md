@@ -48,6 +48,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.A.3 PGvector Connectivity Smoke Test](version-updates/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md)
 - [V5.A RAG Production Path Completion](version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md)
 - [V5.A RAG Production Path Summary](version-updates/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md)
+- [V5.B.1 Container + CI](version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md)
+- [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -143,6 +145,23 @@ providers, API keys, Docker, PostgreSQL, PGvector, MySQL, Redis, real LLMs, or r
 
 详见 [docs/deploy/DOCKER_COMPOSE.md](docs/deploy/DOCKER_COMPOSE.md)
 
+## V5.B.1 Container + CI
+
+V5.B.1 adds a multi-stage Dockerfile, `.dockerignore` secret-safety exclusions, and a GitHub Actions quality gate.
+The CI gate runs Maven tests, Checkstyle, SpotBugs, ArchitectureTest, and Docker image build validation. It does not
+run live PGvector, live LLM, live Spring AI, Docker Compose, or external service checks, and it does not push an image.
+
+Local Docker build validation is optional:
+
+```bash
+docker build -t after-sale-agent-platform:local .
+docker run --rm -p 8080:8080 after-sale-agent-platform:local
+```
+
+See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment. V5.B.2
+config / secret / migration hardening, V5.B.3 observability hardening, and V5.B.4 auth / Kubernetes / release hardening
+remain planned.
+
 ## Observability
 
 详见 [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md)
@@ -163,6 +182,9 @@ mvn checkstyle:check
 mvn spotbugs:check
 mvn test -Dtest=ArchitectureTest
 ```
+
+The default validation path remains offline. It does not require real LLMs, API keys, PostgreSQL, PGvector, Docker,
+MySQL, Redis, real embedding providers, Spring AI live calls, registry secrets, or external network access.
 
 ## V1 能力边界
 

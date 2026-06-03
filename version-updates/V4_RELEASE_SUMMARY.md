@@ -132,9 +132,15 @@ Deployment hardening docs:
 - `docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md`
 - `version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md`
 
+Current addendum: V5.B.1 later adds container + CI foundation through Dockerfile hardening, `.dockerignore`, CI Maven
+quality gate, and Docker build validation. This does not change the V4 release boundary and does not make V4 or V5 a
+production deployment.
+
 ## Future Roadmap
 
-- V5 production hardening.
+- V5.B.2 config / secret / migration hardening.
+- V5.B.3 observability hardening.
+- V5.B.4 auth, Kubernetes / Helm, release, and rollback hardening.
 - Production auth and security.
 - Live PGvector validation.
 - Production ingestion API or admin UI.
