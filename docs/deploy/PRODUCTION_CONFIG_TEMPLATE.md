@@ -107,8 +107,9 @@ The default Actuator exposure remains health-only. `/actuator/health`, `/actuato
 
 This does not add OpenTelemetry, collector configuration, production monitoring, or live DB / PGvector / LLM /
 embedding readiness checks. V5.B.3.2 Micrometer metrics foundation completed, V5.B.3.3 Prometheus opt-in exposure
-completed, V5.B.3.4 tracing / correlation boundary completed for local HTTP log correlation, and V5.B.3.5 planned
-production monitoring roadmap plus V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+completed, V5.B.3.4 tracing / correlation boundary completed for local HTTP log correlation, and V5.B.3.5
+observability docs + completion record completed. Production monitoring backend, OpenTelemetry, dashboards, alerting,
+log aggregation, and V5.B.4 auth / Kubernetes / release hardening remain future work.
 
 ## V5.B.3.2 Micrometer Metrics Foundation
 

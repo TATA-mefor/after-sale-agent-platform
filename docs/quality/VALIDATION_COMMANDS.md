@@ -618,8 +618,9 @@ provider, Spring AI live provider calls, secret manager, Docker Compose, Prometh
 external network.
 
 V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing /
-correlation boundary completed. V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes /
-release hardening remain future work.
+correlation boundary completed. V5.B.3.5 observability docs + completion record completed. V5.B.4 planned auth /
+Kubernetes / release hardening remains future work. Production monitoring backend, dashboards, alerting, log
+aggregation, and OpenTelemetry remain future / opt-in work.
 
 ## V5.B.3.2 Micrometer Metrics Foundation Validation
 
@@ -742,8 +743,44 @@ V5.B.3.4 validation does not require real LLM, API Key, PostgreSQL, PGvector, Do
 provider, Spring AI live provider calls, Spring AI `VectorStore`, secret manager, Docker Compose, Prometheus server,
 Grafana, OpenTelemetry collector, tracing backend, log aggregation backend, or external network.
 
-V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future
-work.
+## V5.B.3.5 Observability Docs + Completion Validation
+
+V5.B.3.5 observability docs + completion record completed. It consolidates the V5.B.3.1 readiness / liveness,
+V5.B.3.2 Micrometer metrics, V5.B.3.3 Prometheus opt-in exposure, and V5.B.3.4 tracing / correlation documentation
+into a single observability docs map.
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=ObservabilityDocsCompletionDocsTest
+```
+
+The docs harness verifies:
+
+- V5.B.3.5 observability docs and completion record exist;
+- README, validation commands, quality score, deployment roadmap, production config template, remediation plan, and
+  V5 status docs link or mention the completion;
+- production monitoring backend, Grafana dashboards, alerting, scrape jobs, log aggregation, OpenTelemetry,
+  distributed tracing, cross-service propagation, production auth, Kubernetes / Helm, and release / rollback hardening
+  remain future / opt-in;
+- default validation remains offline and does not require live LLM, API Key, PostgreSQL, PGvector, Docker, MySQL,
+  Redis, real embedding provider, Prometheus server, Grafana, OpenTelemetry collector, tracing backend, log
+  aggregation backend, or external network;
+- docs do not contain local absolute paths or real secret assignments.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.B.3.5 is documentation-only. It does not add runtime observability behavior and does not implement production
+monitoring.
+
+V5.B.4 planned auth / Kubernetes / release hardening remains future work.
 
 ## Interview Safe Validation Commands
 

@@ -2072,8 +2072,9 @@ Known limitations:
 ### V5.B.3.1 Readiness / Liveness Boundary (completed)
 
 Status: completed for readiness / liveness actuator probe boundary. V5.B.3.2 Micrometer metrics foundation completed.
-V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5 planned
-production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5
+observability docs + completion record completed. V5.B.4 planned auth / Kubernetes / release hardening remains future
+work.
 
 Current V5.B.3.1 quality status:
 
@@ -2102,8 +2103,8 @@ Known limitations:
 ### V5.B.3.2 Micrometer Metrics Foundation (completed)
 
 Status: completed for low-cardinality Micrometer metrics foundation. V5.B.3.3 Prometheus opt-in exposure completed.
-V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned
-auth / Kubernetes / release hardening remain future work.
+V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5 observability docs + completion record completed.
+V5.B.4 planned auth / Kubernetes / release hardening remains future work.
 
 Current V5.B.3.2 quality status:
 
@@ -2131,8 +2132,9 @@ Known limitations:
 
 ### V5.B.3.3 Prometheus Opt-in Exposure (completed)
 
-Status: completed for Prometheus opt-in exposure. V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5 planned
-production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+Status: completed for Prometheus opt-in exposure. V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5
+observability docs + completion record completed. V5.B.4 planned auth / Kubernetes / release hardening remains future
+work.
 
 Current V5.B.3.3 quality status:
 
@@ -2154,6 +2156,30 @@ Known limitations:
 - V5.B.3.3 does not add OpenTelemetry, distributed tracing, cross-service propagation, Grafana dashboards, scrape jobs,
   alert rules, production monitoring backend, production auth / RBAC, Kubernetes / Helm, release / rollback hardening,
   or external business integrations.
+- Real refund / exchange / payment / logistics integrations are not connected.
+
+### V5.B.3.5 Observability Docs + Completion Record (completed)
+
+Status: completed for observability docs and completion record. V5.B.4 planned auth / Kubernetes / release hardening
+remains future work. Production monitoring backend, dashboards, alerting, log aggregation, and OpenTelemetry remain
+future / opt-in work.
+
+Current V5.B.3.5 quality status:
+
+- Documentation quality: `docs/deploy/OBSERVABILITY_DOCS_COMPLETION.md` maps readiness / liveness, Micrometer metrics,
+  Prometheus opt-in exposure, local HTTP correlation, validation commands, and follow-ups.
+- Completion record quality:
+  `docs/exec-plans/completed/EXEC_PLAN_V5_B3_5_OBSERVABILITY_DOCS_COMPLETION_RECORD.md` records the scope,
+  boundaries, validation commands, known limitations, follow-ups, and `TASK_COMPLETE`.
+- Docs harness quality: `ObservabilityDocsCompletionDocsTest` checks links, status wording, default offline boundary,
+  production monitoring non-goals, OpenTelemetry non-goals, secret safety, and overclaim prevention.
+- Runtime non-change quality: V5.B.3.5 is documentation-only and does not modify business runtime semantics.
+
+Known limitations:
+
+- V5.B.3.5 does not implement production monitoring backend, production tracing, Grafana dashboards, Prometheus scrape
+  jobs, alert rules, recording rules, external log aggregation, OpenTelemetry, production auth / RBAC, Kubernetes /
+  Helm, release / rollback hardening, or external business integrations.
 - Real refund / exchange / payment / logistics integrations are not connected.
 
 Planned phases:

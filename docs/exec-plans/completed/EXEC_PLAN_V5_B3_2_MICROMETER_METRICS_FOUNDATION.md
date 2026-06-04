@@ -137,7 +137,8 @@ mvn test -Dtest=ArchitectureTest
 
 - V5.B.3.3 tracing / cross-service propagation strategy.
 - V5.B.3.4 tracing / correlation boundary completed for local HTTP log correlation.
-- V5.B.3.5 planned production monitoring roadmap.
+- V5.B.3.5 observability docs + completion record completed; production monitoring implementation remains future /
+  opt-in.
 - V5.B.4 auth, Kubernetes / Helm, release and rollback hardening.
 
 ## Completion Signal

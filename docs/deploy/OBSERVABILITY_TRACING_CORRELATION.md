@@ -157,6 +157,7 @@ mvn test -Dtest=ArchitectureTest
 
 ## Follow-ups
 
-- V5.B.3.5 planned production monitoring roadmap.
+- V5.B.3.5 observability docs + completion record completed; production monitoring implementation remains future /
+  opt-in.
 - Future OpenTelemetry / distributed tracing strategy if cross-service topology requires it.
 - V5.B.4 planned auth, Kubernetes / Helm, release and rollback hardening.

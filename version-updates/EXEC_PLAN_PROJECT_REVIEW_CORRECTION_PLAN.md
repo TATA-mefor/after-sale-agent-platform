@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned 历史口径已推进为 V5.B.1 Container + CI foundation 已完成，V5.B.2.1 Config + Secret Boundary 已完成，V5.B.2.2 Flyway migration foundation 已完成，V5.B.2.3 Profile Matrix Validation 已完成，V5.B.2 current scope completed，V5.B.3.1 Readiness / Liveness Boundary 已完成，V5.B.3.2 Micrometer metrics foundation 已完成，V5.B.3.3 Prometheus opt-in exposure 已完成，V5.B.3.4 tracing / correlation boundary completed，V5.B.3.5 planned，V5.B.4 planned
+状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned 历史口径已推进为 V5.B.1 Container + CI foundation 已完成，V5.B.2.1 Config + Secret Boundary 已完成，V5.B.2.2 Flyway migration foundation 已完成，V5.B.2.3 Profile Matrix Validation 已完成，V5.B.2 current scope completed，V5.B.3.1 Readiness / Liveness Boundary 已完成，V5.B.3.2 Micrometer metrics foundation 已完成，V5.B.3.3 Prometheus opt-in exposure 已完成，V5.B.3.4 tracing / correlation boundary completed，V5.B.3.5 observability docs + completion record completed，V5.B.4 planned
 
 历史状态记录：阶段 5 收口时状态为“状态：阶段 0-5 已完成，阶段 6 planned”；当前状态已推进为阶段 0-6 已完成。
 
@@ -388,7 +388,7 @@
 17. V5.B.3.2：Micrometer metrics foundation 已完成；`/actuator/metrics` 和 `/actuator/prometheus` 仍默认不暴露。
 18. V5.B.3.3：Prometheus opt-in exposure 已完成；默认仍不暴露 `/actuator/prometheus`。
 19. V5.B.3.4：tracing / correlation boundary completed；完成 local HTTP log correlation，OpenTelemetry / distributed tracing 仍为 future / opt-in。
-20. V5.B.3.5 planned：production monitoring roadmap。
+20. V5.B.3.5：observability docs + completion record completed；production monitoring backend remains future / opt-in。
 21. V5.B.4 planned：auth、Kubernetes / Helm、release / rollback hardening。
 
 ## 5. 风险控制

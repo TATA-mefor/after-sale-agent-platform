@@ -32,12 +32,14 @@ metrics、Prometheus、Grafana、OpenTelemetry、跨服务 trace-id 传播或生
 当前缺口：
 
 - Prometheus registry / `/actuator/prometheus` 已在 V5.B.3.3 作为 explicit opt-in profile 完成，默认仍不暴露；
+- V5.B.3.5 已完成 observability docs + completion record，用于收口 V5.B.3 当前文档基线；
 - 没有 Grafana dashboard；
 - 没有 OpenTelemetry tracing；V5.B.3.4 只完成 local HTTP tracing / correlation boundary；
 - 没有 collector；
 - 没有跨服务 trace-id 传播；
 - 没有 provider latency / cost metrics；
-- 没有 AgentRun / ToolCall / RAG search 的 production metrics；
+- AgentRun / ToolCall / RAG search 已有 V5.B.3.2 low-cardinality Micrometer metrics foundation，但没有
+  production metrics dashboard；
 - 没有生产日志采集方案；
 - health 不是 live provider、live PGvector 或生产依赖连通性的证明。
 
@@ -53,6 +55,7 @@ safety 边界，再在后续阶段按 opt-in 路径实现。
 
 - 保持当前 runtime 行为不变；
 - V5.B.3.3 后续已新增 Prometheus registry dependency，但只通过 `observability-prometheus` profile 显式 opt-in；
+- V5.B.3.5 后续已完成 observability docs + completion record，但不新增 production monitoring backend；
 - 不新增 Grafana、OpenTelemetry、collector 或外部日志平台依赖；
 - 不修改 `pom.xml`、`application.yml`、Actuator health indicator 或 OpenAPI runtime；
 - 默认 actuator exposure 继续只包含 `health`；

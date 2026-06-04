@@ -112,5 +112,6 @@ external network.
 - V5.B.3.2: low-cardinality Micrometer metrics strategy and optional registry decision.
 - V5.B.3.3: completed Prometheus opt-in exposure.
 - V5.B.3.4 tracing / correlation boundary completed for local HTTP log correlation.
-- V5.B.3.5: planned production monitoring and dashboard roadmap; OpenTelemetry remains future / opt-in.
+- V5.B.3.5 observability docs + completion record completed; production monitoring and dashboard implementation
+  remains future / opt-in, and OpenTelemetry remains future / opt-in.
 - V5.B.4: auth, Kubernetes / Helm, release and rollback hardening.

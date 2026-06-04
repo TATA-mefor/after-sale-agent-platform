@@ -64,6 +64,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.B.3.3 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md)
 - [V5.B.3.4 Tracing / Correlation Boundary](docs/deploy/OBSERVABILITY_TRACING_CORRELATION.md)
 - [V5.B.3.4 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_4_TRACING_CORRELATION_BOUNDARY.md)
+- [V5.B.3.5 Observability Docs + Completion](docs/deploy/OBSERVABILITY_DOCS_COMPLETION.md)
+- [V5.B.3.5 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_5_OBSERVABILITY_DOCS_COMPLETION_RECORD.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -176,8 +178,9 @@ See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is
 V5.B.2.1 config / secret boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile Matrix Validation are
 completed. V5.B.2 current scope completed. V5.B.3.1 readiness / liveness actuator probe boundary completed.
 V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing /
-correlation boundary completed. V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes /
-release hardening remain future work.
+correlation boundary completed. V5.B.3.5 observability docs + completion record completed. V5.B.4 planned auth /
+Kubernetes / release hardening remains future work. Production monitoring backend, dashboards, alerting, log
+aggregation, and OpenTelemetry remain future / opt-in work.
 
 ## V5.B.2 Config / Secret / Migration Boundary
 
@@ -256,6 +259,18 @@ This is local MDC-based correlation only. It is not OpenTelemetry, not distribut
 propagation, not production tracing, and not production monitoring. Correlation IDs and request IDs are not used as
 metrics tags. The task does not change AgentRun, ToolRegistry, ToolCallTrace, Workspace, Execution Tree, RAG retrieval,
 health indicators, OpenAPI behavior, or external business integrations.
+
+## V5.B.3.5 Observability Docs + Completion
+
+V5.B.3.5 closes the current observability documentation sequence. It links the readiness / liveness, Micrometer
+metrics, Prometheus opt-in, and local HTTP correlation docs into a single completion map.
+
+See [V5.B.3.5 Observability Docs + Completion](docs/deploy/OBSERVABILITY_DOCS_COMPLETION.md) and
+[V5.B.3.5 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_5_OBSERVABILITY_DOCS_COMPLETION_RECORD.md).
+
+This is documentation-only. It does not add production monitoring backend, Grafana dashboards, alerting, scrape jobs,
+external log aggregation, OpenTelemetry, distributed tracing, production auth, Kubernetes / Helm, release / rollback
+hardening, or external business integrations.
 
 ## Observability
 
