@@ -2071,9 +2071,9 @@ Known limitations:
 
 ### V5.B.3.1 Readiness / Liveness Boundary (completed)
 
-Status: completed for readiness / liveness actuator probe boundary. V5.B.3.2 planned metrics, V5.B.3.3 planned
-tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned auth / Kubernetes / release hardening
-remain future work.
+Status: completed for readiness / liveness actuator probe boundary. V5.B.3.2 Micrometer metrics foundation completed.
+V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned auth / Kubernetes /
+release hardening remain future work.
 
 Current V5.B.3.1 quality status:
 
@@ -2097,6 +2097,35 @@ Known limitations:
   dashboards, OpenTelemetry, collector configuration, production monitoring, live DB / PGvector / LLM / embedding
   readiness checks, production auth / RBAC, Kubernetes / Helm, release / rollback hardening, or external business
   integrations.
+- Real refund / exchange / payment / logistics integrations are not connected.
+
+### V5.B.3.2 Micrometer Metrics Foundation (completed)
+
+Status: completed for low-cardinality Micrometer metrics foundation. V5.B.3.3 planned tracing, V5.B.3.4 planned
+production monitoring roadmap, and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+
+Current V5.B.3.2 quality status:
+
+- Metrics boundary quality: `ApplicationMetricsRecorder` records AgentRun, ToolCall, Approval, RAG search, and
+  provider-call observations through Micrometer `MeterRegistry`.
+- Metric naming quality: project-owned meters use the `aftersale.*` prefix, including AgentRun, ToolCall, Approval,
+  RAG search, and provider call count / duration meters.
+- Low-cardinality tag quality: allowed tags are bounded to component, operation, outcome, status, tool name, risk
+  level, retrieval mode, fallback, provider type, and approval decision.
+- Secret safety quality: metric tags sanitize secrets, paths, URLs, JDBC URLs, raw prompts, raw provider responses,
+  search queries, snippets, raw dataset paths, and private endpoints to `unknown`.
+- Actuator exposure quality: `/actuator/metrics` and `/actuator/prometheus` remain unavailable by default; Actuator web
+  exposure remains health-only.
+- Default offline quality: `MetricsFoundationBoundaryTest` verifies the default context does not create `DataSource`,
+  Spring AI live model, Spring AI `VectorStore`, or `JdbcPolicyVectorRepository` beans.
+- Docs harness quality: `MetricsFoundationDocsTest` checks status docs, metric names, tag safety, actuator exposure,
+  validation commands, secret safety, and future-work boundaries.
+
+Known limitations:
+
+- V5.B.3.2 does not add Prometheus registry, `/actuator/prometheus`, OpenTelemetry, distributed tracing, dashboards,
+  production monitoring backend, provider cost dashboards, production auth / RBAC, Kubernetes / Helm, release /
+  rollback hardening, or external business integrations.
 - Real refund / exchange / payment / logistics integrations are not connected.
 
 Planned phases:

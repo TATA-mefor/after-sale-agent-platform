@@ -2,7 +2,8 @@
 
 Date: 2026-06-03
 
-Status: V5.B.2.2 completed for Flyway migration foundation.
+Status: V5.B.2.2 completed for Flyway migration foundation. Later V5.B.3.2 Micrometer metrics foundation completed
+without changing migration SQL, Flyway defaults, profile behavior, or database connection boundaries.
 
 ## Goal
 

@@ -58,6 +58,8 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.B.2.3 Profile Matrix Validation](docs/exec-plans/completed/EXEC_PLAN_V5_B2_3_PROFILE_MATRIX_VALIDATION.md)
 - [V5.B.3.1 Readiness / Liveness Boundary](docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md)
 - [V5.B.3.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md)
+- [V5.B.3.2 Micrometer Metrics Foundation](docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md)
+- [V5.B.3.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_2_MICROMETER_METRICS_FOUNDATION.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -169,8 +171,8 @@ docker run --rm -p 8080:8080 after-sale-agent-platform:local
 See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment.
 V5.B.2.1 config / secret boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile Matrix Validation are
 completed. V5.B.2 current scope completed. V5.B.3.1 readiness / liveness actuator probe boundary completed.
-V5.B.3.2 planned metrics, V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4
-planned auth / Kubernetes / release hardening remain future work.
+V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring
+roadmap, and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
 
 ## V5.B.2 Config / Secret / Migration Boundary
 
@@ -204,10 +206,23 @@ remains health-only; `/actuator/env`, `/actuator/beans`, `/actuator/configprops`
 See [Readiness / Liveness Boundary](docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md) and
 [V5.B.3.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md).
 
-This is not production monitoring. It does not add Prometheus, OpenTelemetry, Micrometer business metrics, live DB /
-PGvector / LLM / embedding readiness checks, production auth, or deployment hardening. The default profile remains
-offline and does not create `DataSource`, Spring AI live model, Spring AI `VectorStore`, or
-`JdbcPolicyVectorRepository` beans.
+This is not production monitoring. V5.B.3.1 itself did not add Prometheus, OpenTelemetry, live DB / PGvector / LLM /
+embedding readiness checks, production auth, or deployment hardening. The default profile remains offline and does not
+create `DataSource`, Spring AI live model, Spring AI `VectorStore`, or `JdbcPolicyVectorRepository` beans.
+
+## V5.B.3.2 Micrometer Metrics Foundation
+
+V5.B.3.2 adds a low-cardinality Micrometer metrics recording foundation for AgentRun, ToolCall, Approval, RAG search,
+and provider-call observations. It uses the existing Spring Boot Actuator / Micrometer core dependency and records
+meters through a centralized `ApplicationMetricsRecorder`.
+
+See [Micrometer Metrics Foundation](docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md) and
+[V5.B.3.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_2_MICROMETER_METRICS_FOUNDATION.md).
+
+Actuator web exposure remains health-only. `/actuator/metrics` and `/actuator/prometheus` are not exposed by default.
+Prometheus registry, OpenTelemetry tracing, dashboards, provider cost metrics, production monitoring backend,
+production auth, Kubernetes / Helm, release / rollback hardening, and real external business integrations remain
+planned / future work.
 
 ## Observability
 

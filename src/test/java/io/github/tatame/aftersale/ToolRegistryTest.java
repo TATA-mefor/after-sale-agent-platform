@@ -2,6 +2,7 @@ package io.github.tatame.aftersale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
 import io.github.tatame.aftersale.ticket.application.TicketApplicationService;
 import io.github.tatame.aftersale.ticket.domain.Ticket;
 import io.github.tatame.aftersale.ticket.domain.TicketStatus;
@@ -14,6 +15,7 @@ import io.github.tatame.aftersale.tool.domain.ToolOutput;
 import io.github.tatame.aftersale.tool.domain.ToolRiskLevel;
 import java.util.List;
 import java.util.Map;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -81,13 +83,17 @@ class ToolRegistryTest {
     void highRiskToolRequiresApprovalBeforeExecutorRuns() {
         HighRiskTestTool executor = new HighRiskTestTool();
         ToolRegistry registry = new ToolRegistry(List.of(executor), record -> {
-        });
+        }, testMetricsRecorder());
 
         ToolOutput output = registry.execute("issue_refund", ToolInput.empty());
 
         assertThat(output.status()).isEqualTo(ToolExecutionStatus.REQUIRES_APPROVAL);
         assertThat(output.message()).contains("human approval");
         assertThat(executor.executed).isFalse();
+    }
+
+    private static ApplicationMetricsRecorder testMetricsRecorder() {
+        return new ApplicationMetricsRecorder(new SimpleMeterRegistry());
     }
 
     @Test

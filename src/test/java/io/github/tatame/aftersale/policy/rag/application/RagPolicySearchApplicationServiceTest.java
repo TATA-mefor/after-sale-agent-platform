@@ -2,6 +2,7 @@ package io.github.tatame.aftersale.policy.rag.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
 import io.github.tatame.aftersale.policy.application.PolicyApplicationService;
 import io.github.tatame.aftersale.policy.infrastructure.repository.InMemoryPolicyRepository;
 import io.github.tatame.aftersale.policy.rag.domain.PolicyChunk;
@@ -14,6 +15,7 @@ import io.github.tatame.aftersale.policy.rag.search.RagPolicySearchQuery;
 import io.github.tatame.aftersale.policy.rag.search.RagPolicySearchResult;
 import io.github.tatame.aftersale.policy.rag.search.RetrievalMode;
 import io.github.tatame.aftersale.policy.rag.infrastructure.memory.InMemoryPolicyVectorRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -116,7 +118,8 @@ class RagPolicySearchApplicationServiceTest {
         return new RagPolicySearchApplicationService(
                 new PolicyApplicationService(new InMemoryPolicyRepository()),
                 embeddingClients,
-                vectorRepositories);
+                vectorRepositories,
+                new ApplicationMetricsRecorder(new SimpleMeterRegistry()));
     }
 
     private static RagPolicySearchQuery query(String text, RetrievalMode mode) {

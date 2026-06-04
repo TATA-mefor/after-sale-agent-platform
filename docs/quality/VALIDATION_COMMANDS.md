@@ -617,8 +617,49 @@ V5.B.3.1 validation does not require real LLM, API Key, PostgreSQL, PGvector, Do
 provider, Spring AI live provider calls, secret manager, Docker Compose, Prometheus, OpenTelemetry collector, or
 external network.
 
-V5.B.3.2 planned metrics, V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned
-auth / Kubernetes / release hardening remain future work.
+V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring
+roadmap, and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+
+## V5.B.3.2 Micrometer Metrics Foundation Validation
+
+V5.B.3.2 low-cardinality Micrometer metrics foundation completed. It records AgentRun, ToolCall, Approval, RAG search,
+and provider-call observations through a centralized recorder while keeping Actuator web exposure limited to health.
+
+Targeted runtime/docs harness:
+
+```bash
+mvn test -Dtest=ApplicationMetricsRecorderTest
+mvn test -Dtest=MetricsFoundationBoundaryTest
+mvn test -Dtest=MetricsFoundationDocsTest
+```
+
+The runtime and docs tests verify:
+
+- `MeterRegistry` and `ApplicationMetricsRecorder` exist in the default context;
+- project-owned metric names use the `aftersale.*` prefix;
+- metric tags stay low-cardinality and sanitize secrets, paths, prompts, queries, snippets, URLs, JDBC URLs, and raw
+  free text to `unknown`;
+- AgentRun, ToolCall, Approval, RAG search, and provider metrics are recorded best-effort;
+- `/actuator/metrics`, `/actuator/prometheus`, `/actuator/env`, `/actuator/beans`, `/actuator/configprops`,
+  `/actuator/heapdump`, and `/actuator/threaddump` remain unavailable by default;
+- the default context still does not create `DataSource`, Spring AI live model, Spring AI `VectorStore`, or
+  `JdbcPolicyVectorRepository` beans.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.B.3.2 validation does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+provider, Spring AI live provider calls, Spring AI `VectorStore`, secret manager, Docker Compose, Prometheus,
+OpenTelemetry collector, or external network.
+
+Prometheus registry, `/actuator/prometheus`, OpenTelemetry tracing, dashboards, production monitoring backend,
+production auth, Kubernetes / Helm, and release / rollback hardening remain planned / future work.
 
 ## Interview Safe Validation Commands
 

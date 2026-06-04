@@ -1,6 +1,6 @@
 # AfterSale-Agent 项目审查问题修正方案
 
-状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned 历史口径已推进为 V5.B.1 Container + CI foundation 已完成，V5.B.2.1 Config + Secret Boundary 已完成，V5.B.2.2 Flyway migration foundation 已完成，V5.B.2.3 Profile Matrix Validation 已完成，V5.B.2 current scope completed，V5.B.3.1 Readiness / Liveness Boundary 已完成，V5.B.3.2 planned，V5.B.3.3 planned，V5.B.3.4 planned，V5.B.4 planned
+状态：阶段 0-6 已完成，current correction scope completed，V5.A RAG production path foundation completed。V5.A.1 opt-in JdbcPolicyVectorRepository 已完成，V5.A.2 schema init / version baseline 已完成，V5.A.3 PGvector connectivity smoke 已完成，V5.A.4 docs / completion record 已完成，V5.B planned 历史口径已推进为 V5.B.1 Container + CI foundation 已完成，V5.B.2.1 Config + Secret Boundary 已完成，V5.B.2.2 Flyway migration foundation 已完成，V5.B.2.3 Profile Matrix Validation 已完成，V5.B.2 current scope completed，V5.B.3.1 Readiness / Liveness Boundary 已完成，V5.B.3.2 Micrometer metrics foundation 已完成，V5.B.3.3 planned，V5.B.3.4 planned，V5.B.4 planned
 
 历史状态记录：阶段 5 收口时状态为“状态：阶段 0-5 已完成，阶段 6 planned”；当前状态已推进为阶段 0-6 已完成。
 
@@ -364,7 +364,8 @@
 1. 阶段 0：文档事实口径修正。
 2. 阶段 1：生产配置模板。
 3. 阶段 3：API 分页和 AgentRun 读取模型。
-4. 阶段 2：可观测性指标决策。已完成文档决策；最小 Micrometer 集成仍是后续实现任务。
+4. 阶段 2：可观测性指标决策。已完成文档决策；后续 V5.B.3.2 已完成最小低基数 Micrometer metrics
+   foundation，但 Prometheus、OpenTelemetry、dashboard 和 production monitoring 仍未完成。
 5. 阶段 4：Spring AI 深化评估。已完成文档决策；runtime 深化仍需独立任务。
 6. 阶段 5：RAG 检索质量改进评估。已完成文档决策；reranking、query rewriting、RRF 和 chunk window expansion
    runtime 仍需独立任务。
@@ -384,7 +385,7 @@
     profile behavior was not changed。
 16. V5.B.3.1：Readiness / Liveness Boundary 已完成；readiness / liveness actuator probe boundary completed，
     Actuator web exposure remains health-only。
-17. V5.B.3.2 planned：Micrometer metrics / optional registry strategy。
+17. V5.B.3.2：Micrometer metrics foundation 已完成；`/actuator/metrics` 和 `/actuator/prometheus` 仍默认不暴露。
 18. V5.B.3.3 planned：tracing / cross-service propagation strategy。
 19. V5.B.3.4 planned：production monitoring roadmap。
 20. V5.B.4 planned：auth、Kubernetes / Helm、release / rollback hardening。

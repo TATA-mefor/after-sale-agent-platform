@@ -3,6 +3,7 @@ package io.github.tatame.aftersale.policy.rag.health;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.tatame.aftersale.common.ai.SpringAiProviderProperties;
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
 import io.github.tatame.aftersale.policy.application.PolicyApplicationService;
 import io.github.tatame.aftersale.policy.infrastructure.repository.InMemoryPolicyRepository;
 import io.github.tatame.aftersale.policy.rag.application.EmbeddingClient;
@@ -21,6 +22,7 @@ import io.github.tatame.aftersale.policy.rag.infrastructure.memory.InMemoryPolic
 import io.github.tatame.aftersale.policy.rag.infrastructure.pgvector.PgVectorProperties;
 import java.util.List;
 import java.util.Optional;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.health.Health;
@@ -34,7 +36,8 @@ class RagHealthIndicatorTest {
                 provider(new RagPolicySearchApplicationService(
                         new PolicyApplicationService(new InMemoryPolicyRepository()),
                         List.of(),
-                        List.of())),
+                        List.of(),
+                        new ApplicationMetricsRecorder(new SimpleMeterRegistry()))),
                 detailedProperties());
 
         Health health = indicator.health();

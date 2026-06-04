@@ -4,8 +4,8 @@ Date: 2026-06-01
 
 Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config / secret boundary completed;
 V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 Profile Matrix Validation completed; V5.B.3 through V5.B.4
-roadmap remains planned; V5.B.3.1 readiness / liveness actuator probe boundary completed; V5.B.3.2 through V5.B.4
-planned
+roadmap remains in progress; V5.B.3.1 readiness / liveness actuator probe boundary completed; V5.B.3.2 Micrometer
+metrics foundation completed; V5.B.3.3 through V5.B.4 planned
 
 ## 目的
 
@@ -57,8 +57,8 @@ V5.B.1 已完成 container + CI foundation：
 V5.B.1 不等于 production deployment。V5.B.2.1 Config + Secret Boundary 已完成文档基线；V5.B.2.2
 Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix Validation 已完成 file-based harness。
 V5.B.2 current scope completed。V5.B.3.1 Readiness / Liveness Boundary 已完成最小 Actuator probe 边界。
-V5.B.3.2 metrics、V5.B.3.3 tracing、V5.B.3.4 production monitoring roadmap 和 V5.B.4 Auth + Kubernetes / Helm +
-Release / Rollback 仍为 planned。
+V5.B.3.2 Micrometer metrics foundation 已完成。V5.B.3.3 tracing、V5.B.3.4 production monitoring roadmap 和
+V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。
 
 ## V5.B.2.1 Config + Secret Boundary status
 
@@ -127,16 +127,30 @@ V5.B.3.1 不实现 Prometheus registry、Micrometer business metrics、OpenTelem
 production monitoring、live DB / PGvector / LLM / embedding readiness checks、production auth、Kubernetes / Helm 或
 release / rollback hardening。
 
+## V5.B.3.2 Micrometer Metrics Foundation status
+
+V5.B.3.2 已完成 low-cardinality Micrometer metrics foundation：
+
+- 新增 `ApplicationMetricsRecorder`、`MetricNames`、`MetricTags`、`MetricOutcome` 和 tag sanitizer。
+- AgentRun、ToolCall、Approval、RAG search 和 provider-call 路径记录 best-effort metrics。
+- Metric names 使用 `aftersale.*` prefix。
+- Metric tags 限定为低基数字段，并清理 secret、path、URL、JDBC URL、raw prompt、query、snippet 和 raw text。
+- Actuator web exposure 仍为 health-only；`/actuator/metrics` 和 `/actuator/prometheus` 默认不可用。
+- 新增 `docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md` 和
+  `docs/exec-plans/completed/EXEC_PLAN_V5_B3_2_MICROMETER_METRICS_FOUNDATION.md`。
+
+V5.B.3.2 不实现 Prometheus registry、OpenTelemetry、collector、Grafana dashboard、production monitoring backend、
+provider cost dashboard、production auth、Kubernetes / Helm、release / rollback hardening 或真实外部业务系统接入。
+
 ## 推荐后续里程碑
 
 1. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
 2. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 broader opt-in live
    validation。
-3. V5.B.3.2 planned metrics：Micrometer low-cardinality metrics 和 optional registry strategy。
-4. V5.B.3.3 planned tracing：OpenTelemetry / cross-service propagation strategy。
-5. V5.B.3.4 planned monitoring：Prometheus / Grafana / log aggregation roadmap。
-6. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
-7. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
+3. V5.B.3.3 planned tracing：OpenTelemetry / cross-service propagation strategy。
+4. V5.B.3.4 planned monitoring：Prometheus / Grafana / log aggregation roadmap。
+5. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
+6. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
 
 ## Dockerfile checklist
 

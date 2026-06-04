@@ -21,6 +21,8 @@ import io.github.tatame.aftersale.agent.domain.AgentRunRepository;
 import io.github.tatame.aftersale.common.exception.ResourceNotFoundException;
 import io.github.tatame.aftersale.common.observability.MdcScope;
 import io.github.tatame.aftersale.common.observability.ObservabilityConstants;
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
+import io.github.tatame.aftersale.common.observability.metrics.MetricOutcome;
 import io.github.tatame.aftersale.ticket.application.TicketApplicationService;
 import io.github.tatame.aftersale.ticket.domain.IntentType;
 import io.github.tatame.aftersale.ticket.domain.Ticket;
@@ -68,6 +70,7 @@ public class AgentApplicationService {
     private final ObjectMapper objectMapper;
     private final ApprovalApplicationService approvalApplicationService;
     private final AgentExecutableToolPolicy executableToolPolicy;
+    private final ApplicationMetricsRecorder metricsRecorder;
 
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
@@ -80,7 +83,8 @@ public class AgentApplicationService {
             AgentPlanner agentPlanner,
             ObjectMapper objectMapper,
             ApprovalApplicationService approvalApplicationService,
-            AgentExecutableToolPolicy executableToolPolicy) {
+            AgentExecutableToolPolicy executableToolPolicy,
+            ApplicationMetricsRecorder metricsRecorder) {
         this.agentRunRepository = agentRunRepository;
         this.ticketApplicationService = ticketApplicationService;
         this.toolRegistry = toolRegistry;
@@ -89,6 +93,7 @@ public class AgentApplicationService {
         this.objectMapper = objectMapper;
         this.approvalApplicationService = approvalApplicationService;
         this.executableToolPolicy = executableToolPolicy;
+        this.metricsRecorder = metricsRecorder;
     }
 
     /**
@@ -105,6 +110,8 @@ public class AgentApplicationService {
                 ticket.getTicketId(),
                 agentRun.getStartedAt());
         agentRunRepository.save(agentRun);
+        long startedAt = System.nanoTime();
+        metricsRecorder.recordAgentRunStarted();
 
         try (MdcScope ignored = MdcScope.putAll(Map.of(
                 ObservabilityConstants.TICKET_ID, ticket.getTicketId(),
@@ -149,6 +156,10 @@ public class AgentApplicationService {
                         workspace);
                 agentRun.succeed(completedPlanJson, finalSuggestion, Instant.now());
                 agentRunRepository.save(agentRun);
+                metricsRecorder.recordAgentRunCompleted(
+                        agentRun.getStatus().name(),
+                        MetricOutcome.SUCCEEDED,
+                        startedAt);
                 if (!requiresHumanApproval(subtaskResults)) {
                     ticketApplicationService.updateTicketStatus(ticket.getTicketId(), TicketStatus.RESOLVED,
                             finalSuggestion);
@@ -162,6 +173,10 @@ public class AgentApplicationService {
                 String failureMessage = failureMessage(exception);
                 agentRun.fail(failureMessage, Instant.now());
                 agentRunRepository.save(agentRun);
+                metricsRecorder.recordAgentRunCompleted(
+                        agentRun.getStatus().name(),
+                        MetricOutcome.FAILED,
+                        startedAt);
                 markTicketFailedIfAgentCanOwnFailure(ticket.getTicketId(), failureMessage);
                 LOGGER.warn("agent_run.failed intent={} toolCallCount={} errorType={}",
                         intent,

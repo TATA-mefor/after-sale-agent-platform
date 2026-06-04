@@ -2,6 +2,7 @@ package io.github.tatame.aftersale.tool.application;
 
 import io.github.tatame.aftersale.common.observability.MdcScope;
 import io.github.tatame.aftersale.common.observability.ObservabilityConstants;
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
 import io.github.tatame.aftersale.tool.domain.ToolDefinition;
 import io.github.tatame.aftersale.tool.domain.ToolInput;
 import io.github.tatame.aftersale.tool.domain.ToolOutput;
@@ -34,13 +35,18 @@ public class ToolRegistry {
 
     private final Map<String, ToolExecutor> executors;
     private final ToolTraceRecorder traceRecorder;
+    private final ApplicationMetricsRecorder metricsRecorder;
 
     @SuppressFBWarnings(
             value = "CT_CONSTRUCTOR_THROW",
             justification = "The registry rejects duplicate tool names during Spring bean construction.")
-    public ToolRegistry(List<ToolExecutor> toolExecutors, ToolTraceRecorder traceRecorder) {
+    public ToolRegistry(
+            List<ToolExecutor> toolExecutors,
+            ToolTraceRecorder traceRecorder,
+            ApplicationMetricsRecorder metricsRecorder) {
         this.executors = Map.copyOf(indexByToolName(toolExecutors));
         this.traceRecorder = traceRecorder;
+        this.metricsRecorder = metricsRecorder;
     }
 
     public Optional<ToolDefinition> findDefinition(String toolName) {
@@ -71,6 +77,7 @@ public class ToolRegistry {
                 ToolOutput output = ToolOutput.failure(toolName, TOOL_NOT_FOUND, "Unknown tool: " + toolName);
                 trace(toolName, input, output, startedAt);
                 logToolCompleted(output, startedAt);
+                recordToolCall(toolName, output, "unknown", startedAt);
                 return output;
             }
 
@@ -81,6 +88,7 @@ public class ToolRegistry {
                         "Tool requires human approval: " + definition.toolName());
                 trace(definition.toolName(), input, output, startedAt);
                 logToolCompleted(output, startedAt);
+                recordToolCall(definition.toolName(), output, definition.riskLevel().name(), startedAt);
                 return output;
             }
 
@@ -88,6 +96,7 @@ public class ToolRegistry {
                 ToolOutput output = executor.execute(input);
                 trace(definition.toolName(), input, output, startedAt);
                 logToolCompleted(output, startedAt);
+                recordToolCall(definition.toolName(), output, definition.riskLevel().name(), startedAt);
                 return output;
             } catch (RuntimeException exception) {
                 ToolOutput output = ToolOutput.failure(
@@ -95,6 +104,7 @@ public class ToolRegistry {
                         TOOL_EXECUTION_FAILED,
                         failureMessage(exception));
                 trace(definition.toolName(), input, output, startedAt);
+                recordToolCall(definition.toolName(), output, definition.riskLevel().name(), startedAt);
                 LOGGER.warn("tool.invocation.failed status={} latencyMs={} errorType={}",
                         output.status(),
                         elapsedMillis(startedAt),
@@ -114,6 +124,10 @@ public class ToolRegistry {
                         output,
                         elapsedMillis(startedAt),
                         Instant.now())));
+    }
+
+    private void recordToolCall(String toolName, ToolOutput output, String riskLevel, long startedAt) {
+        metricsRecorder.recordToolCall(toolName, output.status().name(), riskLevel, startedAt);
     }
 
     private static long elapsedMillis(long startedAt) {

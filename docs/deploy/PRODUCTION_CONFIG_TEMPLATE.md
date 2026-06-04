@@ -105,10 +105,21 @@ The default Actuator exposure remains health-only. `/actuator/health`, `/actuato
 `/actuator/health/readiness` are available. `/actuator/env`, `/actuator/beans`, `/actuator/configprops`,
 `/actuator/heapdump`, `/actuator/threaddump`, and `/actuator/prometheus` remain unavailable by default.
 
-This does not add Prometheus registry, Micrometer business metrics, OpenTelemetry, collector configuration, production
-monitoring, or live DB / PGvector / LLM / embedding readiness checks. V5.B.3.2 planned metrics, V5.B.3.3 planned
+This does not add Prometheus registry, OpenTelemetry, collector configuration, production monitoring, or live DB /
+PGvector / LLM / embedding readiness checks. V5.B.3.2 Micrometer metrics foundation completed, while V5.B.3.3 planned
 tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned auth / Kubernetes / release hardening
 remain future work.
+
+## V5.B.3.2 Micrometer Metrics Foundation
+
+V5.B.3.2 adds low-cardinality Micrometer application metrics through the existing Spring Boot Actuator / Micrometer
+core dependency. It records AgentRun, ToolCall, Approval, RAG search, and provider-call observations with sanitized
+tags. It does not require any production secret, API key, database, PGvector, Docker, Redis, real LLM, real embedding
+provider, Spring AI live provider, Prometheus, OpenTelemetry collector, or external network in the default gate.
+
+Actuator exposure remains health-only. `/actuator/metrics` and `/actuator/prometheus` are not exposed by default.
+Prometheus registry, OpenTelemetry tracing, dashboards, production monitoring backend, production auth, Kubernetes /
+Helm, and release / rollback hardening remain planned / future work.
 
 V5.A.1 adds an explicit opt-in `JdbcPolicyVectorRepository` for the `rag-postgres` / `pgvector` profile. This is an
 infrastructure adapter behind `PolicyVectorRepository`, not a new Agent tool, not a public RAG HTTP endpoint, and not a

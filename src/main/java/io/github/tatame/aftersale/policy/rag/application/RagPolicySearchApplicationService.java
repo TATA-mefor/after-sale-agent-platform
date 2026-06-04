@@ -13,6 +13,8 @@ import io.github.tatame.aftersale.policy.rag.search.RagPolicySearchQuery;
 import io.github.tatame.aftersale.policy.rag.search.RagPolicySearchResult;
 import io.github.tatame.aftersale.policy.rag.search.RetrievalMode;
 import io.github.tatame.aftersale.policy.rag.search.VectorPolicyEvidenceMapper;
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
+import io.github.tatame.aftersale.common.observability.metrics.MetricOutcome;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class RagPolicySearchApplicationService {
     private final KeywordPolicyEvidenceMapper keywordMapper = new KeywordPolicyEvidenceMapper();
     private final VectorPolicyEvidenceMapper vectorMapper = new VectorPolicyEvidenceMapper();
     private final RagPolicyEvidenceMergeService mergeService = new RagPolicyEvidenceMergeService();
+    private final ApplicationMetricsRecorder metricsRecorder;
 
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
@@ -44,18 +47,32 @@ public class RagPolicySearchApplicationService {
     public RagPolicySearchApplicationService(
             PolicyApplicationService policyApplicationService,
             List<EmbeddingClient> embeddingClients,
-            List<PolicyVectorRepository> vectorRepositories) {
+            List<PolicyVectorRepository> vectorRepositories,
+            ApplicationMetricsRecorder metricsRecorder) {
         this.policyApplicationService = policyApplicationService;
         this.embeddingClients = List.copyOf(embeddingClients);
         this.vectorRepositories = List.copyOf(vectorRepositories);
+        this.metricsRecorder = metricsRecorder;
     }
 
     public RagPolicySearchResult search(RagPolicySearchQuery query) {
-        return switch (query.retrievalMode()) {
-            case KEYWORD -> searchKeyword(query);
-            case VECTOR -> searchVector(query);
-            case HYBRID -> searchHybrid(query);
-        };
+        long startedAt = System.nanoTime();
+        try {
+            RagPolicySearchResult result = switch (query.retrievalMode()) {
+                case KEYWORD -> searchKeyword(query);
+                case VECTOR -> searchVector(query);
+                case HYBRID -> searchHybrid(query);
+            };
+            metricsRecorder.recordRagSearch(
+                    result.retrievalMode().name(),
+                    result.fallbackUsed(),
+                    MetricOutcome.SUCCEEDED,
+                    startedAt);
+            return result;
+        } catch (RuntimeException exception) {
+            metricsRecorder.recordRagSearch(query.retrievalMode().name(), false, MetricOutcome.FAILED, startedAt);
+            throw exception;
+        }
     }
 
     private RagPolicySearchResult searchKeyword(RagPolicySearchQuery query) {

@@ -3,7 +3,8 @@
 Date: 2026-06-03
 
 Status: Completed for V5.B.2.1 documentation boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile
-Matrix Validation.
+Matrix Validation. Later V5.B.3.2 Micrometer metrics foundation completed without changing this config / secret /
+migration decision boundary.
 
 ## Context
 
@@ -117,6 +118,8 @@ fresh-volume init、手动 SQL 导入和 V5.A.3 live smoke 的 schema setup。Fl
 
 - V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
 - V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
+- V5.B.3.2：已完成。Micrometer low-cardinality metrics foundation；Actuator metrics / Prometheus endpoints remain
+  unexposed by default。
 - V5.B.3：observability runtime hardening。
 - V5.B.4：auth、Kubernetes / Helm、release / rollback hardening。
 

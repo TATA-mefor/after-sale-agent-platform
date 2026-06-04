@@ -55,7 +55,7 @@ class ReadinessLivenessBoundaryDocsTest {
         assertThat(docs).contains(
                 "V5.B.3.1 Readiness / Liveness Boundary",
                 "readiness / liveness actuator probe boundary completed",
-                "V5.B.3.2 planned",
+                "V5.B.3.2 Micrometer metrics foundation completed",
                 "V5.B.3.3 planned",
                 "V5.B.3.4 planned",
                 "V5.B.4 planned",
@@ -110,7 +110,7 @@ class ReadinessLivenessBoundaryDocsTest {
                 "OpenTelemetry",
                 "collector configuration",
                 "production monitoring is not completed",
-                "V5.B.3.2 planned");
+                "V5.B.3.3 planned");
         assertThat(lower).doesNotContain(
                 "prometheus registry completed",
                 "opentelemetry completed",

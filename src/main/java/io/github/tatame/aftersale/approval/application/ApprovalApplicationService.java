@@ -6,6 +6,7 @@ import io.github.tatame.aftersale.approval.domain.ApprovalStatus;
 import io.github.tatame.aftersale.common.exception.ResourceNotFoundException;
 import io.github.tatame.aftersale.common.observability.MdcScope;
 import io.github.tatame.aftersale.common.observability.ObservabilityConstants;
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
 import io.github.tatame.aftersale.ticket.application.TicketApplicationService;
 import io.github.tatame.aftersale.ticket.domain.TicketStatus;
 import io.github.tatame.aftersale.tool.domain.ToolRiskLevel;
@@ -34,15 +35,18 @@ public class ApprovalApplicationService {
 
     private final ApprovalRepository approvalRepository;
     private final TicketApplicationService ticketApplicationService;
+    private final ApplicationMetricsRecorder metricsRecorder;
 
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
             justification = "Spring constructor injection intentionally stores application collaborators.")
     public ApprovalApplicationService(
             ApprovalRepository approvalRepository,
-            TicketApplicationService ticketApplicationService) {
+            TicketApplicationService ticketApplicationService,
+            ApplicationMetricsRecorder metricsRecorder) {
         this.approvalRepository = approvalRepository;
         this.ticketApplicationService = ticketApplicationService;
+        this.metricsRecorder = metricsRecorder;
     }
 
     /**
@@ -66,6 +70,7 @@ public class ApprovalApplicationService {
                 riskLevel,
                 Instant.now());
         ApprovalRequest saved = approvalRepository.save(request);
+        metricsRecorder.recordApprovalRequest(riskLevel.name());
         logApprovalCreated(saved);
         ticketApplicationService.addTicketNote(ticketId, "Approval request created: " + saved.getApprovalId()
                 + " for " + requestedAction);
@@ -90,6 +95,7 @@ public class ApprovalApplicationService {
                 riskLevel,
                 Instant.now());
         ApprovalRequest saved = approvalRepository.save(request);
+        metricsRecorder.recordApprovalRequest(riskLevel.name());
         logApprovalCreated(saved);
         return saved;
     }
@@ -118,6 +124,7 @@ public class ApprovalApplicationService {
         ApprovalRequest request = getById(approvalRequestId);
         request.approve(reviewerId, reason, Instant.now());
         ApprovalRequest saved = approvalRepository.save(request);
+        metricsRecorder.recordApprovalDecision(saved.getStatus().name());
         logApprovalDecision(saved, "approval.approved");
         ticketApplicationService.addTicketNote(saved.getTicketId(), "Approval approved: " + saved.getApprovalId()
                 + ". Reviewer=" + saved.getReviewerId() + ". Reason=" + saved.getDecisionReason());
@@ -132,6 +139,7 @@ public class ApprovalApplicationService {
         ApprovalRequest request = getById(approvalRequestId);
         request.reject(reviewerId, reason, Instant.now());
         ApprovalRequest saved = approvalRepository.save(request);
+        metricsRecorder.recordApprovalDecision(saved.getStatus().name());
         logApprovalDecision(saved, "approval.rejected");
         ticketApplicationService.addTicketNote(saved.getTicketId(), "Approval rejected: " + saved.getApprovalId()
                 + ". Reviewer=" + saved.getReviewerId() + ". Reason=" + saved.getDecisionReason());

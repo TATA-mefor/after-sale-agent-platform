@@ -1,5 +1,6 @@
 package io.github.tatame.aftersale.policy.rag.evaluation;
 
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
 import io.github.tatame.aftersale.policy.application.PolicyApplicationService;
 import io.github.tatame.aftersale.policy.infrastructure.repository.InMemoryPolicyRepository;
 import io.github.tatame.aftersale.policy.rag.application.EmbeddingClient;
@@ -15,6 +16,7 @@ import io.github.tatame.aftersale.policy.rag.infrastructure.memory.InMemoryPolic
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 public final class RagEvaluationFixture {
 
@@ -31,7 +33,8 @@ public final class RagEvaluationFixture {
         return new RagPolicySearchApplicationService(
                 new PolicyApplicationService(new InMemoryPolicyRepository()),
                 List.of(embeddingClient),
-                List.of(vectorRepository));
+                List.of(vectorRepository),
+                new ApplicationMetricsRecorder(new SimpleMeterRegistry()));
     }
 
     public static InMemoryPolicyVectorRepository vectorRepository() {

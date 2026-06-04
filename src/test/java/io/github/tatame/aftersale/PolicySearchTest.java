@@ -2,6 +2,7 @@ package io.github.tatame.aftersale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.tatame.aftersale.common.observability.metrics.ApplicationMetricsRecorder;
 import io.github.tatame.aftersale.policy.application.PolicyApplicationService;
 import io.github.tatame.aftersale.policy.domain.PolicySearchResult;
 import io.github.tatame.aftersale.policy.domain.PolicySnippet;
@@ -26,6 +27,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -264,10 +266,16 @@ class PolicySearchTest {
         RagPolicySearchApplicationService ragService = new RagPolicySearchApplicationService(
                 new PolicyApplicationService(new InMemoryPolicyRepository()),
                 List.of(embeddingClient),
-                List.of(vectorRepository));
+                List.of(vectorRepository),
+                testMetricsRecorder());
         return new ToolRegistry(
                 List.of(new SearchAfterSalePolicyToolExecutor(ragService)),
-                record -> { });
+                record -> { },
+                testMetricsRecorder());
+    }
+
+    private static ApplicationMetricsRecorder testMetricsRecorder() {
+        return new ApplicationMetricsRecorder(new SimpleMeterRegistry());
     }
 
     private static void saveVectorPolicy(

@@ -233,8 +233,9 @@ JdbcPolicyVectorRepository、V5.A.2 schema baseline、V5.A.3 opt-in PGvector con
 completion record 均已完成。V5.B.1 completed container + CI foundation：新增 Dockerfile foundation、
 `.dockerignore` secret safety、GitHub Actions Maven quality gate 和 Docker build validation。V5.B.2+ 的
 config / secret / migration hardening 已推进到 V5.B.2 current scope completed。V5.B.3.1 readiness / liveness
-actuator probe boundary completed。V5.B.3.2 metrics、V5.B.3.3 tracing、V5.B.3.4 production monitoring roadmap、
-auth、Kubernetes / Helm、release / rollback 和 production deployment 仍是后续任务。
+actuator probe boundary completed。V5.B.3.2 Micrometer metrics foundation completed。V5.B.3.3 tracing、
+V5.B.3.4 production monitoring roadmap、auth、Kubernetes / Helm、release / rollback 和 production deployment
+仍是后续任务。
 
 ## 可观测性决策边界
 
@@ -511,7 +512,8 @@ V5.A 不完成：
 - V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
 - V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
 - V5.B.3.1：已完成。Readiness / Liveness Boundary；readiness / liveness actuator probe boundary completed。
-- V5.B.3.2：planned。Micrometer metrics / optional registry strategy。
+- V5.B.3.2：已完成。Micrometer low-cardinality metrics foundation；`/actuator/metrics` 和
+  `/actuator/prometheus` 仍默认不暴露。
 - V5.B.3.3：planned。Tracing / cross-service propagation strategy。
 - V5.B.3.4：planned。Production monitoring roadmap。
 - V5.B.4：planned。Auth、Kubernetes / Helm、release / rollback hardening。
@@ -549,6 +551,34 @@ V5.B.3.1 不完成：
 
 默认验证仍不需要 real LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、Redis、real embedding provider、
 Spring AI live calls、secret manager、Docker Compose、Prometheus、OpenTelemetry collector 或 external network。
+
+## V5.B.3.2 Micrometer Metrics Foundation
+
+V5.B.3.2 完成低基数 Micrometer metrics foundation。该阶段新增项目自有 metrics recorder，用于记录 AgentRun、
+ToolCall、Approval、RAG search 和 provider-call 观测值，但不引入 Prometheus registry、OpenTelemetry、
+dashboard 或 production monitoring backend。
+
+已完成范围：
+
+- 新增 `ApplicationMetricsRecorder`、metric names、tag vocabulary 和 tag sanitizer；
+- AgentRun / ToolCall / Approval / RAG search 路径接入 best-effort metrics recording；
+- provider metrics 作为 foundation hook，不调用真实 provider；
+- `/actuator/metrics`、`/actuator/prometheus`、`/actuator/env`、`/actuator/beans`、`/actuator/configprops`、
+  `/actuator/heapdump` 和 `/actuator/threaddump` 默认不可用；
+- 新增 `ApplicationMetricsRecorderTest`、`MetricsFoundationBoundaryTest` 和 `MetricsFoundationDocsTest`；
+- 新增 `docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md`；
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V5_B3_2_MICROMETER_METRICS_FOUNDATION.md`。
+
+V5.B.3.2 不完成：
+
+- Prometheus registry 或 `/actuator/prometheus`；
+- OpenTelemetry、collector、distributed tracing 或 cross-service propagation；
+- Grafana dashboard 或 production monitoring backend；
+- provider cost dashboard；
+- production auth / RBAC；
+- Kubernetes / Helm；
+- release / rollback hardening；
+- 真实退款、换货、优惠券补偿、支付或物流系统接入。
 
 ## 生产配置模板边界
 

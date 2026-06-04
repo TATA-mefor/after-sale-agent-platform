@@ -3,7 +3,8 @@
 Date: 2026-06-03
 
 Status: V5.B.2.1 completed for documentation boundary; V5.B.2.2 completed for Flyway migration foundation;
-V5.B.2.3 Profile Matrix Validation completed.
+V5.B.2.3 Profile Matrix Validation completed. Later V5.B.3.2 Micrometer metrics foundation completed without changing
+the V5.B.2 config / secret / migration boundary.
 
 ## 目标
 
@@ -145,6 +146,8 @@ src/main/resources/db/migration/pgvector
 
 - V5.B.2.2：已完成。Flyway migration foundation；Liquibase 未引入。
 - V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
+- V5.B.3.2：已完成。Micrometer low-cardinality metrics foundation；Actuator metrics / Prometheus endpoints remain
+  unexposed by default。
 - V5.B.3：observability runtime hardening。
 - V5.B.4：auth、Kubernetes / Helm、release / rollback hardening。
 
