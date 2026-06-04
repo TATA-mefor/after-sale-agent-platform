@@ -233,9 +233,9 @@ JdbcPolicyVectorRepository、V5.A.2 schema baseline、V5.A.3 opt-in PGvector con
 completion record 均已完成。V5.B.1 completed container + CI foundation：新增 Dockerfile foundation、
 `.dockerignore` secret safety、GitHub Actions Maven quality gate 和 Docker build validation。V5.B.2+ 的
 config / secret / migration hardening 已推进到 V5.B.2 current scope completed。V5.B.3.1 readiness / liveness
-actuator probe boundary completed。V5.B.3.2 Micrometer metrics foundation completed。V5.B.3.3 tracing、
-V5.B.3.4 production monitoring roadmap、auth、Kubernetes / Helm、release / rollback 和 production deployment
-仍是后续任务。
+actuator probe boundary completed。V5.B.3.2 Micrometer metrics foundation completed。V5.B.3.3 Prometheus opt-in
+exposure completed。OpenTelemetry / tracing、V5.B.3.4 production monitoring roadmap、auth、Kubernetes / Helm、
+release / rollback 和 production deployment 仍是后续任务。
 
 ## 可观测性决策边界
 
@@ -514,7 +514,8 @@ V5.A 不完成：
 - V5.B.3.1：已完成。Readiness / Liveness Boundary；readiness / liveness actuator probe boundary completed。
 - V5.B.3.2：已完成。Micrometer low-cardinality metrics foundation；`/actuator/metrics` 和
   `/actuator/prometheus` 仍默认不暴露。
-- V5.B.3.3：planned。Tracing / cross-service propagation strategy。
+- V5.B.3.3：已完成。Prometheus opt-in exposure；`observability-prometheus` profile 显式开启
+  `/actuator/prometheus`，默认 Actuator exposure 仍为 health-only。
 - V5.B.3.4：planned。Production monitoring roadmap。
 - V5.B.4：planned。Auth、Kubernetes / Helm、release / rollback hardening。
 
@@ -574,6 +575,32 @@ V5.B.3.2 不完成：
 - Prometheus registry 或 `/actuator/prometheus`；
 - OpenTelemetry、collector、distributed tracing 或 cross-service propagation；
 - Grafana dashboard 或 production monitoring backend；
+- provider cost dashboard；
+- production auth / RBAC；
+- Kubernetes / Helm；
+- release / rollback hardening；
+- 真实退款、换货、优惠券补偿、支付或物流系统接入。
+
+## V5.B.3.3 Prometheus Opt-in Exposure
+
+V5.B.3.3 完成 Prometheus opt-in exposure。该阶段新增 Boot-managed Prometheus registry dependency 和
+`observability-prometheus` profile，但不改变默认 health-only exposure。
+
+已完成范围：
+
+- `pom.xml` 新增 `micrometer-registry-prometheus`，版本由 Spring Boot dependency management 管理；
+- `application.yml` 默认禁用 Prometheus endpoint；
+- `application-observability-prometheus.yml` 显式 profile 暴露 `/actuator/prometheus`；
+- `/actuator/metrics`、`/actuator/env`、`/actuator/beans`、`/actuator/configprops`、`/actuator/heapdump` 和
+  `/actuator/threaddump` 仍不暴露；
+- 新增 `PrometheusOptInExposureTest` 和 `PrometheusOptInDocsTest`；
+- 新增 `docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md`；
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md`。
+
+V5.B.3.3 不完成：
+
+- OpenTelemetry、collector、distributed tracing 或 cross-service propagation；
+- Grafana dashboard、scrape jobs、alert rules 或 production monitoring backend；
 - provider cost dashboard；
 - production auth / RBAC；
 - Kubernetes / Helm；

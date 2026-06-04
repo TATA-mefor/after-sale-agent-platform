@@ -120,6 +120,7 @@ fresh-volume init、手动 SQL 导入和 V5.A.3 live smoke 的 schema setup。Fl
 - V5.B.2.3：已完成。V5.B.2.3 Profile Matrix Validation；profile matrix validation harness completed。
 - V5.B.3.2：已完成。Micrometer low-cardinality metrics foundation；Actuator metrics / Prometheus endpoints remain
   unexposed by default。
+- V5.B.3.3：已完成。Prometheus opt-in exposure；`/actuator/prometheus` only with `observability-prometheus` profile。
 - V5.B.3：observability runtime hardening。
 - V5.B.4：auth、Kubernetes / Helm、release / rollback hardening。
 

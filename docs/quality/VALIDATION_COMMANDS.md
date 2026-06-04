@@ -617,8 +617,8 @@ V5.B.3.1 validation does not require real LLM, API Key, PostgreSQL, PGvector, Do
 provider, Spring AI live provider calls, secret manager, Docker Compose, Prometheus, OpenTelemetry collector, or
 external network.
 
-V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring
-roadmap, and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 planned
+production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
 
 ## V5.B.3.2 Micrometer Metrics Foundation Validation
 
@@ -657,6 +657,44 @@ mvn test -Dtest=ArchitectureTest
 V5.B.3.2 validation does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
 provider, Spring AI live provider calls, Spring AI `VectorStore`, secret manager, Docker Compose, Prometheus,
 OpenTelemetry collector, or external network.
+
+## V5.B.3.3 Prometheus Opt-in Exposure Validation
+
+V5.B.3.3 Prometheus opt-in exposure completed. It adds the Boot-managed Prometheus registry dependency and the explicit
+`observability-prometheus` profile for local `/actuator/prometheus` review while keeping default Actuator web exposure
+health-only.
+
+Targeted runtime/docs harness:
+
+```bash
+mvn test -Dtest=PrometheusOptInExposureTest
+mvn test -Dtest=PrometheusOptInDocsTest
+```
+
+The runtime and docs tests verify:
+
+- default `/actuator/health`, `/actuator/health/liveness`, and `/actuator/health/readiness` remain available;
+- default `/actuator/prometheus`, `/actuator/metrics`, `/actuator/env`, `/actuator/beans`, `/actuator/configprops`,
+  `/actuator/heapdump`, and `/actuator/threaddump` remain unavailable;
+- `observability-prometheus` exposes `/actuator/prometheus` and keeps `/actuator/metrics` plus sensitive endpoints
+  unavailable;
+- the default context still does not create `DataSource`, Spring AI live model, Spring AI `VectorStore`, or
+  `JdbcPolicyVectorRepository` beans;
+- OpenTelemetry, distributed tracing, dashboards, scrape jobs, alerts, production monitoring backend, production auth,
+  Kubernetes / Helm, release / rollback hardening, and real external business integrations remain future work.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.B.3.3 validation does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+provider, Spring AI live provider calls, Spring AI `VectorStore`, secret manager, Docker Compose, Prometheus server,
+Grafana, OpenTelemetry collector, or external network.
 
 Prometheus registry, `/actuator/prometheus`, OpenTelemetry tracing, dashboards, production monitoring backend,
 production auth, Kubernetes / Helm, and release / rollback hardening remain planned / future work.

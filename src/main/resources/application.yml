@@ -17,6 +17,10 @@ spring:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 
 management:
+  prometheus:
+    metrics:
+      export:
+        enabled: false
   endpoints:
     web:
       exposure:
@@ -31,6 +35,8 @@ management:
           include: livenessState
         readiness:
           include: readinessState
+    prometheus:
+      enabled: false
 
 springdoc:
   api-docs:

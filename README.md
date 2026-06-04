@@ -171,8 +171,8 @@ docker run --rm -p 8080:8080 after-sale-agent-platform:local
 See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment.
 V5.B.2.1 config / secret boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile Matrix Validation are
 completed. V5.B.2 current scope completed. V5.B.3.1 readiness / liveness actuator probe boundary completed.
-V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring
-roadmap, and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 planned
+production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
 
 ## V5.B.2 Config / Secret / Migration Boundary
 
@@ -223,6 +223,20 @@ Actuator web exposure remains health-only. `/actuator/metrics` and `/actuator/pr
 Prometheus registry, OpenTelemetry tracing, dashboards, provider cost metrics, production monitoring backend,
 production auth, Kubernetes / Helm, release / rollback hardening, and real external business integrations remain
 planned / future work.
+
+## V5.B.3.3 Prometheus Opt-in Exposure
+
+V5.B.3.3 adds the Boot-managed Prometheus registry dependency and an explicit `observability-prometheus` profile for
+local `/actuator/prometheus` review. The default profile remains health-only: `/actuator/prometheus`,
+`/actuator/metrics`, `/actuator/env`, `/actuator/beans`, `/actuator/configprops`, `/actuator/heapdump`, and
+`/actuator/threaddump` are not exposed by default.
+
+See [V5.B.3.3 Prometheus Opt-in Exposure](docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md) and
+[V5.B.3.3 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md).
+
+This is not OpenTelemetry tracing and not production monitoring. The opt-in profile does not connect to a Prometheus
+server, Grafana, collector, real LLM, real embedding provider, PostgreSQL, PGvector, MySQL, Redis, Docker, or external
+network.
 
 ## Observability
 

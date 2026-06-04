@@ -1,0 +1,20 @@
+spring:
+  config:
+    activate:
+      on-profile: observability-prometheus
+
+management:
+  metrics:
+    enable:
+      disk: false
+  prometheus:
+    metrics:
+      export:
+        enabled: ${AFTERSALE_PROMETHEUS_ENABLED:true}
+  endpoint:
+    prometheus:
+      enabled: ${AFTERSALE_PROMETHEUS_ENABLED:true}
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus

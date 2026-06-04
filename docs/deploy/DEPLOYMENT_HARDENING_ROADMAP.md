@@ -5,7 +5,7 @@ Date: 2026-06-01
 Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config / secret boundary completed;
 V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 Profile Matrix Validation completed; V5.B.3 through V5.B.4
 roadmap remains in progress; V5.B.3.1 readiness / liveness actuator probe boundary completed; V5.B.3.2 Micrometer
-metrics foundation completed; V5.B.3.3 through V5.B.4 planned
+metrics foundation completed; V5.B.3.3 Prometheus opt-in exposure completed; V5.B.3.4 through V5.B.4 planned
 
 ## 目的
 
@@ -57,7 +57,8 @@ V5.B.1 已完成 container + CI foundation：
 V5.B.1 不等于 production deployment。V5.B.2.1 Config + Secret Boundary 已完成文档基线；V5.B.2.2
 Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix Validation 已完成 file-based harness。
 V5.B.2 current scope completed。V5.B.3.1 Readiness / Liveness Boundary 已完成最小 Actuator probe 边界。
-V5.B.3.2 Micrometer metrics foundation 已完成。V5.B.3.3 tracing、V5.B.3.4 production monitoring roadmap 和
+V5.B.3.2 Micrometer metrics foundation 已完成。V5.B.3.3 Prometheus opt-in exposure 已完成。V5.B.3.4
+production monitoring roadmap 和
 V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。
 
 ## V5.B.2.1 Config + Secret Boundary status
@@ -142,13 +143,31 @@ V5.B.3.2 已完成 low-cardinality Micrometer metrics foundation：
 V5.B.3.2 不实现 Prometheus registry、OpenTelemetry、collector、Grafana dashboard、production monitoring backend、
 provider cost dashboard、production auth、Kubernetes / Helm、release / rollback hardening 或真实外部业务系统接入。
 
+## V5.B.3.3 Prometheus Opt-in Exposure status
+
+V5.B.3.3 已完成 Prometheus opt-in exposure：
+
+- `pom.xml` 新增 Boot-managed `micrometer-registry-prometheus` dependency，不写散落版本号。
+- `application.yml` 默认禁用 Prometheus endpoint，并保持 Actuator web exposure health-only。
+- `application-observability-prometheus.yml` 新增 `observability-prometheus` profile，只在显式 opt-in 时暴露
+  `/actuator/prometheus`。
+- `/actuator/metrics`、`/actuator/env`、`/actuator/beans`、`/actuator/configprops`、`/actuator/heapdump` 和
+  `/actuator/threaddump` 仍不暴露。
+- 新增 `PrometheusOptInExposureTest` 和 `PrometheusOptInDocsTest`。
+- 新增 `docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md` 和
+  `docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md`。
+
+V5.B.3.3 不实现 OpenTelemetry、distributed tracing、cross-service propagation、Grafana dashboard、scrape jobs、
+alert rules、production monitoring backend、production auth、Kubernetes / Helm、release / rollback hardening 或
+真实外部业务系统接入。
+
 ## 推荐后续里程碑
 
 1. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
 2. V5.B.2 PGvector deployment：在 V5.A.1 opt-in `JdbcPolicyVectorRepository` 基础上补 broader opt-in live
    validation。
-3. V5.B.3.3 planned tracing：OpenTelemetry / cross-service propagation strategy。
-4. V5.B.3.4 planned monitoring：Prometheus / Grafana / log aggregation roadmap。
+3. V5.B.3.4 planned monitoring：Grafana / log aggregation / alerting roadmap；OpenTelemetry / cross-service
+   propagation remains future / opt-in unless a later task scopes it separately。
 5. V5.B.4 Security / auth：production auth/RBAC 和 trace access control。
 6. V5.B.4 Release / rollback：版本、迁移、配置和健康检查回滚方案。
 
@@ -218,7 +237,7 @@ provider cost dashboard、production auth、Kubernetes / Helm、release / rollba
 ## observability checklist
 
 - 定义 low-cardinality metrics。
-- 规划 Prometheus registry。
+- V5.B.3.3 已完成 Prometheus opt-in exposure；生产 scrape jobs / dashboards 仍是后续任务。
 - 规划 Grafana dashboard。
 - 规划 OpenTelemetry tracing。
 - 规划 provider latency / cost metrics。

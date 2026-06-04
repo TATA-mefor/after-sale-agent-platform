@@ -60,7 +60,7 @@ class MetricsFoundationDocsTest {
 
         assertThat(docs).contains(
                 "V5.B.3.2 Micrometer metrics foundation completed",
-                "V5.B.3.3 planned",
+                "V5.B.3.3 Prometheus opt-in exposure completed",
                 "V5.B.3.4 planned",
                 "V5.B.4 planned",
                 BOUNDARY_DOC,
@@ -127,7 +127,7 @@ class MetricsFoundationDocsTest {
                 "OpenTelemetry",
                 "Grafana dashboard",
                 "production monitoring backend",
-                "planned / future work");
+                "future / opt-in");
         assertThat(lower).doesNotContain(
                 "prometheus registry completed",
                 "opentelemetry completed",

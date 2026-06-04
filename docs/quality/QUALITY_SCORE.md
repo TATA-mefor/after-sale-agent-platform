@@ -2072,8 +2072,8 @@ Known limitations:
 ### V5.B.3.1 Readiness / Liveness Boundary (completed)
 
 Status: completed for readiness / liveness actuator probe boundary. V5.B.3.2 Micrometer metrics foundation completed.
-V5.B.3.3 planned tracing, V5.B.3.4 planned production monitoring roadmap, and V5.B.4 planned auth / Kubernetes /
-release hardening remain future work.
+V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 planned production monitoring roadmap and V5.B.4 planned
+auth / Kubernetes / release hardening remain future work.
 
 Current V5.B.3.1 quality status:
 
@@ -2101,8 +2101,9 @@ Known limitations:
 
 ### V5.B.3.2 Micrometer Metrics Foundation (completed)
 
-Status: completed for low-cardinality Micrometer metrics foundation. V5.B.3.3 planned tracing, V5.B.3.4 planned
-production monitoring roadmap, and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+Status: completed for low-cardinality Micrometer metrics foundation. V5.B.3.3 Prometheus opt-in exposure completed.
+V5.B.3.4 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future
+work.
 
 Current V5.B.3.2 quality status:
 
@@ -2123,9 +2124,36 @@ Current V5.B.3.2 quality status:
 
 Known limitations:
 
-- V5.B.3.2 does not add Prometheus registry, `/actuator/prometheus`, OpenTelemetry, distributed tracing, dashboards,
-  production monitoring backend, provider cost dashboards, production auth / RBAC, Kubernetes / Helm, release /
-  rollback hardening, or external business integrations.
+- V5.B.3.2 itself does not add Prometheus registry, `/actuator/prometheus`, OpenTelemetry, distributed tracing,
+  dashboards, production monitoring backend, provider cost dashboards, production auth / RBAC, Kubernetes / Helm,
+  release / rollback hardening, or external business integrations.
+- Real refund / exchange / payment / logistics integrations are not connected.
+
+### V5.B.3.3 Prometheus Opt-in Exposure (completed)
+
+Status: completed for Prometheus opt-in exposure. V5.B.3.4 planned production monitoring roadmap and V5.B.4 planned
+auth / Kubernetes / release hardening remain future work.
+
+Current V5.B.3.3 quality status:
+
+- Dependency quality: `micrometer-registry-prometheus` is added without an explicit version and remains managed by
+  Spring Boot dependency management.
+- Profile quality: `application-observability-prometheus.yml` activates only under `observability-prometheus`.
+- Default exposure quality: Actuator web exposure remains health-only by default. `/actuator/prometheus`,
+  `/actuator/metrics`, `/actuator/env`, `/actuator/beans`, `/actuator/configprops`, `/actuator/heapdump`, and
+  `/actuator/threaddump` remain unavailable without opt-in.
+- Opt-in exposure quality: `PrometheusOptInExposureTest` verifies `/actuator/prometheus` is available only with the
+  explicit profile and that `/actuator/metrics` plus sensitive endpoints remain unavailable.
+- Default offline quality: the default context still does not create `DataSource`, Spring AI live model, Spring AI
+  `VectorStore`, or `JdbcPolicyVectorRepository` beans.
+- Docs harness quality: `PrometheusOptInDocsTest` checks status docs, validation commands, secret safety, endpoint
+  exposure boundaries, OpenTelemetry boundaries, production monitoring boundaries, and future-work boundaries.
+
+Known limitations:
+
+- V5.B.3.3 does not add OpenTelemetry, distributed tracing, cross-service propagation, Grafana dashboards, scrape jobs,
+  alert rules, production monitoring backend, production auth / RBAC, Kubernetes / Helm, release / rollback hardening,
+  or external business integrations.
 - Real refund / exchange / payment / logistics integrations are not connected.
 
 Planned phases:

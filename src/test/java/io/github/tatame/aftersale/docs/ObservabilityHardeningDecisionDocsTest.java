@@ -64,7 +64,8 @@ class ObservabilityHardeningDecisionDocsTest {
                 "ingestion",
                 "offline RAG evaluation metrics");
         assertThat(decision).contains(
-                "没有 Prometheus registry",
+                "Prometheus registry / `/actuator/prometheus` 已在 V5.B.3.3 作为 explicit opt-in profile 完成",
+                "默认仍不暴露",
                 "没有 Grafana dashboard",
                 "没有 OpenTelemetry tracing",
                 "没有 collector",

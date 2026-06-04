@@ -30,7 +30,7 @@ metrics、Prometheus、Grafana、OpenTelemetry、跨服务 trace-id 传播或生
 
 当前缺口：
 
-- 没有 Prometheus registry；
+- Prometheus registry / `/actuator/prometheus` 已在 V5.B.3.3 作为 explicit opt-in profile 完成，默认仍不暴露；
 - 没有 Grafana dashboard；
 - 没有 OpenTelemetry tracing；
 - 没有 collector；
@@ -42,7 +42,7 @@ metrics、Prometheus、Grafana、OpenTelemetry、跨服务 trace-id 传播或生
 
 ## Problem Statement
 
-如果直接接入 Prometheus、Grafana 或 OpenTelemetry，容易把生产监控能力误写成已完成，也可能把外部 collector
+如果直接接入 Grafana 或 OpenTelemetry，容易把生产监控能力误写成已完成，也可能把外部 collector
 或 monitoring platform 引入默认验证路径。当前更合适的做法是先明确指标、trace、Actuator 暴露和 secret
 safety 边界，再在后续阶段按 opt-in 路径实现。
 
@@ -51,7 +51,8 @@ safety 边界，再在后续阶段按 opt-in 路径实现。
 阶段 2 决策如下：
 
 - 保持当前 runtime 行为不变；
-- 不新增 Prometheus、Grafana、OpenTelemetry、collector 或外部日志平台依赖；
+- V5.B.3.3 后续已新增 Prometheus registry dependency，但只通过 `observability-prometheus` profile 显式 opt-in；
+- 不新增 Grafana、OpenTelemetry、collector 或外部日志平台依赖；
 - 不修改 `pom.xml`、`application.yml`、Actuator health indicator 或 OpenAPI runtime；
 - 默认 actuator exposure 继续只包含 `health`；
 - 当前 tracing 继续是 MDC-only；
