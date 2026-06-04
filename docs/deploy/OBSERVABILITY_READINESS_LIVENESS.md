@@ -81,9 +81,9 @@ Health details remain hidden by default with `management.endpoint.health.show-de
 V5.B.3.1 does not add Micrometer business metrics, Prometheus registry, Grafana dashboards, OpenTelemetry exporters,
 collector configuration, distributed tracing, or production log aggregation.
 
-V5.B.3.2 later added Micrometer metrics foundation, and V5.B.3.3 later added Prometheus opt-in exposure. Grafana,
-OpenTelemetry, collector configuration, distributed tracing, and production log aggregation remain future / opt-in
-production hardening work.
+V5.B.3.2 later added Micrometer metrics foundation, V5.B.3.3 later added Prometheus opt-in exposure, and V5.B.3.4
+later added local HTTP tracing / correlation for logs only. Grafana, OpenTelemetry, collector configuration,
+distributed tracing, and production log aggregation remain future / opt-in production hardening work.
 
 ## Default Offline Validation
 
@@ -111,5 +111,6 @@ external network.
 
 - V5.B.3.2: low-cardinality Micrometer metrics strategy and optional registry decision.
 - V5.B.3.3: completed Prometheus opt-in exposure.
-- V5.B.3.4: production monitoring and dashboard roadmap; OpenTelemetry / tracing remains future / opt-in.
+- V5.B.3.4 tracing / correlation boundary completed for local HTTP log correlation.
+- V5.B.3.5: planned production monitoring and dashboard roadmap; OpenTelemetry remains future / opt-in.
 - V5.B.4: auth, Kubernetes / Helm, release and rollback hardening.

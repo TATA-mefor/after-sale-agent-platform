@@ -96,8 +96,9 @@ V5.B.3.2 does not add:
 - production monitoring backend;
 - provider cost metrics dashboard.
 
-Prometheus endpoint exposure is handled separately by V5.B.3.3 as an explicit opt-in profile. OpenTelemetry,
-distributed tracing, dashboards, and production monitoring remain V5.B.3.4 or later opt-in production hardening work.
+Prometheus endpoint exposure is handled separately by V5.B.3.3 as an explicit opt-in profile. V5.B.3.4 later added
+local HTTP tracing / correlation for logs only. OpenTelemetry, distributed tracing, dashboards, and production
+monitoring remain V5.B.3.5 or later opt-in production hardening work.
 
 ## Default Offline Validation
 
@@ -125,5 +126,6 @@ Docker Compose, or external network.
 ## Follow-ups
 
 - V5.B.3.3: completed Prometheus opt-in exposure.
-- V5.B.3.4: production monitoring and dashboard roadmap; OpenTelemetry / tracing remains future / opt-in.
+- V5.B.3.4 tracing / correlation boundary completed for local HTTP log correlation.
+- V5.B.3.5: planned production monitoring and dashboard roadmap; OpenTelemetry remains future / opt-in.
 - V5.B.4: auth, Kubernetes / Helm, release and rollback hardening.

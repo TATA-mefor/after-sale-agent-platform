@@ -61,7 +61,8 @@ class MetricsFoundationDocsTest {
         assertThat(docs).contains(
                 "V5.B.3.2 Micrometer metrics foundation completed",
                 "V5.B.3.3 Prometheus opt-in exposure completed",
-                "V5.B.3.4 planned",
+                "V5.B.3.4 tracing / correlation boundary completed",
+                "V5.B.3.5 planned",
                 "V5.B.4 planned",
                 BOUNDARY_DOC,
                 COMPLETED_PLAN);

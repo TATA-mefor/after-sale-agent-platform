@@ -14,6 +14,7 @@ class ObservabilityHarnessTest {
         String config = resourceText("application.yml");
 
         assertThat(config).contains(
+                "correlationId=%X{correlationId:-}",
                 "requestId=%X{requestId:-}",
                 "ticketId=%X{ticketId:-}",
                 "agentRunId=%X{agentRunId:-}",

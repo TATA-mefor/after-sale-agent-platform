@@ -49,7 +49,7 @@ springdoc:
 
 logging:
   pattern:
-    level: "%5p requestId=%X{requestId:-} ticketId=%X{ticketId:-} agentRunId=%X{agentRunId:-} subtaskId=%X{subtaskId:-} toolName=%X{toolName:-} approvalRequestId=%X{approvalRequestId:-}"
+    level: "%5p correlationId=%X{correlationId:-} requestId=%X{requestId:-} ticketId=%X{ticketId:-} agentRunId=%X{agentRunId:-} subtaskId=%X{subtaskId:-} toolName=%X{toolName:-} approvalRequestId=%X{approvalRequestId:-}"
 
 agent:
   rag:

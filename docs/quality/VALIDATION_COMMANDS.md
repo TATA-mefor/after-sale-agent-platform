@@ -617,8 +617,9 @@ V5.B.3.1 validation does not require real LLM, API Key, PostgreSQL, PGvector, Do
 provider, Spring AI live provider calls, secret manager, Docker Compose, Prometheus, OpenTelemetry collector, or
 external network.
 
-V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 planned
-production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing /
+correlation boundary completed. V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes /
+release hardening remain future work.
 
 ## V5.B.3.2 Micrometer Metrics Foundation Validation
 
@@ -696,8 +697,53 @@ V5.B.3.3 validation does not require real LLM, API Key, PostgreSQL, PGvector, Do
 provider, Spring AI live provider calls, Spring AI `VectorStore`, secret manager, Docker Compose, Prometheus server,
 Grafana, OpenTelemetry collector, or external network.
 
-Prometheus registry, `/actuator/prometheus`, OpenTelemetry tracing, dashboards, production monitoring backend,
-production auth, Kubernetes / Helm, and release / rollback hardening remain planned / future work.
+OpenTelemetry tracing, dashboards, production monitoring backend, production auth, Kubernetes / Helm, and release /
+rollback hardening remain planned / future work. V5.B.3.4 tracing / correlation boundary completed separately as local
+HTTP log correlation.
+
+## V5.B.3.4 Tracing / Correlation Boundary Validation
+
+V5.B.3.4 tracing / correlation boundary completed. It adds safe `X-Correlation-Id` and `X-Request-Id` handling,
+response headers, MDC keys `correlationId` and `requestId`, and structured logging support while keeping default
+Actuator exposure health-only.
+
+Targeted runtime/docs harness:
+
+```bash
+mvn test -Dtest=CorrelationIdsTest
+mvn test -Dtest=CorrelationIdFilterBoundaryTest
+mvn test -Dtest=CorrelationObservabilityBoundaryTest
+mvn test -Dtest=TracingCorrelationDocsTest
+```
+
+The runtime and docs tests verify:
+
+- missing or unsafe correlation / request headers are replaced with generated safe values;
+- accepted values use safe characters and stay within 128 characters;
+- unsafe values are not echoed and are not placed into MDC;
+- MDC keys `correlationId` and `requestId` are cleared after request processing;
+- `/actuator/health`, `/actuator/health/liveness`, and `/actuator/health/readiness` remain available;
+- `/actuator/prometheus`, `/actuator/metrics`, `/actuator/env`, `/actuator/beans`, `/actuator/configprops`,
+  `/actuator/heapdump`, and `/actuator/threaddump` remain unavailable by default;
+- correlation IDs and request IDs are not Micrometer tags;
+- OpenTelemetry, distributed tracing, cross-service propagation, tracing backend, production monitoring backend,
+  production auth, Kubernetes / Helm, and release / rollback hardening remain future work.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.B.3.4 validation does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+provider, Spring AI live provider calls, Spring AI `VectorStore`, secret manager, Docker Compose, Prometheus server,
+Grafana, OpenTelemetry collector, tracing backend, log aggregation backend, or external network.
+
+V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future
+work.
 
 ## Interview Safe Validation Commands
 

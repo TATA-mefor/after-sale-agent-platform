@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.tatame.aftersale.common.api.RequestIdFilter;
 import io.github.tatame.aftersale.common.observability.ObservabilityConstants;
+import io.github.tatame.aftersale.common.observability.correlation.CorrelationHeaders;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,9 @@ class RequestIdFilterTest {
         filter.doFilter(request, response, chain);
 
         assertThat(observedRequestId[0]).isNotBlank();
+        assertThat(response.getHeader(CorrelationHeaders.CORRELATION_ID_HEADER)).isNotBlank();
         assertThat(response.getHeader(ObservabilityConstants.REQUEST_ID_HEADER)).isEqualTo(observedRequestId[0]);
+        assertThat(MDC.get(CorrelationHeaders.CORRELATION_ID_MDC_KEY)).isNull();
         assertThat(MDC.get(ObservabilityConstants.REQUEST_ID)).isNull();
     }
 
@@ -39,6 +42,7 @@ class RequestIdFilterTest {
     void providedRequestIdIsAvailableDuringRequestAndClearedAfterCompletion() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/health");
         request.addHeader(ObservabilityConstants.REQUEST_ID_HEADER, "REQ-PROVIDED-1");
+        request.addHeader(CorrelationHeaders.CORRELATION_ID_HEADER, "CORR-PROVIDED-1");
         MockHttpServletResponse response = new MockHttpServletResponse();
         String[] observedRequestId = new String[1];
         FilterChain chain = (servletRequest, servletResponse) ->
@@ -47,7 +51,9 @@ class RequestIdFilterTest {
         filter.doFilter(request, response, chain);
 
         assertThat(observedRequestId[0]).isEqualTo("REQ-PROVIDED-1");
+        assertThat(response.getHeader(CorrelationHeaders.CORRELATION_ID_HEADER)).isEqualTo("CORR-PROVIDED-1");
         assertThat(response.getHeader(ObservabilityConstants.REQUEST_ID_HEADER)).isEqualTo("REQ-PROVIDED-1");
+        assertThat(MDC.get(CorrelationHeaders.CORRELATION_ID_MDC_KEY)).isNull();
         assertThat(MDC.get(ObservabilityConstants.REQUEST_ID)).isNull();
     }
 }

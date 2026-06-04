@@ -10,19 +10,20 @@ import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
-class PrometheusOptInDocsTest {
+class TracingCorrelationDocsTest {
 
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
 
-    private static final String BOUNDARY_DOC = "docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md";
+    private static final String BOUNDARY_DOC = "docs/deploy/OBSERVABILITY_TRACING_CORRELATION.md";
 
     private static final String COMPLETED_PLAN =
-            "docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md";
+            "docs/exec-plans/completed/EXEC_PLAN_V5_B3_4_TRACING_CORRELATION_BOUNDARY.md";
 
-    private static final List<String> V5_B3_3_DOCS = List.of(
+    private static final List<String> V5_B3_4_DOCS = List.of(
             "README.md",
             "docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md",
             "docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md",
+            "docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md",
             "docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md",
             "docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md",
             "docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md",
@@ -35,30 +36,31 @@ class PrometheusOptInDocsTest {
             COMPLETED_PLAN);
 
     @Test
-    void completionRecordExistsAndMarksV5B33Completed() throws IOException {
+    void completionRecordExistsAndMarksV5B34Completed() throws IOException {
         String completedPlan = projectText(COMPLETED_PLAN);
 
         assertThat(completedPlan).contains(
                 "Status: Completed",
-                "Prometheus Registry Boundary",
-                "Opt-in Profile Boundary",
-                "Default Exposure Boundary",
-                "Actuator Endpoint Boundary",
-                "Metrics Policy Boundary",
+                "Correlation ID Boundary",
+                "Request ID Boundary",
+                "MDC Boundary",
+                "HTTP Header Boundary",
+                "Structured Logging Boundary",
+                "AgentRun / ToolCallTrace / ExecutionTree Boundary",
+                "Metrics Tag Boundary",
                 "Secret Safety Boundary",
                 "OpenTelemetry Boundary",
-                "Production Monitoring Boundary",
+                "Production Tracing Boundary",
                 "Runtime Non-change Boundary",
                 "Default Offline Boundary",
                 "TASK_COMPLETE");
     }
 
     @Test
-    void statusDocsRecordV5B33CompletedAndFutureWorkPlanned() throws IOException {
+    void statusDocsRecordV5B34CompletedAndFutureWorkPlanned() throws IOException {
         String docs = combinedDocs();
 
         assertThat(docs).contains(
-                "V5.B.3.3 Prometheus opt-in exposure completed",
                 "V5.B.3.4 tracing / correlation boundary completed",
                 "V5.B.3.5 planned",
                 "V5.B.4 planned",
@@ -67,91 +69,80 @@ class PrometheusOptInDocsTest {
     }
 
     @Test
-    void readmeLinksPrometheusDocs() throws IOException {
-        String readme = projectText("README.md");
+    void boundaryDocDescribesHeadersAndMdcFields() throws IOException {
+        String boundaryDoc = projectText(BOUNDARY_DOC);
 
-        assertThat(readme).contains(
-                "[V5.B.3.3 Prometheus Opt-in Exposure](" + BOUNDARY_DOC + ")",
-                "[V5.B.3.3 Completion Record](" + COMPLETED_PLAN + ")");
+        assertThat(boundaryDoc).contains(
+                "X-Correlation-Id",
+                "X-Request-Id",
+                "correlationId",
+                "requestId",
+                "MDC",
+                "safe characters",
+                "128",
+                "Unsafe header values",
+                "finally");
     }
 
     @Test
-    void actuatorExposureBoundaryIsDocumented() throws IOException {
+    void actuatorAndMetricsBoundariesAreDocumented() throws IOException {
         String docs = combinedDocs();
 
         assertThat(docs).contains(
-                "observability-prometheus",
+                "health-only",
                 "/actuator/health",
                 "/actuator/health/liveness",
                 "/actuator/health/readiness",
                 "/actuator/prometheus",
                 "/actuator/metrics",
-                "/actuator/env",
-                "/actuator/beans",
-                "/actuator/configprops",
-                "/actuator/heapdump",
-                "/actuator/threaddump",
-                "health-only",
                 "unavailable by default",
-                "opt-in");
-    }
-
-    @Test
-    void metricsPolicyAndSecretSafetyAreDocumented() throws IOException {
-        String docs = combinedDocs();
-
-        assertThat(docs).contains(
+                "must not be used as Micrometer tags",
                 "low-cardinality",
-                "Metric tags must not include API keys",
-                "passwords",
-                "tokens",
-                "local paths",
-                "raw prompts",
-                "raw provider responses",
-                "raw user messages",
-                "raw policy snippets",
-                "JDBC URLs");
+                "Metric tags must not include `correlationId`, `requestId`");
     }
 
     @Test
-    void validationCommandsAreDocumented() throws IOException {
+    void agentRuntimeAndAuditBoundariesAreDocumentedAsUnchanged() throws IOException {
         String docs = combinedDocs();
 
         assertThat(docs).contains(
-                "mvn test -Dtest=PrometheusOptInExposureTest",
-                "mvn test -Dtest=PrometheusOptInDocsTest",
-                "mvn test",
-                "mvn checkstyle:check",
-                "mvn spotbugs:check",
-                "mvn test -Dtest=ArchitectureTest");
+                "ToolRegistry remains the Agent tool execution entry",
+                "AgentRun state transitions are unchanged",
+                "ToolCallTrace schema and write behavior are unchanged",
+                "Workspace evidence logic is unchanged",
+                "Execution Tree runtime is unchanged",
+                "Approval behavior is unchanged",
+                "does not create Ticket, AgentRun, ToolCallTrace, Workspace, Approval, or Execution Tree records");
     }
 
     @Test
-    void openTelemetryAndProductionMonitoringRemainFutureWork() throws IOException {
+    void openTelemetryDistributedTracingAndProductionTracingRemainFutureWork() throws IOException {
         String docs = combinedDocs();
         String lower = docs.toLowerCase(Locale.ROOT);
 
         assertThat(docs).contains(
-                "OpenTelemetry",
-                "distributed tracing",
-                "cross-service",
-                "Grafana",
-                "production monitoring",
-                "future");
+                "not OpenTelemetry",
+                "not distributed tracing",
+                "not production tracing",
+                "W3C `traceparent`",
+                "cross-service propagation",
+                "Jaeger",
+                "Zipkin",
+                "future / opt-in");
         assertThat(lower).doesNotContain(
                 "opentelemetry completed",
                 "distributed tracing completed",
+                "production tracing completed",
                 "production monitoring completed",
                 "production deployment completed",
                 "production auth completed");
     }
 
     @Test
-    void defaultOfflineBoundaryIsDocumented() throws IOException {
+    void defaultOfflineBoundaryAndValidationCommandsAreDocumented() throws IOException {
         String docs = combinedDocs();
 
         assertThat(docs).contains(
-                "Default Offline Boundary",
                 "real LLM",
                 "API Key",
                 "PostgreSQL",
@@ -160,13 +151,21 @@ class PrometheusOptInDocsTest {
                 "MySQL",
                 "Redis",
                 "real embedding provider",
-                "Spring AI live",
-                "external network");
+                "Spring AI live provider calls",
+                "external network",
+                "mvn test -Dtest=CorrelationIdsTest",
+                "mvn test -Dtest=CorrelationIdFilterBoundaryTest",
+                "mvn test -Dtest=CorrelationObservabilityBoundaryTest",
+                "mvn test -Dtest=TracingCorrelationDocsTest",
+                "mvn test",
+                "mvn checkstyle:check",
+                "mvn spotbugs:check",
+                "mvn test -Dtest=ArchitectureTest");
     }
 
     @Test
     void docsDoNotContainSecretsLocalPathsOrOverclaims() throws IOException {
-        for (String path : V5_B3_3_DOCS) {
+        for (String path : V5_B3_4_DOCS) {
             assertSafeText(path, projectText(path));
         }
     }
@@ -189,10 +188,11 @@ class PrometheusOptInDocsTest {
                 "token=",
                 "secret=",
                 "sk-",
-                "metrics exposed by default",
-                "prometheus exposed by default",
+                "correlation id as metric tag",
+                "request id as metric tag",
                 "opentelemetry completed",
                 "distributed tracing completed",
+                "production tracing completed",
                 "production monitoring completed",
                 "production deployment completed",
                 "production auth completed",
@@ -205,7 +205,7 @@ class PrometheusOptInDocsTest {
 
     private static String combinedDocs() throws IOException {
         StringBuilder builder = new StringBuilder();
-        for (String path : V5_B3_3_DOCS) {
+        for (String path : V5_B3_4_DOCS) {
             builder.append(projectText(path)).append('\n');
         }
         return builder.toString();

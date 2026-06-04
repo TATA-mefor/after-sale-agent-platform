@@ -2072,8 +2072,8 @@ Known limitations:
 ### V5.B.3.1 Readiness / Liveness Boundary (completed)
 
 Status: completed for readiness / liveness actuator probe boundary. V5.B.3.2 Micrometer metrics foundation completed.
-V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 planned production monitoring roadmap and V5.B.4 planned
-auth / Kubernetes / release hardening remain future work.
+V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5 planned
+production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
 
 Current V5.B.3.1 quality status:
 
@@ -2102,8 +2102,8 @@ Known limitations:
 ### V5.B.3.2 Micrometer Metrics Foundation (completed)
 
 Status: completed for low-cardinality Micrometer metrics foundation. V5.B.3.3 Prometheus opt-in exposure completed.
-V5.B.3.4 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future
-work.
+V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned
+auth / Kubernetes / release hardening remain future work.
 
 Current V5.B.3.2 quality status:
 
@@ -2131,8 +2131,8 @@ Known limitations:
 
 ### V5.B.3.3 Prometheus Opt-in Exposure (completed)
 
-Status: completed for Prometheus opt-in exposure. V5.B.3.4 planned production monitoring roadmap and V5.B.4 planned
-auth / Kubernetes / release hardening remain future work.
+Status: completed for Prometheus opt-in exposure. V5.B.3.4 tracing / correlation boundary completed. V5.B.3.5 planned
+production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
 
 Current V5.B.3.3 quality status:
 

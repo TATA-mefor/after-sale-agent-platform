@@ -60,6 +60,10 @@ logistics, production auth, production monitoring, and production deployment rem
 - [V5.B.3.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md)
 - [V5.B.3.2 Micrometer Metrics Foundation](docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md)
 - [V5.B.3.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_2_MICROMETER_METRICS_FOUNDATION.md)
+- [V5.B.3.3 Prometheus Opt-in Exposure](docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md)
+- [V5.B.3.3 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md)
+- [V5.B.3.4 Tracing / Correlation Boundary](docs/deploy/OBSERVABILITY_TRACING_CORRELATION.md)
+- [V5.B.3.4 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_4_TRACING_CORRELATION_BOUNDARY.md)
 
 
 > 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
@@ -85,7 +89,7 @@ logistics, production auth, production monitoring, and production deployment rem
 - Run offline evaluation against a versioned after-sale dataset.
 - Run with default in-memory repositories or an explicit MySQL profile.
 - Start a local app + MySQL environment with Docker Compose.
-- Correlate requests and Agent execution logs with `X-Request-Id` and MDC fields.
+- Correlate local HTTP requests and Agent execution logs with safe `X-Correlation-Id`, `X-Request-Id`, and MDC fields.
 - Enrich local MySQL demo data with optional product and order-item seed generated from public datasets.
 - Return structured `orderItems` from the `get_order_by_id` order tool for product-level after-sale context.
 - Generate item-level return and exchange recommendations from `orderItems` in specialist handlers.
@@ -171,8 +175,9 @@ docker run --rm -p 8080:8080 after-sale-agent-platform:local
 See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment.
 V5.B.2.1 config / secret boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile Matrix Validation are
 completed. V5.B.2 current scope completed. V5.B.3.1 readiness / liveness actuator probe boundary completed.
-V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 planned
-production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release hardening remain future work.
+V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing /
+correlation boundary completed. V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes /
+release hardening remain future work.
 
 ## V5.B.2 Config / Secret / Migration Boundary
 
@@ -237,6 +242,20 @@ See [V5.B.3.3 Prometheus Opt-in Exposure](docs/deploy/OBSERVABILITY_PROMETHEUS_O
 This is not OpenTelemetry tracing and not production monitoring. The opt-in profile does not connect to a Prometheus
 server, Grafana, collector, real LLM, real embedding provider, PostgreSQL, PGvector, MySQL, Redis, Docker, or external
 network.
+
+## V5.B.3.4 Tracing / Correlation Boundary
+
+V5.B.3.4 adds local HTTP log correlation for `X-Correlation-Id` and `X-Request-Id`. Incoming values are accepted only
+when they use safe characters and stay within the length boundary; missing or unsafe values are replaced before they
+reach response headers or MDC. The log pattern includes `correlationId` and keeps `requestId`.
+
+See [V5.B.3.4 Tracing / Correlation Boundary](docs/deploy/OBSERVABILITY_TRACING_CORRELATION.md) and
+[V5.B.3.4 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_4_TRACING_CORRELATION_BOUNDARY.md).
+
+This is local MDC-based correlation only. It is not OpenTelemetry, not distributed tracing, not cross-service
+propagation, not production tracing, and not production monitoring. Correlation IDs and request IDs are not used as
+metrics tags. The task does not change AgentRun, ToolRegistry, ToolCallTrace, Workspace, Execution Tree, RAG retrieval,
+health indicators, OpenAPI behavior, or external business integrations.
 
 ## Observability
 

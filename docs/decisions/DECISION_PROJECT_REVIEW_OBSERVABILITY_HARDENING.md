@@ -16,8 +16,9 @@ metrics、Prometheus、Grafana、OpenTelemetry、跨服务 trace-id 传播或生
 
 当前已经具备：
 
-- `X-Request-Id` 请求关联，缺失时由应用生成，存在时原样透传到响应头；
-- MDC / structured logging 字段：`requestId`、`ticketId`、`agentRunId`、`subtaskId`、`toolName`、
+- `X-Request-Id` 请求关联，缺失时由应用生成并写入响应头；
+- V5.B.3.4 later added `X-Correlation-Id` local HTTP log correlation with safe header sanitization；
+- MDC / structured logging 字段：`correlationId`、`requestId`、`ticketId`、`agentRunId`、`subtaskId`、`toolName`、
   `approvalRequestId`；
 - Ticket、AgentRun、Specialist Handler、ToolRegistry、Approval 和 Execution Tree 路径的诊断日志；
 - ToolCallTrace 作为工具调用审计记录；
@@ -32,7 +33,7 @@ metrics、Prometheus、Grafana、OpenTelemetry、跨服务 trace-id 传播或生
 
 - Prometheus registry / `/actuator/prometheus` 已在 V5.B.3.3 作为 explicit opt-in profile 完成，默认仍不暴露；
 - 没有 Grafana dashboard；
-- 没有 OpenTelemetry tracing；
+- 没有 OpenTelemetry tracing；V5.B.3.4 只完成 local HTTP tracing / correlation boundary；
 - 没有 collector；
 - 没有跨服务 trace-id 传播；
 - 没有 provider latency / cost metrics；
@@ -55,7 +56,7 @@ safety 边界，再在后续阶段按 opt-in 路径实现。
 - 不新增 Grafana、OpenTelemetry、collector 或外部日志平台依赖；
 - 不修改 `pom.xml`、`application.yml`、Actuator health indicator 或 OpenAPI runtime；
 - 默认 actuator exposure 继续只包含 `health`；
-- 当前 tracing 继续是 MDC-only；
+- 当前 tracing 继续是 local MDC log correlation only；
 - ToolCallTrace 继续是工具审计 source of truth；
 - Execution Tree 继续是只读解释视图；
 - RAG health 继续是 offline readiness diagnostics，不执行 live provider 或 live vector checks；
@@ -94,9 +95,9 @@ raw dataset path、local absolute path 或 customer PII 放进 metrics label。
 
 ## Tracing Strategy
 
-当前 tracing 策略保持 MDC-only：
+当前 tracing 策略保持 local MDC log correlation only：
 
-- HTTP request 使用 `requestId` 关联日志；
+- HTTP request 使用 `correlationId` 和 `requestId` 关联日志；
 - AgentRun、subtask、tool、approval 使用业务 ID 进入 MDC；
 - ToolCallTrace 记录工具输入、输出、状态、错误和耗时；
 - Execution Tree 读取 AgentRun、ToolCallTrace、ApprovalRequest 和 Workspace 摘要，不执行新的业务动作。
@@ -113,7 +114,7 @@ OpenTelemetry 是 future / opt-in path，只在以下条件明确后推进：
 
 日志继续作为诊断面，而不是审计事实来源：
 
-- 日志用于按 `requestId`、`ticketId`、`agentRunId`、`toolName` 排查；
+- 日志用于按 `correlationId`、`requestId`、`ticketId`、`agentRunId`、`toolName` 排查；
 - ToolCallTrace、ApprovalRequest 和 Execution Tree 仍是审计与解释面；
 - 日志不得记录 API keys、database passwords、tokens、完整 prompt、provider raw response、raw dataset path、
   local absolute path 或长原始用户文本；

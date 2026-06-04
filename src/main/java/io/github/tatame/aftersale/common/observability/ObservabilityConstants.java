@@ -2,7 +2,9 @@ package io.github.tatame.aftersale.common.observability;
 
 public final class ObservabilityConstants {
 
+    public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
     public static final String REQUEST_ID_HEADER = "X-Request-Id";
+    public static final String CORRELATION_ID = "correlationId";
     public static final String REQUEST_ID = "requestId";
     public static final String TICKET_ID = "ticketId";
     public static final String AGENT_RUN_ID = "agentRunId";

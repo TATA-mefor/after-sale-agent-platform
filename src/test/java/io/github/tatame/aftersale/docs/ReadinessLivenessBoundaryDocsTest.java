@@ -57,7 +57,8 @@ class ReadinessLivenessBoundaryDocsTest {
                 "readiness / liveness actuator probe boundary completed",
                 "V5.B.3.2 Micrometer metrics foundation completed",
                 "V5.B.3.3 Prometheus opt-in exposure completed",
-                "V5.B.3.4 planned",
+                "V5.B.3.4 tracing / correlation boundary completed",
+                "V5.B.3.5 planned",
                 "V5.B.4 planned",
                 COMPLETED_PLAN,
                 BOUNDARY_DOC);

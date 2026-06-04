@@ -104,7 +104,8 @@ mvn test -Dtest=ArchitectureTest
 
 ## Follow-ups
 
-- V5.B.3.4 production monitoring roadmap.
+- V5.B.3.4 tracing / correlation boundary completed for local HTTP log correlation.
+- V5.B.3.5 planned production monitoring roadmap.
 - Future OpenTelemetry / cross-service propagation strategy.
 - V5.B.4 auth, Kubernetes / Helm, release and rollback hardening.
 

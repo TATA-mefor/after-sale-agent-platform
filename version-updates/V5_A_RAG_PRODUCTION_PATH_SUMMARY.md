@@ -77,8 +77,9 @@ logistics integrations.
 - V5.B.3.2 Micrometer metrics foundation is now completed. `/actuator/metrics` and `/actuator/prometheus` remain
   unavailable by default.
 - V5.B.3.3 Prometheus opt-in exposure is now completed. `/actuator/prometheus` is available only with the explicit
-  `observability-prometheus` profile. V5.B.3.4 planned production monitoring roadmap and V5.B.4 planned auth /
-  Kubernetes / release hardening remain future work.
+  `observability-prometheus` profile. V5.B.3.4 tracing / correlation boundary completed for local HTTP log
+  correlation. V5.B.3.5 planned production monitoring roadmap and V5.B.4 planned auth / Kubernetes / release
+  hardening remain future work.
 - Optional Spring AI `VectorStore` production path decision.
 - RAG quality enhancements and real embedding evaluation.
 - Production auth / RBAC, deployment, monitoring, and external business integrations.
