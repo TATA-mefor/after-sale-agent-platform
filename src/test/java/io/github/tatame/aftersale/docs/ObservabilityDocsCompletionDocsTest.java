@@ -64,10 +64,11 @@ class ObservabilityDocsCompletionDocsTest {
         String readme = projectText("README.md");
 
         assertThat(readme).contains(
-                "[V5.B.3.5 Observability Docs + Completion](" + COMPLETION_DOC + ")",
-                "[V5.B.3.5 Completion Record](" + COMPLETED_PLAN + ")",
-                "V5.B.3.5 observability docs + completion record completed",
-                "V5.B.4 planned");
+                "[Observability](docs/OBSERVABILITY.md)",
+                "[Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md)");
+        // V5.B.4 and production monitoring details are in the deployment roadmap
+        assertThat(projectText("docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md"))
+                .contains("V5.B.4", "production monitoring");
     }
 
     @Test

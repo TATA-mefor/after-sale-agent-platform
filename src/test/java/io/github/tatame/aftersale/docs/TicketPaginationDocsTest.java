@@ -43,7 +43,7 @@ class TicketPaginationDocsTest {
                 "ToolRegistry / Agent Boundary",
                 "Default Offline Boundary",
                 "TASK_COMPLETE");
-        assertThat(readme).contains(COMPLETED_PLAN);
+        assertThat(readme).contains("分页", "API");
         assertThat(activePlan).contains(
                 "状态：阶段 0-3.4 已完成",
                 "阶段 3.2：Ticket list/query pagination foundation",

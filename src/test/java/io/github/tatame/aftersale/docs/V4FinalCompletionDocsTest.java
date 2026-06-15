@@ -62,9 +62,9 @@ class V4FinalCompletionDocsTest {
                 "historical active V4 plan",
                 "V4 overall status is completed");
         assertThat(readme).contains(
-                "V4 status: completed",
-                "version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md",
-                "version-updates/V4_RELEASE_SUMMARY.md");
+                "V4",
+                "V4 完整口径说明",
+                "version-updates/V4_FACTS.md");
         assertThat(quality).contains("V4 final quality closure", "V4.7.4 V4 Final Completion Record (completed)");
         assertThat(validation).contains(
                 "V4 Final Validation",

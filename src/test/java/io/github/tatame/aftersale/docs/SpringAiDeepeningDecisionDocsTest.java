@@ -53,7 +53,7 @@ class SpringAiDeepeningDecisionDocsTest {
                 "ToolRegistry / Approval Boundary",
                 "TASK_COMPLETE");
         assertThat(completion).contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(readme).contains(DECISION_DOC, COMPLETED_PLAN);
+        assertThat(readme).contains("Spring AI", "SPEC.md");
         assertThat(v4SpringAiDecision).contains(DECISION_DOC, "Project Review Stage 4 Deepening Evaluation");
         assertThat(remediation).contains("阶段 4：已完成", DECISION_DOC, "阶段 5：planned");
         assertThat(validation).contains("SpringAiDeepeningDecisionDocsTest", DECISION_DOC);

@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "after-sale-agent-platform.fullname" . }}
+  labels:
+    {{- include "after-sale-agent-platform.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "after-sale-agent-platform.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "after-sale-agent-platform.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "after-sale-agent-platform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.appPort }}
+              protocol: TCP
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ include "after-sale-agent-platform.springProfiles" . | quote }}
+            - name: JAVA_OPTS
+              value: {{ .Values.javaOpts | quote }}
+            - name: AFTERSALE_SECURITY_ADMIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "after-sale-agent-platform.secretName" . }}
+                  key: AFTERSALE_SECURITY_ADMIN_API_KEY
+                  optional: true
+            - name: AFTERSALE_SECURITY_SUPERVISOR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "after-sale-agent-platform.secretName" . }}
+                  key: AFTERSALE_SECURITY_SUPERVISOR_API_KEY
+                  optional: true
+            - name: AFTERSALE_SECURITY_OPERATOR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "after-sale-agent-platform.secretName" . }}
+                  key: AFTERSALE_SECURITY_OPERATOR_API_KEY
+                  optional: true
+            - name: AFTERSALE_SECURITY_SYSTEM_SERVICE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "after-sale-agent-platform.secretName" . }}
+                  key: AFTERSALE_SECURITY_SYSTEM_SERVICE_API_KEY
+                  optional: true
+            - name: AFTERSALE_RAG_HEALTH_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "after-sale-agent-platform.fullname" . }}-config
+                  key: AFTERSALE_RAG_HEALTH_ENABLED
+                  optional: true
+            - name: LOGGING_LEVEL_IO_GITHUB_TATAME_AFTERSALE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "after-sale-agent-platform.fullname" . }}-config
+                  key: LOGGING_LEVEL_IO_GITHUB_TATAME_AFTERSALE
+                  optional: true
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

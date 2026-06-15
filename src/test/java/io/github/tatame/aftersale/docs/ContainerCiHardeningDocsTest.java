@@ -128,7 +128,7 @@ class ContainerCiHardeningDocsTest {
         String completion = projectText(CANONICAL_COMPLETION);
         String completedPlan = projectText(COMPLETED_PLAN);
 
-        assertThat(readme).contains("V5.B.1 Container + CI", CONTAINER_DOC, CANONICAL_COMPLETION);
+        assertThat(readme).contains(CONTAINER_DOC, "Container + CI");
         assertThat(roadmap).contains(
                 "V5.B.1",
                 "foundation completed",

@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: after-sale-agent-platform
+  labels:
+    app: after-sale-agent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: after-sale-agent-platform
+  template:
+    metadata:
+      labels:
+        app: after-sale-agent-platform
+    spec:
+      # serviceAccountName: after-sale-agent-platform  # optional, create: false by default
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: after-sale-agent-platform
+          image: after-sale-agent-platform:REPLACE_WITH_IMAGE_TAG
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            # Spring profiles: enable security-api-key for auth, observability-prometheus for Prometheus endpoint.
+            # Example: "prod,security-api-key"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "REPLACE_WITH_SPRING_PROFILES_ACTIVE"
+            # Java opts for JVM tuning (e.g., -Xms512m -Xmx1024m)
+            - name: JAVA_OPTS
+              value: "REPLACE_WITH_JAVA_OPTS"
+            # API key auth env vars (required only when security-api-key profile is active)
+            - name: AFTERSALE_SECURITY_ADMIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: after-sale-agent-platform-secret
+                  key: AFTERSALE_SECURITY_ADMIN_API_KEY
+                  optional: true
+            - name: AFTERSALE_SECURITY_SUPERVISOR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: after-sale-agent-platform-secret
+                  key: AFTERSALE_SECURITY_SUPERVISOR_API_KEY
+                  optional: true
+            - name: AFTERSALE_SECURITY_OPERATOR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: after-sale-agent-platform-secret
+                  key: AFTERSALE_SECURITY_OPERATOR_API_KEY
+                  optional: true
+            - name: AFTERSALE_SECURITY_SYSTEM_SERVICE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: after-sale-agent-platform-secret
+                  key: AFTERSALE_SECURITY_SYSTEM_SERVICE_API_KEY
+                  optional: true
+            # Non-sensitive env vars from ConfigMap
+            - name: AFTERSALE_RAG_HEALTH_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: after-sale-agent-platform-config
+                  key: AFTERSALE_RAG_HEALTH_ENABLED
+                  optional: true
+          # Database / LLM / PGvector secrets are optional placeholders only.
+          # Real secrets must come from external secret manager or deployment platform injection.
+          # - name: AFTERSALE_MYSQL_URL
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: AFTERSALE_MYSQL_URL
+          #       optional: true
+          # - name: AFTERSALE_MYSQL_USERNAME
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: AFTERSALE_MYSQL_USERNAME
+          #       optional: true
+          # - name: AFTERSALE_MYSQL_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: AFTERSALE_MYSQL_PASSWORD
+          #       optional: true
+          # - name: AFTERSALE_PGVECTOR_URL
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: AFTERSALE_PGVECTOR_URL
+          #       optional: true
+          # - name: AFTERSALE_PGVECTOR_USERNAME
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: AFTERSALE_PGVECTOR_USERNAME
+          #       optional: true
+          # - name: AFTERSALE_PGVECTOR_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: AFTERSALE_PGVECTOR_PASSWORD
+          #       optional: true
+          # - name: OPENAI_API_KEY
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: OPENAI_API_KEY
+          #       optional: true
+          # - name: DASHSCOPE_API_KEY
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: DASHSCOPE_API_KEY
+          #       optional: true
+          # - name: SPRING_AI_OPENAI_API_KEY
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: after-sale-agent-platform-secret
+          #       key: SPRING_AI_OPENAI_API_KEY
+          #       optional: true
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 3
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            # readOnlyRootFilesystem: true  # Future hardening; Spring Boot may need /tmp writable.
+          resources:
+            requests:
+              memory: "REPLACE_WITH_MEMORY_REQUEST"
+              cpu: "REPLACE_WITH_CPU_REQUEST"
+            limits:
+              memory: "REPLACE_WITH_MEMORY_LIMIT"
+              cpu: "REPLACE_WITH_CPU_LIMIT"
+          # Example conservative values (uncomment to use):
+          # resources:
+          #   requests:
+          #     memory: "512Mi"
+          #     cpu: "250m"
+          #   limits:
+          #     memory: "1Gi"
+          #     cpu: "1000m"

@@ -112,7 +112,7 @@ class DeploymentHardeningRoadmapDocsTest {
         String validation = projectText("docs/quality/VALIDATION_COMMANDS.md");
         String releaseSummary = projectText("version-updates/V4_RELEASE_SUMMARY.md");
 
-        assertThat(readme).contains(DECISION_DOC, ROADMAP_DOC, COMPLETED_PLAN);
+        assertThat(readme).contains(ROADMAP_DOC);
         assertThat(productionConfig).contains(DECISION_DOC, ROADMAP_DOC);
         assertThat(remediation).contains("阶段 6：已完成", "阶段 0-6 current correction scope completed");
         assertThat(activePlan).contains("状态：阶段 0-6 已完成", "current correction scope completed");

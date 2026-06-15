@@ -42,7 +42,7 @@ class ApiCompletenessDecisionDocsTest {
 
         assertThat(projectText(DECISION_DOC)).contains("Status: Completed");
         assertThat(completedPlan).contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(readme).contains(DECISION_DOC, COMPLETED_PLAN);
+        assertThat(readme).contains("OpenAPI", "API", "SPEC.md");
         assertThat(openApiDocs).contains("API Completeness Roadmap", DECISION_DOC);
         assertThat(validation).contains("ApiCompletenessDecisionDocsTest", DECISION_DOC);
         assertThat(remediation).contains("阶段 3.1：已完成", DECISION_DOC);

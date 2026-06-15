@@ -2182,6 +2182,143 @@ Known limitations:
   Helm, release / rollback hardening, or external business integrations.
 - Real refund / exchange / payment / logistics integrations are not connected.
 
+### V5.B.4.1 Production Auth / RBAC Boundary Decision (completed)
+
+Status: completed for documentation-only auth / RBAC boundary decision. V5.B.4 planned auth / Kubernetes / release
+hardening remains in progress overall. V5.B.4.2 Spring Security / API Key Auth Foundation completed. V5.B.4.3 K8s /
+Helm Foundation completed. V5.B.4.4 Release / Rollback Foundation completed. V5.B.4
+current scope completed.
+
+Current V5.B.4.1 quality status:
+
+- Decision quality: `docs/decisions/DECISION_V5_B4_AUTH_RBAC_BOUNDARY.md` records the current API surface, current
+  auth gap, planned role model, API access matrix, actuator boundary, OpenAPI boundary, Approval boundary,
+  ToolRegistry boundary, RAG evidence-only boundary, K8s exposure precondition, and release / rollback security
+  precondition.
+- Deployment docs quality: `docs/deploy/AUTH_RBAC_BOUNDARY.md` gives the deployment-facing auth / RBAC boundary and
+  states production auth runtime remains planned.
+- Completion record quality:
+  `docs/exec-plans/completed/EXEC_PLAN_V5_B4_1_AUTH_RBAC_BOUNDARY_DECISION.md` records scope, non-goals, validation
+  commands, limitations, follow-ups, and `TASK_COMPLETE`.
+- Docs harness quality: `AuthRbacBoundaryDocsTest` checks links, status wording, role model, API access matrix,
+  ToolRegistry direct access boundary, Approval boundary, RAG evidence-only boundary, default offline validation,
+  future-work boundaries, secret safety, and overclaim prevention.
+- Runtime non-change quality: V5.B.4.1 does not modify `src/main/java`, `src/main/resources`, `pom.xml`, Dockerfile,
+  CI workflow, migration SQL, ToolRegistry, AgentApplicationService, RAG runtime, health indicators, metrics recorder,
+  Prometheus config, correlation filter, OpenAPI runtime config, ToolCallTrace, Workspace, or Execution Tree.
+
+### V5.B.4.2 Spring Security / API Key Auth Foundation (completed)
+
+Status: completed for opt-in Spring Security API key auth foundation. Default local/test profile remains permit-all and
+offline. Full production IAM remains future work.
+
+Current V5.B.4.2 quality status:
+
+- Runtime boundary quality: Spring Security protects HTTP endpoints only under `security-api-key` or
+  `agent.security.enabled=true`; business services and ToolRegistry semantics are unchanged.
+- Default profile quality: `SecurityDefaultBoundaryTest` verifies default API access remains permit-all and live
+  dependency beans are not created.
+- Credential quality: `ApiKeyCredentialValidatorTest` verifies configured key-to-role mapping, blank key rejection,
+  invalid key rejection, fail-fast behavior, and no raw key exposure in principal text.
+- RBAC quality: `ApiKeyAuthBoundaryTest` verifies protected API `401` / `403` behavior, health public boundary,
+  Approval decision role boundary, Trace / ExecutionTree role boundary, and OpenAPI / Swagger role boundary.
+- Prometheus quality: `ApiKeyPrometheusBoundaryTest` verifies opt-in Prometheus requires `ADMIN` or `SYSTEM_SERVICE`
+  under the security profile.
+- Docs harness quality: `ApiKeyAuthFoundationDocsTest` checks deployment docs, completion record, status docs, secret
+  safety, default offline boundary, non-goals, and overclaim prevention.
+- Architecture quality: `ArchitectureTest` keeps the security package away from business repositories, ToolRegistry,
+  RAG runtime, JDBC, Spring AI and PGvector concrete classes.
+
+Known limitations:
+
+- Full production auth / IAM is not completed.
+- OAuth2 / OIDC and JWT issuer / JWKS are not implemented.
+- Session login, password login, user database and tenant isolation are not implemented.
+- Secret manager, rate limiting, Kubernetes / Helm and release / rollback automation are not implemented.
+- Real refund / exchange / payment / logistics integrations are not connected.
+
+Known limitations from V5.B.4.1 decision context:
+
+- full production auth/RBAC is not completed.
+- full production IAM is not completed.
+- OAuth2 / OIDC and session login are not implemented.
+- Kubernetes / Helm is not implemented.
+- Release / rollback automation is not implemented.
+- Production deployment is not completed.
+- Real refund / exchange / payment / logistics integrations are not connected.
+
+### V5.B.4.3 K8s / Helm Foundation (completed)
+
+Status: completed for Kubernetes manifest templates and Helm chart skeleton. V5.B.4.4 planned.
+
+Current V5.B.4.3 quality status:
+
+- K8s manifest quality: `deploy/k8s/` contains deployment, service, configmap, and secret example with safe
+  placeholders only. Non-root securityContext, readiness/liveness probes wired to Spring Boot Actuator health groups.
+- Helm chart quality: `deploy/helm/after-sale-agent-platform/` provides Chart.yaml, values.yaml with placeholders,
+  templates for deployment/service/configmap/secret, _helpers.tpl with profile composition, and NOTES.txt with
+  security warnings.
+- Secret safety quality: K8s Secret uses `stringData` with `REPLACE_WITH_RUNTIME_SECRET` only. Helm chart defaults
+  `secrets.create: false` and supports `existingSecret`. No real API keys, database passwords, tokens, or base64-encoded
+  secrets.
+- SecurityContext quality: `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, `capabilities.drop: [ALL]`.
+  `readOnlyRootFilesystem` noted as future hardening.
+- Readiness/liveness quality: probes wired to `/actuator/health/readiness` and `/actuator/health/liveness`.
+- Profile boundary quality: `security-api-key` and `observability-prometheus` profiles documented but NOT enabled by
+  default. ConfigMap contains only non-sensitive values.
+- Ingress boundary quality: Ingress disabled by default; no Ingress resource in raw K8s manifests.
+- Docs harness quality: `K8sHelmFoundationDocsTest` verifies file existence, manifest content boundaries, Helm chart
+  boundaries, docs status, deployment boundaries, and secret safety.
+- Default offline quality: default validation does NOT require Kubernetes, Helm, kubectl, Docker, MySQL, PostgreSQL,
+  PGvector, Redis, real LLMs, real embedding providers, or external network.
+- Runtime non-change quality: V5.B.4.3 does NOT modify `src/main/java`, `src/main/resources`, `pom.xml`, Dockerfile,
+  CI workflow, migration SQL, ToolRegistry, AgentApplicationService, RAG runtime, Spring Security runtime, health
+  indicators, metrics recorder, Prometheus config, correlation filter, OpenAPI runtime, ToolCallTrace, Workspace, or
+  Execution Tree.
+
+Known limitations:
+
+- V5.B.4.3 is deployment manifest foundation only. No `kubectl apply` or Helm release has been executed.
+- No image registry push, no GitHub release workflow, no CD automation.
+- No external secret manager, no sealed-secrets, no ExternalSecrets.
+- No production Ingress with TLS, no cert-manager, no service mesh.
+- No HPA, no NetworkPolicy, no production database provisioning.
+- No OAuth2 / OIDC, no JWT runtime.
+### V5.B.4.4 Release / Rollback Foundation (completed)
+
+Status: completed for release governance and rollback runbook foundation. V5.B.4 current
+scope completed.
+
+Current V5.B.4.4 quality status:
+
+- Release checklist quality: pre-flight checks, release info record, post-release
+  verification defined. Template uses `REPLACE_WITH_*` placeholders only.
+- Rollback runbook quality: 13-trigger matrix with symptom, detection, action, rollback,
+  verify. Rollback strategy covers image, config, secret, profile, and migration caution.
+- Image tag policy quality: `latest` prohibited; immutable tags (Git SHA, version tag)
+  recommended. Rollback must use known-good immutable tag.
+- Change record quality: template covers before/after, validation gates, verification,
+  rollback, known issues, and sign-off.
+- Automation boundary quality: no GitHub release workflow, no registry push, no
+  semantic-release, no Helm/kubectl automation, no CD pipeline.
+- Production deployment boundary quality: production deployment is not completed; no
+  real release or rollback has been executed.
+- Default offline quality: default validation does NOT require Docker, Helm, kubectl,
+  Kubernetes, registry, real LLMs, or external network.
+- Runtime non-change quality: V5.B.4.4 does NOT modify `src/main/java`, runtime config,
+  Dockerfile, CI workflow, migration SQL, ToolRegistry, or any business runtime.
+- Docs harness quality: `ReleaseRollbackFoundationDocsTest` verifies file existence,
+  release policy content, non-goals, and secret safety.
+
+Known limitations:
+
+- No real release has been executed. No rollback has been executed. No image has been
+  pushed to a registry.
+- No GitHub release workflow, no CD pipeline, no registry credentials.
+- No external secret manager, no production monitoring backend, no alerting.
+- Flyway migration rollback not implemented. Image signing and SBOM are future work.
+- Real refund / exchange / payment / logistics integrations are not connected.
+
 Planned phases:
 
 ```text

@@ -43,7 +43,7 @@ class AgentRunStatusDocsTest {
                 "ToolRegistry / Planner Boundary",
                 "Default Offline Boundary",
                 "TASK_COMPLETE");
-        assertThat(readme).contains(COMPLETED_PLAN);
+        assertThat(readme).contains("AgentRun", "API");
         assertThat(activePlan).contains(
                 "状态：阶段 0-3.4 已完成",
                 "阶段 3.3：AgentRun get/status polling read model",

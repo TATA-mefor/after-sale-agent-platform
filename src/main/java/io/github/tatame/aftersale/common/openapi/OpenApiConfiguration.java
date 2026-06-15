@@ -2,7 +2,9 @@ package io.github.tatame.aftersale.common.openapi;
 
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,13 @@ public class OpenApiConfiguration {
     @Bean
     public OpenAPI afterSaleOpenApi() {
         return new OpenAPI()
+                .components(new Components()
+                        .addSecuritySchemes("ApiKeyAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("X-API-Key")
+                                .description("Optional security-api-key profile. Default local tests remain offline "
+                                        + "and permit-all.")))
                 .info(new Info()
                         .title("AfterSale-Agent API")
                         .version("V4")

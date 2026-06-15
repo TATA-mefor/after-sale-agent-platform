@@ -1,0 +1,165 @@
+# Default values for after-sale-agent-platform.
+# This is a Helm chart skeleton — all values are safe placeholders.
+# Do NOT put real secrets, real registry credentials, or local paths here.
+
+# Number of replicas
+replicaCount: 1
+
+image:
+  repository: after-sale-agent-platform
+  tag: "REPLACE_WITH_IMAGE_TAG"
+  pullPolicy: IfNotPresent
+
+# Image pull secrets — placeholder only; no real registry credentials.
+imagePullSecrets: []
+# - name: REPLACE_WITH_REGISTRY_SECRET_NAME
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  # readOnlyRootFilesystem: true  # Future hardening; Spring Boot may need /tmp writable.
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# Application port
+appPort: 8080
+
+# Spring profiles configuration
+profiles:
+  # Enable production-oriented defaults
+  prod:
+    enabled: false
+    profileName: "prod"
+  # Security API key auth (opt-in)
+  securityApiKey:
+    enabled: false
+    profileName: "security-api-key"
+  # Prometheus endpoint exposure (opt-in)
+  prometheus:
+    enabled: false
+    profileName: "observability-prometheus"
+
+# Non-sensitive environment variables
+env:
+  # Log level
+  loggingLevelIoGithubTatameAftersale: "INFO"
+  # RAG health indicator toggle
+  aftersaleRagHealthEnabled: "true"
+
+# Existing Secret name.
+# When set, the chart does NOT create a Secret and uses this existing one instead.
+# Recommended for production: use external secret manager or sealed secrets.
+existingSecret: ""
+
+# Secret values — PLACEHOLDERS ONLY.
+# If existingSecret is empty and secrets.create is true, the chart creates a Secret.
+# Production deployments MUST use existingSecret or external secret injection.
+secrets:
+  create: false
+  # API key auth (security-api-key profile)
+  adminApiKey: "REPLACE_WITH_RUNTIME_SECRET"
+  supervisorApiKey: "REPLACE_WITH_RUNTIME_SECRET"
+  operatorApiKey: "REPLACE_WITH_RUNTIME_SECRET"
+  systemServiceApiKey: "REPLACE_WITH_RUNTIME_SECRET"
+  # Optional DB / LLM / PGvector secrets
+  # mysqlUrl: "REPLACE_WITH_RUNTIME_SECRET"
+  # mysqlUsername: "REPLACE_WITH_RUNTIME_SECRET"
+  # mysqlPassword: "REPLACE_WITH_RUNTIME_SECRET"
+  # pgvectorUrl: "REPLACE_WITH_RUNTIME_SECRET"
+  # pgvectorUsername: "REPLACE_WITH_RUNTIME_SECRET"
+  # pgvectorPassword: "REPLACE_WITH_RUNTIME_SECRET"
+  # openaiApiKey: "REPLACE_WITH_RUNTIME_SECRET"
+  # dashscopeApiKey: "REPLACE_WITH_RUNTIME_SECRET"
+  # springAiOpenaiApiKey: "REPLACE_WITH_RUNTIME_SECRET"
+
+# Readiness probe
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  failureThreshold: 3
+
+# Liveness probe
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 20
+  failureThreshold: 3
+
+# Resource requests and limits
+resources:
+  requests:
+    memory: "REPLACE_WITH_MEMORY_REQUEST"
+    cpu: "REPLACE_WITH_CPU_REQUEST"
+  limits:
+    memory: "REPLACE_WITH_MEMORY_LIMIT"
+    cpu: "REPLACE_WITH_CPU_LIMIT"
+  # Example conservative values:
+  # requests:
+  #   memory: "512Mi"
+  #   cpu: "250m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1000m"
+
+# Java opts for JVM tuning
+javaOpts: "REPLACE_WITH_JAVA_OPTS"
+
+# Ingress — disabled by default; future work.
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: REPLACE_WITH_INGRESS_HOST
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  # - secretName: REPLACE_WITH_TLS_SECRET_NAME
+  #   hosts:
+  #     - REPLACE_WITH_INGRESS_HOST
+
+# Autoscaling — disabled by default; future work.
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Node selector, tolerations, affinity — placeholders; no production assignments.
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

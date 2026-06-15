@@ -30,12 +30,8 @@ class V4InterviewDemoDocsTest {
         String readme = projectText("README.md") + "\n" + projectText("docs/demo/DEMO_INTERVIEW_GUIDE.md");
 
         assertThat(readme).contains(
-                "docs/demo/V4_INTERVIEW_DEMO_CHECKLIST.md",
-                "docs/demo/V4_PROJECT_HIGHLIGHTS.md",
-                "docs/demo/V4_RAG_DEMO_SCRIPT.md",
-                "docs/demo/V4_POLICY_INGESTION_PIPELINE.md",
-                "docs/demo/V4_PGVECTOR_LOCAL_SETUP.md",
-                "docs/evaluation/EVALUATION.md",
+                "DEMO_INTERVIEW_GUIDE.md",
+                "docs/demo/DEMO_WALKTHROUGH.md",
                 "docs/api/OPENAPI.md",
                 "docs/quality/VALIDATION_COMMANDS.md");
     }

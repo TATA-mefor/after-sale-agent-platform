@@ -58,7 +58,7 @@ class RagQualityDecisionDocsTest {
                 "ToolRegistry / Evidence-only Boundary",
                 "TASK_COMPLETE");
         assertThat(completion).contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(readme).contains(DECISION_DOC, COMPLETED_PLAN);
+        assertThat(readme).contains("RAG", "SPEC.md");
         assertThat(ragContract).contains(DECISION_DOC, "Project Review Stage 5 RAG Quality Evaluation");
         assertThat(vectorDecision).contains(DECISION_DOC, "Stage 5 quality evaluation status");
         assertThat(evaluation).contains("RAG Retrieval Quality Improvement Roadmap", DECISION_DOC);

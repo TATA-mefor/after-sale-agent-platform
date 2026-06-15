@@ -73,8 +73,9 @@ class MetricsFoundationDocsTest {
         String readme = projectText("README.md");
 
         assertThat(readme).contains(
-                "[V5.B.3.2 Micrometer Metrics Foundation](" + BOUNDARY_DOC + ")",
-                "[V5.B.3.2 Completion Record](" + COMPLETED_PLAN + ")");
+                "Micrometer",
+                "Observability",
+                "Actuator");
     }
 
     @Test

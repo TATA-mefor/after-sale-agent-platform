@@ -40,7 +40,7 @@ class ObservabilityHardeningDecisionDocsTest {
 
         assertThat(projectText(DECISION_DOC)).contains("Status: Completed");
         assertThat(completedPlan).contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(readme).contains(DECISION_DOC, COMPLETED_PLAN);
+        assertThat(readme).contains("Observability", "Production Config Template");
         assertThat(validation).contains("ObservabilityHardeningDecisionDocsTest", DECISION_DOC);
         assertThat(remediation).contains("阶段 2：已完成", DECISION_DOC);
         assertThat(quality).contains("Project Review Correction Stage 2 (completed)");

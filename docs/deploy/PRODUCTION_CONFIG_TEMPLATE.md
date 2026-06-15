@@ -95,6 +95,47 @@ Secret manager is not implemented, production deployment is not completed, produ
 production monitoring is not completed, and real refund / exchange / payment / logistics integrations are not
 connected.
 
+## V5.B.4.3 K8s / Helm Foundation
+
+V5.B.4.3 adds Kubernetes manifest templates and a Helm chart skeleton. See
+`docs/deploy/K8S_HELM_FOUNDATION.md`, `deploy/k8s/README.md`, and
+`deploy/helm/after-sale-agent-platform/README.md`.
+
+Key boundaries:
+
+- All manifests use safe placeholders. The image does not contain secrets.
+- K8s `secret.example.yaml` uses `stringData` with `REPLACE_WITH_RUNTIME_SECRET` only.
+- Helm chart defaults `secrets.create: false`; production should use `existingSecret`.
+- `security-api-key` profile is available for auth runtime boundary through
+  `SPRING_PROFILES_ACTIVE` or `profiles.securityApiKey.enabled: true`.
+- `observability-prometheus` profile is explicit opt-in and NOT enabled by default.
+- Ingress is disabled by default; production Ingress exposure remains future work.
+- External secret manager integration remains future work.
+- This is deployment manifest foundation only. Production deployment is not completed.
+- Release / rollback hardening foundation completed (V5.B.4.4). Release automation and real
+  rollback execution remain future work.
+
+## V5.B.4.1 Auth / RBAC Boundary
+
+V5.B.4.1 completes the production authentication / RBAC boundary decision only. See
+`docs/deploy/AUTH_RBAC_BOUNDARY.md` and `docs/decisions/DECISION_V5_B4_AUTH_RBAC_BOUNDARY.md`.
+
+The production template does not enforce authentication by itself. It remains an example configuration file and is not
+loaded by default. V5.B.4.2 adds the opt-in `security-api-key` profile for Spring Security API key auth foundation.
+Future production profile work still needs full IAM hardening before any public exposure.
+
+Current boundary:
+
+- full production auth / RBAC runtime is not implemented;
+- opt-in Spring Security API key auth foundation is available through `security-api-key`;
+- JWT, OAuth2 / OIDC, user database, and session login are not implemented;
+- Kubernetes / Helm exposure waits for runtime auth;
+- release / rollback governance foundation completed; release / rollback automation remains planned;
+- ToolRegistry is not a public API;
+- high-risk actions require Approval;
+- `search_aftersale_policy` remains LOW-risk read-only;
+- RAG evidence remains evidence-only policy support.
+
 ## V5.B.3.1 Readiness / Liveness Boundary
 
 V5.B.3.1 readiness / liveness actuator probe boundary completed. See

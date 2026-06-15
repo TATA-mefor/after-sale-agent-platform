@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: after-sale-agent-platform-config
+  labels:
+    app: after-sale-agent-platform
+data:
+  # Non-sensitive configuration only.
+  # Do NOT put API keys, database passwords, tokens, private endpoints, or secrets here.
+
+  # Active profiles placeholder — set per environment.
+  # Example values: "prod,security-api-key" or "prod"
+  SPRING_PROFILES_ACTIVE: "REPLACE_WITH_SPRING_PROFILES_ACTIVE"
+
+  # Log level — adjust per environment.
+  LOGGING_LEVEL_IO_GITHUB_TATAME_AFTERSALE: "INFO"
+
+  # RAG health indicator toggle (non-sensitive).
+  AFTERSALE_RAG_HEALTH_ENABLED: "true"
+
+  # Actuator / profile boundary note:
+  # - /actuator/health, /actuator/health/liveness, /actuator/health/readiness are available.
+  # - /actuator/env, /actuator/beans, /actuator/configprops, /actuator/heapdump,
+  #   /actuator/threaddump, /actuator/prometheus, and /actuator/metrics are NOT exposed by default.
+  # - observability-prometheus profile is explicit opt-in only.
+  # - security-api-key profile is explicit opt-in for auth runtime boundary.

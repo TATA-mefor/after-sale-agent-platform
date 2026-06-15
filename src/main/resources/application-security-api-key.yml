@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: security-api-key
+
+agent:
+  security:
+    enabled: ${AFTERSALE_SECURITY_ENABLED:true}
+    api-key-header: ${AFTERSALE_SECURITY_API_KEY_HEADER:X-API-Key}
+    api-keys:
+      admin: ${AFTERSALE_SECURITY_ADMIN_API_KEY:}
+      supervisor: ${AFTERSALE_SECURITY_SUPERVISOR_API_KEY:}
+      operator: ${AFTERSALE_SECURITY_OPERATOR_API_KEY:}
+      system-service: ${AFTERSALE_SECURITY_SYSTEM_SERVICE_API_KEY:}

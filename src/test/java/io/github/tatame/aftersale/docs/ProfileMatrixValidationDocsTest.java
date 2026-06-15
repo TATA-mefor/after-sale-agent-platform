@@ -55,9 +55,10 @@ class ProfileMatrixValidationDocsTest {
                 "V5.B.2.3 Profile Matrix Validation",
                 "profile matrix validation harness completed",
                 "V5.B.2 current scope completed",
-                COMPLETED_PLAN,
                 "mvn test -Dtest=ProfileMatrixValidationTest",
                 "mvn test -Dtest=ProfileMatrixValidationDocsTest");
+        // Completion plan exists (path was in old README; now verified directly)
+        assertThat(PROJECT_ROOT.resolve(COMPLETED_PLAN)).exists();
     }
 
     @Test

@@ -64,10 +64,13 @@ class PgVectorConnectivitySmokeDocsTest {
                 "Schema Initialization Boundary",
                 "Default Offline Boundary",
                 "TASK_COMPLETE");
-        assertThat(projectText("README.md") + "\n" + projectText("version-updates/V4_FACTS.md")).contains(
+        // V5.A.3 details are in V4_FACTS.md; README is a clean intro without version tracking
+        String v4Facts = projectText("version-updates/V4_FACTS.md");
+        assertThat(v4Facts).contains(
                 "V5.A.3",
-                "PGvector connectivity smoke",
-                COMPLETION_RECORD);
+                "PGvector connectivity smoke");
+        // Completion record exists
+        assertThat(PROJECT_ROOT.resolve(COMPLETION_RECORD)).exists();
         assertThat(docs).contains(
                 "mvn test -Dtest=JdbcPolicyVectorRepositorySmokeTest -Dlive.rag=true",
                 "AFTERSALE_PGVECTOR_URL",

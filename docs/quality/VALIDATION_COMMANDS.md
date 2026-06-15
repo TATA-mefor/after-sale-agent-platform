@@ -618,8 +618,8 @@ provider, Spring AI live provider calls, secret manager, Docker Compose, Prometh
 external network.
 
 V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing /
-correlation boundary completed. V5.B.3.5 observability docs + completion record completed. V5.B.4 planned auth /
-Kubernetes / release hardening remains future work. Production monitoring backend, dashboards, alerting, log
+correlation boundary completed. V5.B.3.5 observability docs + completion record completed. V5.B.4.3 K8s / Helm Foundation completed; V5.B.4.4 Release / Rollback Foundation
+planned. Production monitoring backend, dashboards, alerting, log
 aggregation, and OpenTelemetry remain future / opt-in work.
 
 ## V5.B.3.2 Micrometer Metrics Foundation Validation
@@ -781,6 +781,181 @@ V5.B.3.5 is documentation-only. It does not add runtime observability behavior a
 monitoring.
 
 V5.B.4 planned auth / Kubernetes / release hardening remains future work.
+
+V5.B.4.3 K8s / Helm Foundation completed. V5.B.4.4 Release / Rollback Foundation
+completed. V5.B.4 current scope completed. V5.B Production Hardening current planned scope
+completed.
+
+## V5.B.4.3 K8s / Helm Foundation Validation
+
+V5.B.4.3 adds Kubernetes manifest templates and a Helm chart skeleton. This is deployment
+manifest foundation only — NOT a production deployment.
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=K8sHelmFoundationDocsTest
+```
+
+The docs harness is file-based only. It reads K8s manifests, Helm chart files, and docs.
+It does NOT start Spring, call HTTP endpoints, connect to databases, start Docker, call
+real LLMs, call real embedding providers, or access external network.
+
+Optional local commands (NOT part of default Maven gate):
+
+```bash
+helm template after-sale-agent-platform deploy/helm/after-sale-agent-platform
+kubectl apply --dry-run=client -f deploy/k8s/
+```
+
+These commands require `helm` and `kubectl` installed locally. If not installed, skip them.
+Default Maven validation does NOT require helm, kubectl, Kubernetes, Docker, MySQL,
+PostgreSQL, PGvector, Redis, real LLMs, real embedding providers, or external network.
+
+V5.B.4.3 does NOT implement release / rollback automation, image registry push,
+production ingress, external secret manager, sealed secrets, database StatefulSet,
+live PGvector deployment, OAuth2 / OIDC, or production deployment.
+
+## V5.B.4.4 Release / Rollback Foundation Validation
+
+V5.B.4.4 adds release governance and rollback runbook foundation: release checklist,
+rollback trigger matrix, image tag policy, Helm/K8s release review policy, post-release
+verification, and change/release note templates. This is a governance / runbook foundation
+only — NOT release automation, NOT production deployment, NOT executed rollback.
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=ReleaseRollbackFoundationDocsTest
+```
+
+The docs harness is file-based only. It reads the release/rollback foundation doc,
+templates, and cross-referenced docs. It does NOT start Spring, call HTTP endpoints,
+connect to databases, start Docker, call real LLMs, call real embedding providers, or
+access external network.
+
+Optional local commands (NOT part of default Maven gate):
+
+```bash
+docker build -t after-sale-agent-platform:local .
+helm template after-sale-agent-platform deploy/helm/after-sale-agent-platform
+kubectl apply --dry-run=client -f deploy/k8s/
+```
+
+These commands require Docker, Helm, and kubectl installed locally. If not installed,
+skip them. Default Maven validation does NOT require these tools.
+
+V5.B.4.4 does NOT implement GitHub release workflow, image registry push,
+semantic-release, automated version bump, Helm install/upgrade automation,
+kubectl apply automation, production deployment, real rollback execution,
+secret manager, Argo CD/Flux, or Terraform.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+## V5.B.4.1 Production Auth / RBAC Boundary Validation
+
+V5.B.4.1 Production Auth / RBAC Boundary Decision completed. It is documentation-only and records the current auth
+gap, planned RBAC role model, API access matrix, actuator / OpenAPI boundary, Approval boundary, ToolRegistry
+boundary, RAG evidence-only boundary, K8s exposure precondition, and release / rollback security precondition.
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=AuthRbacBoundaryDocsTest
+```
+
+The docs harness verifies:
+
+- `docs/decisions/DECISION_V5_B4_AUTH_RBAC_BOUNDARY.md` exists and marks V5.B.4.1 completed;
+- `docs/deploy/AUTH_RBAC_BOUNDARY.md` exists and states production auth runtime remains planned;
+- `docs/exec-plans/completed/EXEC_PLAN_V5_B4_1_AUTH_RBAC_BOUNDARY_DECISION.md` contains `TASK_COMPLETE`;
+- README, deployment roadmap, production config template, OpenAPI docs, quality score, remediation plan, validation
+  commands, and V5 status docs mention the boundary;
+- ToolRegistry direct access is never public;
+- high-risk actions require Approval;
+- `search_aftersale_policy` remains LOW-risk read-only;
+- RAG evidence remains evidence-only policy support;
+- V5.B.4.2 Spring Security / API Key Auth Foundation completed, V5.B.4.3 K8s / Helm Foundation planned, and
+  V5.B.4.4 Release / Rollback Foundation planned;
+- docs do not contain local absolute paths, real secret assignments, or production capability overclaims.
+
+Default Maven gate remains unchanged:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+V5.B.4.1 validation is file-based only. It does not start Spring context, call HTTP endpoints, connect to databases,
+run Docker, call real LLMs, call real embedding providers, use Spring AI live providers, use Spring AI `VectorStore`,
+or access external network. V5.B.4.2 API key auth foundation is opt-in and covered by targeted tests. Kubernetes /
+Helm remains planned for V5.B.4.3. Release / rollback hardening remains planned for V5.B.4.4.
+
+## V5.B.4.2 Spring Security / API Key Auth Foundation Validation
+
+V5.B.4.2 completed the opt-in Spring Security API key auth foundation. The default profile remains permit-all and
+offline; `security-api-key` enables `X-API-Key` enforcement.
+
+Targeted validation:
+
+```bash
+mvn test -Dtest=SecurityDefaultBoundaryTest
+mvn test -Dtest=ApiKeyCredentialValidatorTest
+mvn test -Dtest=ApiKeyAuthBoundaryTest
+mvn test -Dtest=ApiKeyAuthFoundationDocsTest
+```
+
+Additional targeted Prometheus security validation:
+
+```bash
+mvn test -Dtest=ApiKeyPrometheusBoundaryTest
+```
+
+The docs and security harness verify:
+
+- default profile does not require API key env vars;
+- default profile remains permit-all and offline;
+- `security-api-key` profile enables stateless Spring Security API key auth;
+- `X-API-Key` is the documented header;
+- missing or invalid API key returns `401` without echoing raw key values;
+- insufficient role returns `403`;
+- health probes remain public;
+- Ticket / AgentRun / Approval / Trace / ExecutionTree are protected by role boundary;
+- OpenAPI / Swagger UI requires `ADMIN` or `SUPERVISOR`;
+- opt-in Prometheus requires `ADMIN` or `SYSTEM_SERVICE` when exposed;
+- sensitive actuator endpoints remain unexposed;
+- OAuth2 / OIDC, JWT issuer / JWKS, session login, user database, secret manager, Kubernetes / Helm, and
+  release / rollback automation remain unimplemented.
+
+Default Maven gate remains:
+
+```bash
+mvn test
+mvn checkstyle:check
+mvn spotbugs:check
+mvn test -Dtest=ArchitectureTest
+```
+
+The default gate still does not require real LLM, API Key, PostgreSQL, PGvector, Docker, MySQL, Redis, real embedding
+provider, Spring AI live provider, Spring AI `VectorStore`, Prometheus server, secret manager or external network.
 
 ## Interview Safe Validation Commands
 

@@ -20,6 +20,9 @@ liveness actuator probe boundary：启用 health probes，增加 liveness/readin
 exposure 只包含 health。V5.B.3.4 完成 local HTTP tracing / correlation boundary：增加安全的 `X-Correlation-Id`
 和 `X-Request-Id` 日志关联。V5.B.1、V5.B.3.1 和 V5.B.3.4 仍不是生产部署、CD、registry release、
 Kubernetes / Helm、secret manager、production auth、production monitoring、Prometheus 或 OpenTelemetry 集成。
+V5.B.4 in progress overall；V5.B.4.1 完成 Production Auth / RBAC Boundary Decision，V5.B.4.2 Spring Security /
+API Key Auth Foundation completed，V5.B.4.3 K8s / Helm Foundation completed，V5.B.4.4 Release / Rollback Foundation
+completed。V5.B.4 current scope completed。V5.B Production Hardening current planned scope completed。
 
 ## 总体结论
 
@@ -520,7 +523,13 @@ V5.A 不完成：
   `/actuator/prometheus`，默认 Actuator exposure 仍为 health-only。
 - V5.B.3.4：已完成。Tracing / correlation boundary；local HTTP log correlation completed。
 - V5.B.3.5：已完成。Observability docs + completion record；production monitoring backend 仍未实现。
-- V5.B.4：planned。Auth、Kubernetes / Helm、release / rollback hardening。
+- V5.B.4：in progress overall。Auth、Kubernetes / Helm、release / rollback hardening。
+- V5.B.4.1：已完成。Production Auth / RBAC Boundary Decision；只完成 documentation-first boundary decision。
+- V5.B.4.2：completed。Spring Security / API Key Auth Foundation；默认 profile permit-all，`security-api-key`
+  profile opt-in。
+- V5.B.4.3：completed。K8s / Helm Foundation。
+- V5.B.4.4：completed。Release / Rollback Foundation。
+- V5.B.4 current scope completed。
 
 V5.B.1 的完成不等于 V5.B overall completed，也不表示 production deployment 已完成。
 
@@ -667,6 +676,40 @@ V5.B.3.5 不完成：
 - release / rollback hardening；
 - 真实退款、换货、优惠券补偿、支付或物流系统接入。
 
+## V5.B.4.1 Production Auth / RBAC Boundary Decision
+
+V5.B.4.1 完成 production auth / RBAC 边界决策。该阶段只修正文档事实口径和后续安全路线，不实现 runtime
+认证授权。
+
+已完成范围：
+
+- 新增 `docs/decisions/DECISION_V5_B4_AUTH_RBAC_BOUNDARY.md`；
+- 新增 `docs/deploy/AUTH_RBAC_BOUNDARY.md`；
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V5_B4_1_AUTH_RBAC_BOUNDARY_DECISION.md`；
+- 记录当前 API surface 和 current auth gap；
+- 记录 planned RBAC roles：`CUSTOMER`、`AGENT_OPERATOR`、`SUPERVISOR`、`ADMIN`、`SYSTEM_SERVICE`；
+- 记录 Ticket、AgentRun、Approval、ToolCallTrace、Execution Tree、Health、OpenAPI / Swagger UI、
+  Prometheus opt-in endpoint、future admin ingestion API 和 ToolRegistry direct access 的 API access matrix；
+- 明确 ToolRegistry direct access never public；
+- 明确 high-risk actions require Approval；
+- 明确 `search_aftersale_policy` remains LOW-risk read-only；
+- 明确 RAG evidence-only，不是业务决策，也不执行业务动作；
+- 明确 K8s / Helm / Ingress exposure 必须等待 runtime auth；
+- 明确 release / rollback gate 后续应包含 auth configuration、actuator exposure、secret injection 和 migration
+  safety checks。
+
+V5.B.4.1 不完成：
+
+- Spring Security runtime；
+- production auth / RBAC runtime；
+- JWT、API key runtime、OAuth2 / OIDC 或 session login；
+- Kubernetes / Helm；
+- release / rollback automation；
+- production deployment；
+- 真实退款、换货、优惠券补偿、支付或物流系统接入。
+
+后续 V5.B.4.2 已完成 opt-in Spring Security / API Key Auth Foundation；这仍不等于 full production IAM。
+
 ## 生产配置模板边界
 
 阶段 1 新增的 `src/main/resources/application-prod.example.yml` 是示例模板，不是默认 `prod` 配置文件。
@@ -725,6 +768,7 @@ mvn test -Dtest=RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,Asy
 mvn test -Dtest=DeploymentHardeningRoadmapDocsTest,RagQualityDecisionDocsTest,SpringAiDeepeningDecisionDocsTest,AsyncStreamingBatchApiDecisionDocsTest
 mvn test -Dtest=ProjectRemediationPlanDocsTest
 mvn test -Dtest=ContainerCiHardeningDocsTest
+mvn test -Dtest=AuthRbacBoundaryDocsTest
 mvn test -Dtest=ArchitectureTest
 mvn test
 mvn checkstyle:check

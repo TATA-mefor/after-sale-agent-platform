@@ -4,285 +4,80 @@
 [![Java 17](https://img.shields.io/badge/Java-17-blue)](https://adoptium.net/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-AfterSale-Agent is a Java Spring Boot platform for auditable e-commerce after-sale ticket handling with Agent execution traces.
+AfterSale-Agent 是一个基于 Java Spring Boot 的智能电商售后工单 Agent 平台，面向面试展示、
+架构评审和工程实践，而非直连生产电商系统。
 
 ## Project Overview
 
-V1 proves a narrow enterprise backend loop:
+当用户提出售后诉求时，系统能够创建售后工单，由 Agent 读取订单信息、检索售后政策、
+规划处理步骤、调用业务工具、生成处理建议，并在高风险动作前进入人工确认流程。
+
+核心闭环：
 
 ```text
-user after-sale message -> ticket -> rule-based AgentRun -> policy retrieval -> low-risk tool call -> trace -> suggestion
+用户售后消息 → 工单创建 → Agent 规划 → 政策检索 → 低风险工具调用 → 执行轨迹 → 处理建议
 ```
 
-The project is intentionally built as a modular monolith with Harness Engineering documents, architecture tests, lint
-checks, and executable tests as the guardrails.
+项目采用模块化单体架构，以 Harness Engineering 文档、ArchUnit 架构测试、Checkstyle / SpotBugs
+代码检查和 JUnit 测试作为工程护栏。
 
-V4 status: completed. The final V4 scope delivered enterprise-grade Agent platform foundation work, RAG policy
-evidence, Spring AI / PGvector boundaries, Actuator health, OpenAPI docs, interview demo docs, and default offline
-validation. This does not mean production external integrations are complete. Real refund, exchange, payment,
-logistics, production auth, production monitoring, and production deployment remain future work.
-
-- [V4 Final Completion Record](version-updates/EXEC_PLAN_V4_FINAL_COMPLETION_RECORD.md)
-- [V4 Release Summary](version-updates/V4_RELEASE_SUMMARY.md)
-- [中文项目整改方案](docs/quality/PROJECT_REMEDIATION_PLAN.md)
-- [Project Review Correction Stage 0](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md)
-- [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md)
-- [Project Review Correction Stage 1](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE1_PROD_CONFIG_TEMPLATE.md)
-- [Observability Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_OBSERVABILITY_HARDENING.md)
-- [Project Review Correction Stage 2](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE2_OBSERVABILITY_HARDENING.md)
-- [API Completeness Decision](docs/decisions/DECISION_PROJECT_REVIEW_API_COMPLETENESS.md)
-- [Project Review Correction Stage 3.1](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_1_API_COMPLETENESS_DECISION.md)
-- [Project Review Correction Stage 3.2](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_2_TICKET_PAGINATION.md)
-- [Project Review Correction Stage 3.3](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_3_AGENT_RUN_STATUS_READ.md)
-- [Async / Streaming / Batch API Decision](docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md)
-- [Project Review Correction Stage 3.4](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE3_4_ASYNC_STREAMING_BATCH_EVALUATION.md)
-- [Spring AI Deepening Decision](docs/decisions/DECISION_PROJECT_REVIEW_SPRING_AI_DEEPENING.md)
-- [Project Review Correction Stage 4](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE4_SPRING_AI_DEEPENING_EVALUATION.md)
-- [RAG Quality Improvement Decision](docs/decisions/DECISION_PROJECT_REVIEW_RAG_QUALITY_IMPROVEMENT.md)
-- [Project Review Correction Stage 5](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE5_RAG_QUALITY_EVALUATION.md)
-- [Deployment Hardening Decision](docs/decisions/DECISION_PROJECT_REVIEW_DEPLOYMENT_HARDENING.md)
-- [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md)
-- [Project Review Correction Stage 6](version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE6_DEPLOYMENT_HARDENING_ROADMAP.md)
-- [V5.A.1 JdbcPolicyVectorRepository](version-updates/EXEC_PLAN_V5_A1_JDBC_POLICY_VECTOR_REPOSITORY.md)
-- [V5.A.2 Schema Init / Version Baseline](version-updates/EXEC_PLAN_V5_A2_SCHEMA_INIT_VERSION_BASELINE.md)
-- [V5.A.3 PGvector Connectivity Smoke Test](version-updates/EXEC_PLAN_V5_A3_PGVECTOR_CONNECTIVITY_SMOKE_TEST.md)
-- [V5.A RAG Production Path Completion](version-updates/EXEC_PLAN_V5_A_RAG_PRODUCTION_PATH_COMPLETION.md)
-- [V5.A RAG Production Path Summary](version-updates/V5_A_RAG_PRODUCTION_PATH_SUMMARY.md)
-- [V5.B.1 Container + CI](version-updates/EXEC_PLAN_V5_B1_CONTAINER_CI.md)
-- [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md)
-- [V5.B.2 Config / Secret / Migration Plan](docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md)
-- [V5.B.2 Config / Secret Decision](docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md)
-- [V5.B.2.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_1_CONFIG_SECRET_BOUNDARY.md)
-- [V5.B.2.2 Flyway Migration Foundation](docs/deploy/MIGRATION_FOUNDATION.md)
-- [V5.B.2.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B2_2_FLYWAY_MIGRATION_FOUNDATION.md)
-- [V5.B.2.3 Profile Matrix Validation](docs/exec-plans/completed/EXEC_PLAN_V5_B2_3_PROFILE_MATRIX_VALIDATION.md)
-- [V5.B.3.1 Readiness / Liveness Boundary](docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md)
-- [V5.B.3.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md)
-- [V5.B.3.2 Micrometer Metrics Foundation](docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md)
-- [V5.B.3.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_2_MICROMETER_METRICS_FOUNDATION.md)
-- [V5.B.3.3 Prometheus Opt-in Exposure](docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md)
-- [V5.B.3.3 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md)
-- [V5.B.3.4 Tracing / Correlation Boundary](docs/deploy/OBSERVABILITY_TRACING_CORRELATION.md)
-- [V5.B.3.4 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_4_TRACING_CORRELATION_BOUNDARY.md)
-- [V5.B.3.5 Observability Docs + Completion](docs/deploy/OBSERVABILITY_DOCS_COMPLETION.md)
-- [V5.B.3.5 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_5_OBSERVABILITY_DOCS_COMPLETION_RECORD.md)
-
-
-> 📋 [V4 完整口径说明](version-updates/V4_FACTS.md) — V4 completed 的含义、已完成范围、以及仍为 future work 的边界。
-
-
-
-## Interview Quick Guide
-
-详见 [docs/demo/DEMO_INTERVIEW_GUIDE.md](docs/demo/DEMO_INTERVIEW_GUIDE.md)
+> **当前状态**：项目已完成 Agent、RAG、Tool / Skill、Spring AI、PGvector、健康检查、
+> OpenAPI、容器化、CI、可观测性、API Key 认证、K8s / Helm 基础和 Release / Rollback
+> 治理基础。真实退款、换货、支付、物流、生产级 IAM、生产监控、release / rollback
+> 自动化和生产部署仍未完成。
+>
+> 详细版本路线请见 [部署加固路线图](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md) 和
+> [项目整改方案](docs/quality/PROJECT_REMEDIATION_PLAN.md)。
 
 ## Core Capabilities
 
-- Create and query after-sale tickets.
-- Trigger deterministic AgentRun execution.
-- Plan single-intent and multi-intent after-sale tasks.
-- Query demo order data through registered tools.
-- Retrieve controlled after-sale policy evidence.
-- Dispatch specialist handlers for return, exchange, coupon, logistics, general consultation, and human escalation
-  subtasks.
-- Record ToolCallTrace entries for tool audit.
-- Create approval requests for high-risk decisions.
-- Query a read-only execution tree for AgentRun inspection.
-- Run offline evaluation against a versioned after-sale dataset.
-- Run with default in-memory repositories or an explicit MySQL profile.
-- Start a local app + MySQL environment with Docker Compose.
-- Correlate local HTTP requests and Agent execution logs with safe `X-Correlation-Id`, `X-Request-Id`, and MDC fields.
-- Enrich local MySQL demo data with optional product and order-item seed generated from public datasets.
-- Return structured `orderItems` from the `get_order_by_id` order tool for product-level after-sale context.
-- Generate item-level return and exchange recommendations from `orderItems` in specialist handlers.
-- Discover V4 Skill definitions for return, exchange, coupon, logistics, general consultation, and human escalation
-  without changing the existing AgentRun runtime path.
+- 创建和查询售后工单，支持分页和状态过滤。
+- 触发确定性 AgentRun 执行，支持单意图和多意图售后任务规划。
+- 通过 ToolRegistry 查询演示订单数据、检索售后政策证据。
+- Specialist Handler 分派退货、换货、优惠券、物流、普通咨询和人工升级子任务。
+- ToolCallTrace 审计每次工具调用。
+- 高风险动作进入 Approval 人工确认流程。
+- 只读 Execution Tree 展示 AgentRun 执行结构。
+- 离线确定性的 RAG 策略检索评估与 Agent 规划评测。
+- 默认使用内存仓储离线运行；显式 `mysql` profile 支持持久化。
+- Docker Compose 本地 app + MySQL 开发环境。
+- `X-Correlation-Id` / `X-Request-Id` HTTP 日志关联。
+- Actuator 健康探针（readiness / liveness）。
+- Micrometer 低基数业务指标。
+- Prometheus opt-in 暴露。
+- Spring Security API Key 认证（opt-in `security-api-key` profile）。
+- Kubernetes manifest 模板和 Helm chart 骨架。
+- OpenAPI / Swagger UI 本地 API 文档。
 
 ## Tech Stack
 
 - Java 17
 - Spring Boot 3.3.x
 - Maven
-- JUnit 5
-- ArchUnit
-- Checkstyle
-- SpotBugs
-- In-memory repositories for default offline demo data
-- Spring JDBC + explicit MySQL profile for V3.1 persistence
-- Python standard library script for optional V3.5 demo seed generation
+- JUnit 5 / ArchUnit / Checkstyle / SpotBugs
+- Spring AI（ChatClient / EmbeddingModel adapter）
+- Spring Security（API Key auth）
+- Spring Boot Actuator / Micrometer / Prometheus
+- Flyway（默认关闭）
+- MySQL / PostgreSQL + PGvector（显式 opt-in profile）
+- Docker / Docker Compose（本地开发）
+- Kubernetes / Helm（部署模板基础）
 
-## Requirements
-
-- Java 17+
-- Maven 3.9+
-- Docker and Docker Compose, only for the optional V3.2 local compose flow
-
-## Run Locally
+## Quick Start
 
 ```bash
 mvn spring-boot:run
 ```
 
-Default local startup uses in-memory repositories. It does not require MySQL, Docker, Redis, a real LLM, API keys, or
-external network access.
-
-Health checks:
+默认本地启动使用内存仓储，不需要 MySQL、Docker、Redis、真实 LLM、API Key 或外部网络。
 
 ```bash
 curl http://localhost:8080/api/health
 curl http://localhost:8080/actuator/health
-```
-
-OpenAPI / Swagger UI:
-
-```bash
 curl http://localhost:8080/v3/api-docs
 ```
 
-Open `http://localhost:8080/swagger-ui/index.html` or `http://localhost:8080/swagger-ui.html` for interactive API
-docs. See [OpenAPI docs](docs/api/OPENAPI.md) for the API groups, evidence-only boundary, health endpoint boundary,
-and default offline path. V4.6.4 is API docs polish only; it does not add runtime behavior and does not require live
-providers, API keys, Docker, PostgreSQL, PGvector, MySQL, Redis, real LLMs, or real embedding providers.
-
-
-## Production Config Template
-
-详见 [docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md)
-
-## MySQL Profile
-
-详见 [docs/deploy/MYSQL_PROFILE.md](docs/deploy/MYSQL_PROFILE.md)
-
-## Demo Dataset Enrichment
-
-详见 [docs/demo/DEMO_DATASET_ENRICHMENT.md](docs/demo/DEMO_DATASET_ENRICHMENT.md)
-
-## Docker Compose Local Development
-
-详见 [docs/deploy/DOCKER_COMPOSE.md](docs/deploy/DOCKER_COMPOSE.md)
-
-## V5.B.1 Container + CI
-
-V5.B.1 adds a multi-stage Dockerfile, `.dockerignore` secret-safety exclusions, and a GitHub Actions quality gate.
-The CI gate runs Maven tests, Checkstyle, SpotBugs, ArchitectureTest, and Docker image build validation. It does not
-run live PGvector, live LLM, live Spring AI, Docker Compose, or external service checks, and it does not push an image.
-
-Local Docker build validation is optional:
-
-```bash
-docker build -t after-sale-agent-platform:local .
-docker run --rm -p 8080:8080 after-sale-agent-platform:local
-```
-
-See [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md). V5.B.1 is not a production deployment.
-V5.B.2.1 config / secret boundary, V5.B.2.2 Flyway migration foundation, and V5.B.2.3 Profile Matrix Validation are
-completed. V5.B.2 current scope completed. V5.B.3.1 readiness / liveness actuator probe boundary completed.
-V5.B.3.2 Micrometer metrics foundation completed. V5.B.3.3 Prometheus opt-in exposure completed. V5.B.3.4 tracing /
-correlation boundary completed. V5.B.3.5 observability docs + completion record completed. V5.B.4 planned auth /
-Kubernetes / release hardening remains future work. Production monitoring backend, dashboards, alerting, log
-aggregation, and OpenTelemetry remain future / opt-in work.
-
-## V5.B.2 Config / Secret / Migration Boundary
-
-V5.B.2.1 documents the configuration baseline, profile matrix, secret boundary, and migration follow-up plan. It keeps
-`application.yml` as the default offline / local baseline, keeps `application-prod.example.yml` as a template only, and
-records `mysql` and `rag-postgres` as explicit opt-in profiles.
-
-See [Config / Secret / Migration Plan](docs/deploy/CONFIG_SECRET_MIGRATION_PLAN.md) and
-[Config / Secret Decision](docs/decisions/DECISION_V5_B2_CONFIG_SECRET_MIGRATION.md).
-
-V5.B.2.2 adds the [Flyway Migration Foundation](docs/deploy/MIGRATION_FOUNDATION.md): Flyway dependencies,
-default-disabled configuration, profile-specific migration locations, and MySQL / PGvector schema-only baseline
-migrations. Liquibase is not introduced. Flyway remains disabled by default, and default validation still does not
-connect to MySQL, PostgreSQL, PGvector, Docker, Redis, real LLMs, real embedding providers, or external network.
-
-V5.B.2.3 adds a file-based profile matrix validation harness for default, `mysql`, `rag-postgres`, production
-template, Flyway, CI, and live smoke boundaries. It verifies `AFTERSALE_FLYWAY_ENABLED:false`,
-`AFTERSALE_RAG_FLYWAY_ENABLED:false`, and the existing `AFTERSALE_PGVECTOR_*` variable convention. Runtime profile
-behavior was not changed.
-
-V5.B.2 does not implement secret manager, production deployment, production auth, production monitoring, or external
-business integrations. Real refund / exchange / payment / logistics integrations are not connected.
-
-## V5.B.3.1 Readiness / Liveness Boundary
-
-V5.B.3.1 enables Spring Boot Actuator health probes and documents the minimal readiness / liveness boundary.
-`/actuator/health`, `/actuator/health/liveness`, and `/actuator/health/readiness` are available. Actuator web exposure
-remains health-only; `/actuator/env`, `/actuator/beans`, `/actuator/configprops`, `/actuator/heapdump`,
-`/actuator/threaddump`, and `/actuator/prometheus` are not exposed by default.
-
-See [Readiness / Liveness Boundary](docs/deploy/OBSERVABILITY_READINESS_LIVENESS.md) and
-[V5.B.3.1 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_1_READINESS_LIVENESS_BOUNDARY.md).
-
-This is not production monitoring. V5.B.3.1 itself did not add Prometheus, OpenTelemetry, live DB / PGvector / LLM /
-embedding readiness checks, production auth, or deployment hardening. The default profile remains offline and does not
-create `DataSource`, Spring AI live model, Spring AI `VectorStore`, or `JdbcPolicyVectorRepository` beans.
-
-## V5.B.3.2 Micrometer Metrics Foundation
-
-V5.B.3.2 adds a low-cardinality Micrometer metrics recording foundation for AgentRun, ToolCall, Approval, RAG search,
-and provider-call observations. It uses the existing Spring Boot Actuator / Micrometer core dependency and records
-meters through a centralized `ApplicationMetricsRecorder`.
-
-See [Micrometer Metrics Foundation](docs/deploy/OBSERVABILITY_METRICS_FOUNDATION.md) and
-[V5.B.3.2 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_2_MICROMETER_METRICS_FOUNDATION.md).
-
-Actuator web exposure remains health-only. `/actuator/metrics` and `/actuator/prometheus` are not exposed by default.
-Prometheus registry, OpenTelemetry tracing, dashboards, provider cost metrics, production monitoring backend,
-production auth, Kubernetes / Helm, release / rollback hardening, and real external business integrations remain
-planned / future work.
-
-## V5.B.3.3 Prometheus Opt-in Exposure
-
-V5.B.3.3 adds the Boot-managed Prometheus registry dependency and an explicit `observability-prometheus` profile for
-local `/actuator/prometheus` review. The default profile remains health-only: `/actuator/prometheus`,
-`/actuator/metrics`, `/actuator/env`, `/actuator/beans`, `/actuator/configprops`, `/actuator/heapdump`, and
-`/actuator/threaddump` are not exposed by default.
-
-See [V5.B.3.3 Prometheus Opt-in Exposure](docs/deploy/OBSERVABILITY_PROMETHEUS_OPT_IN.md) and
-[V5.B.3.3 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_3_PROMETHEUS_OPT_IN_EXPOSURE.md).
-
-This is not OpenTelemetry tracing and not production monitoring. The opt-in profile does not connect to a Prometheus
-server, Grafana, collector, real LLM, real embedding provider, PostgreSQL, PGvector, MySQL, Redis, Docker, or external
-network.
-
-## V5.B.3.4 Tracing / Correlation Boundary
-
-V5.B.3.4 adds local HTTP log correlation for `X-Correlation-Id` and `X-Request-Id`. Incoming values are accepted only
-when they use safe characters and stay within the length boundary; missing or unsafe values are replaced before they
-reach response headers or MDC. The log pattern includes `correlationId` and keeps `requestId`.
-
-See [V5.B.3.4 Tracing / Correlation Boundary](docs/deploy/OBSERVABILITY_TRACING_CORRELATION.md) and
-[V5.B.3.4 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_4_TRACING_CORRELATION_BOUNDARY.md).
-
-This is local MDC-based correlation only. It is not OpenTelemetry, not distributed tracing, not cross-service
-propagation, not production tracing, and not production monitoring. Correlation IDs and request IDs are not used as
-metrics tags. The task does not change AgentRun, ToolRegistry, ToolCallTrace, Workspace, Execution Tree, RAG retrieval,
-health indicators, OpenAPI behavior, or external business integrations.
-
-## V5.B.3.5 Observability Docs + Completion
-
-V5.B.3.5 closes the current observability documentation sequence. It links the readiness / liveness, Micrometer
-metrics, Prometheus opt-in, and local HTTP correlation docs into a single completion map.
-
-See [V5.B.3.5 Observability Docs + Completion](docs/deploy/OBSERVABILITY_DOCS_COMPLETION.md) and
-[V5.B.3.5 Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B3_5_OBSERVABILITY_DOCS_COMPLETION_RECORD.md).
-
-This is documentation-only. It does not add production monitoring backend, Grafana dashboards, alerting, scrape jobs,
-external log aggregation, OpenTelemetry, distributed tracing, production auth, Kubernetes / Helm, release / rollback
-hardening, or external business integrations.
-
-## Observability
-
-详见 [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md)
-
-## Core API List
-
-详见 [docs/api/API_LIST.md](docs/api/API_LIST.md)
-
-## Demo Walkthrough
-
-详见 [docs/demo/DEMO_WALKTHROUGH.md](docs/demo/DEMO_WALKTHROUGH.md)
+Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
 ## Validate
 
@@ -293,65 +88,50 @@ mvn spotbugs:check
 mvn test -Dtest=ArchitectureTest
 ```
 
-The default validation path remains offline. It does not require real LLMs, API keys, PostgreSQL, PGvector, Docker,
-MySQL, Redis, real embedding providers, Spring AI live calls, registry secrets, or external network access.
+默认验证离线、确定性，不依赖真实 LLM、API Key、PostgreSQL、PGvector、Docker、MySQL、
+Redis、真实 embedding provider、Spring AI live call 或外部网络。
 
-## V1 能力边界
+## Key Documentation
 
-V1 建立了规则型 AgentRun 闭环：Ticket 创建、规则意图分类、内存策略检索、ToolRegistry 工具执行、AgentRun 记录。
-详见 [V1_CAPABILITY_BOUNDARY.md](version-updates/V1_CAPABILITY_BOUNDARY.md)
-
-## V2 Roadmap
-
-V2 引入真实 LLM Planner Adapter，支持多意图规划、订单工具、政策检索工具、审批 API、执行树、Agent Workspace 等。
-详见 [V2_ROADMAP.md](version-updates/V2_ROADMAP.md)
-
-## V3 Roadmap
-
-V3 是基础设施闭合阶段：MySQL 持久化、Docker Compose、结构化日志/可观测性、Demo 数据集增强。
-详见 [V3_ROADMAP.md](version-updates/V3_ROADMAP.md)
-
+| 文档 | 说明 |
+| --- | --- |
+| [SPEC.md](SPEC.md) | 项目目标与边界 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 架构分层与依赖规则 |
+| [WORKFLOW.md](WORKFLOW.md) | 任务执行流程 |
+| [AGENTS.md](AGENTS.md) | 智能体入口导航 |
+| [OpenAPI / Swagger](docs/api/OPENAPI.md) | API 文档 |
+| [Observability](docs/OBSERVABILITY.md) | 可观测性总览 |
+| [Project Remediation Plan](docs/quality/PROJECT_REMEDIATION_PLAN.md) | 项目整改方案 |
+| [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md) | 部署加固路线图 |
+| [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md) | 生产配置模板 |
+| [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md) | 容器与 CI 基础 |
+| [Auth / RBAC Boundary](docs/deploy/AUTH_RBAC_BOUNDARY.md) | 认证授权边界 |
+| [Auth Runtime Foundation](docs/deploy/AUTH_RUNTIME_FOUNDATION.md) | API Key 认证 |
+| [K8s / Helm Foundation](docs/deploy/K8S_HELM_FOUNDATION.md) | K8s 部署模板 |
+| [K8s Manifests](deploy/k8s/README.md) | K8s manifest |
+| [Helm Chart](deploy/helm/after-sale-agent-platform/README.md) | Helm chart |
+| [Release / Rollback Foundation](docs/deploy/RELEASE_ROLLBACK_FOUNDATION.md) | 发布与回滚治理 |
+| [Release Checklist](docs/deploy/release-templates/RELEASE_CHECKLIST_TEMPLATE.md) | 发布检查清单 |
+| [Rollback Checklist](docs/deploy/release-templates/ROLLBACK_CHECKLIST_TEMPLATE.md) | 回滚检查清单 |
+| [Change Record Template](docs/deploy/release-templates/CHANGE_RECORD_TEMPLATE.md) | 变更记录模板 |
+| [Validation Commands](docs/quality/VALIDATION_COMMANDS.md) | 验证命令全集 |
+| [Quality Score](docs/quality/QUALITY_SCORE.md) | 质量评分 |
+| [V4 完整口径说明](version-updates/V4_FACTS.md) | V4 completed 边界 |
+| [面试演示指南](docs/demo/DEMO_INTERVIEW_GUIDE.md) | Interview Guide |
+| [Demo Walkthrough](docs/demo/DEMO_WALKTHROUGH.md) | 演示流程 |
+| [MySQL Profile](docs/deploy/MYSQL_PROFILE.md) | MySQL profile |
+| [Docker Compose](docs/deploy/DOCKER_COMPOSE.md) | 本地 compose |
 
 ## Known Limitations
 
-- The default runtime uses in-memory repositories, so default local data is reset on restart.
-- MySQL persistence is available only through the explicit `mysql` profile.
-- Docker Compose is a local development setup, not a production deployment.
-- The default Agent planner is deterministic rule-based fallback; real LLM mode is explicit opt-in.
-- The live LLM smoke test is manual opt-in and requires local credentials.
-- No production authentication or authorization is implemented.
-- No real refund, exchange, coupon compensation, payment, inventory, logistics, order center, or dispute-closing system
-  is connected.
-- Approval APIs record manual decisions but do not execute real high-risk business actions.
-- Policy retrieval is controlled local keyword retrieval, not vector search or hybrid retrieval.
-- Logs are diagnostic only; ToolCallTrace, ApprovalRequest records, and Execution Tree remain the audit surfaces.
-- Demo dataset enrichment is optional; V3.6 exposes available `products` and `order_items` data through order tool
-  output, but it remains demo data and does not connect to a production order center.
-- V3.7 item-level recommendations are deterministic demo guidance. Support flags are derived in Java from existing
-  product/category fields, not read from dedicated MySQL columns.
-- V3.8 token counts are estimates, not provider tokenizer counts. Provider output/cache usage remains `unknown` unless
-  a future provider client safely exposes usage metadata.
-- V3.9 live validation is opt-in and may fail for local setup reasons such as provider balance, MySQL availability, seed
-  import state, or non-deterministic provider output. It is intentionally outside default validation.
-- Docker, MySQL, Redis, real LLMs, API keys, and external network access are intentionally outside the default
-  `mvn test` path.
-
-### 真实 LLM 本地运行说明
-
-默认本地运行仍使用 `rule` 模式。若要手动启用真实 LLM Planner，请只在本机环境变量或本地未提交配置中设置：
-
-```text
-OPENAI_API_KEY
-AFTERSALE_LLM_MODEL
-OPENAI_RESPONSES_ENDPOINT
-```
-
-`AFTERSALE_LLM_MODEL` 和 `OPENAI_RESPONSES_ENDPOINT` 可选；未设置时分别使用 `gpt-4o-mini` 和 OpenAI Responses
-API 默认 endpoint。不要将真实 API Key 写入代码、测试、README、docs、`application.yml` 或提交历史。
-
-
-## V4 Roadmap
-
-V4 聚焦面试关键的 AI 工程能力：RAG/向量化策略检索、Spring AI Adapter、PGvector、
-工具/技能层、执行树证据可视化、Actuator health、OpenAPI docs。
-详见 [V4_ROADMAP.md](version-updates/V4_ROADMAP.md)
+- 默认运行时使用内存仓储，重启后数据重置。
+- MySQL 持久化需显式启用 `mysql` profile。
+- Docker Compose 是本地开发环境，不是生产部署。
+- 默认 Agent Planner 是确定性规则降级；真实 LLM 模式需显式 opt-in。
+- 未接入真实退款、换货、优惠券补偿、支付、库存、物流或争议关闭系统。
+- Approval API 记录人工决策，但不执行真实高风险业务动作。
+- 生产级 IAM（OAuth2 / OIDC、JWT、用户数据库）仍未实现。
+- 生产监控、OpenTelemetry、分布式追踪仍未实现。
+- Release / rollback 治理基础已完成，自动化仍未实现。
+- K8s / Helm 是部署模板基础，尚未执行真实集群部署。
+- 真实 API Key、数据库密码、token 和本地绝对路径不得进入仓库。

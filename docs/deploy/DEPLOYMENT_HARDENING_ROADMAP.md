@@ -6,7 +6,11 @@ Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config /
 V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 Profile Matrix Validation completed; V5.B.3 through V5.B.4
 roadmap remains in progress; V5.B.3.1 readiness / liveness actuator probe boundary completed; V5.B.3.2 Micrometer
 metrics foundation completed; V5.B.3.3 Prometheus opt-in exposure completed; V5.B.3.4 tracing / correlation boundary
-completed; V5.B.3.5 observability docs + completion record completed; V5.B.4 planned
+completed; V5.B.3.5 observability docs + completion record completed; V5.B.4 in progress overall; V5.B.4.1 Production
+Auth / RBAC Boundary Decision completed; V5.B.4.2 Spring Security / API Key Auth Foundation completed; V5.B.4.3 K8s /
+Helm Foundation completed; V5.B.4.4 Release / Rollback Foundation completed; V5.B.4 current scope
+completed. V5.B Production Hardening current planned scope completed. Production deployment,
+release automation, rollback automation, and production monitoring remain future work.
 
 ## 目的
 
@@ -60,8 +64,10 @@ Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix V
 V5.B.2 current scope completed。V5.B.3.1 Readiness / Liveness Boundary 已完成最小 Actuator probe 边界。
 V5.B.3.2 Micrometer metrics foundation 已完成。V5.B.3.3 Prometheus opt-in exposure 已完成。V5.B.3.4
 tracing / correlation boundary 已完成。V5.B.3.5 observability docs + completion record 已完成。
-V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 planned。Production monitoring backend、dashboards、
-alerting、log aggregation 和 OpenTelemetry 仍为 future / opt-in。
+V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 in progress overall；V5.B.4.1 Production Auth / RBAC
+Boundary Decision 已完成文档决策，V5.B.4.2 Spring Security / API Key Auth Foundation completed，V5.B.4.3 K8s /
+Helm Foundation completed，V5.B.4.4 Release / Rollback Foundation completed。Production monitoring backend、
+dashboards、alerting、log aggregation 和 OpenTelemetry 仍为 future / opt-in。
 
 ## V5.B.2.1 Config + Secret Boundary status
 
@@ -199,6 +205,51 @@ V5.B.3.5 已完成 observability docs + completion record：
 V5.B.3.5 不修改 runtime，不新增 production monitoring backend，不新增 OpenTelemetry，不新增 dashboards、alerts、
 scrape jobs、log aggregation 或 external observability platform。
 
+## V5.B.4.1 Production Auth / RBAC Boundary status
+
+V5.B.4.1 已完成 production auth / RBAC boundary decision：
+
+- 新增 `docs/decisions/DECISION_V5_B4_AUTH_RBAC_BOUNDARY.md`。
+- 新增 `docs/deploy/AUTH_RBAC_BOUNDARY.md`。
+- 新增 `docs/exec-plans/completed/EXEC_PLAN_V5_B4_1_AUTH_RBAC_BOUNDARY_DECISION.md`。
+- 固定 planned RBAC role vocabulary：`CUSTOMER`、`AGENT_OPERATOR`、`SUPERVISOR`、`ADMIN`、
+  `SYSTEM_SERVICE`。
+- 记录 Ticket、AgentRun、Approval、ToolCallTrace、Execution Tree、health、OpenAPI / Swagger UI、
+  Prometheus opt-in endpoint、future admin ingestion API 和 ToolRegistry direct access 的 API access matrix。
+- 明确 ToolRegistry direct access never public，ToolRegistry remains internal Agent execution boundary。
+- 明确 high-risk actions require Approval。
+- 明确 `search_aftersale_policy` remains LOW-risk read-only。
+- 明确 RAG evidence-only：policy evidence only，不是 business decision，也不执行业务动作。
+
+V5.B.4.1 不实现 Spring Security、JWT、API key runtime、OAuth2 / OIDC、session login、runtime RBAC enforcement、
+Kubernetes / Helm、release automation、rollback automation、secret manager integration 或 production deployment。
+V5.B.4.2 后续已完成 opt-in API key auth foundation。当前 API surface 如未启用 `security-api-key` profile，
+仍不应直接暴露到 public internet。V5.B.4 overall 仍未完成，后续拆分为：
+
+- V5.B.4.2 Spring Security / API Key Auth Foundation completed。
+- V5.B.4.3 K8s / Helm Foundation completed。
+- V5.B.4.4 Release / Rollback Foundation completed。
+
+## V5.B.4.2 Spring Security / API Key Auth Foundation status
+
+V5.B.4.2 已完成 opt-in Spring Security API key auth foundation：
+
+- 新增 `spring-boot-starter-security`，版本由 Spring Boot dependency management 管理。
+- 默认 profile 保持 `agent.security.enabled=false` 和 permit-all。
+- 新增 `security-api-key` profile，通过 `X-API-Key` header 执行 stateless API key auth。
+- 支持 `ADMIN`、`SUPERVISOR`、`AGENT_OPERATOR` 和 `SYSTEM_SERVICE` runtime role mapping。
+- Health probes remain public。
+- Ticket、AgentRun、Approval、Trace、ExecutionTree、OpenAPI / Swagger UI 和 opt-in Prometheus 在 security
+  profile 下受保护。
+- OpenAPI / Swagger UI 需要 `ADMIN` 或 `SUPERVISOR`。
+- `/actuator/prometheus` 在 `observability-prometheus + security-api-key` 下需要 `ADMIN` 或 `SYSTEM_SERVICE`。
+- Sensitive actuator endpoints 仍不暴露。
+- 新增 `docs/deploy/AUTH_RUNTIME_FOUNDATION.md` 和
+  `docs/exec-plans/completed/EXEC_PLAN_V5_B4_2_SPRING_SECURITY_API_KEY_AUTH_FOUNDATION.md`。
+
+V5.B.4.2 不实现 OAuth2 / OIDC、JWT issuer / JWKS、session login、user database、secret manager、tenant
+isolation、rate limiting、Kubernetes / Helm、release / rollback automation 或 full production IAM。
+
 ## 推荐后续里程碑
 
 1. V5.B.2 Secret management：选择 secret manager 或部署注入策略。
@@ -285,9 +336,12 @@ scrape jobs、log aggregation 或 external observability platform。
 
 ## security/auth checklist
 
-- 设计 production authentication。
-- 设计 production RBAC。
-- 保护 approval、trace、execution-tree 和 admin surfaces。
+- V5.B.4.1 已完成 production authentication / RBAC boundary decision。
+- V5.B.4.2 已完成 opt-in Spring Security / API Key Auth Foundation。
+- 保护 approval、trace、execution-tree、OpenAPI / Swagger UI、Prometheus opt-in endpoint 和 admin surfaces。
+- 保持 ToolRegistry direct access never public。
+- 保持 high-risk actions require Approval。
+- 保持 `search_aftersale_policy` LOW-risk read-only。
 - 增加 rate limit / abuse protection。
 - 明确 audit log 与 ToolCallTrace 的边界。
 
@@ -328,7 +382,9 @@ default offline validation 不需要：
 - production deployment is not completed。
 - live PGvector validation is not completed。
 - JdbcPolicyVectorRepository live validation is not completed。
-- production auth/RBAC is not completed。
+- full production auth/RBAC is not completed。
+- full production IAM is not completed。
+- V5.B.4.2 completed only the opt-in API key auth foundation。
 - production monitoring is not completed。
 - production external integrations are not completed。
 - real refund / exchange / compensation / payment / logistics integrations are not completed。

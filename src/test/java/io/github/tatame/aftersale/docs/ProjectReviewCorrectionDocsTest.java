@@ -36,7 +36,7 @@ class ProjectReviewCorrectionDocsTest {
         String completion = projectText(
                 "version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
 
-        assertThat(readme).contains("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
+        assertThat(readme).contains("Project Remediation Plan", "PROJECT_REMEDIATION_PLAN.md");
         assertThat(execPlan).contains("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
         assertThat(release).contains("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_STAGE0.md");
         assertThat(completion).contains(

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: after-sale-agent-platform
+description: Helm chart for AfterSale-Agent Platform — auditable after-sale ticket Agent platform
+type: application
+version: 0.1.0
+appVersion: "0.1.0-SNAPSHOT"

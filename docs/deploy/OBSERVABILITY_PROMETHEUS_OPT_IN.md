@@ -104,3 +104,6 @@ mvn test -Dtest=ArchitectureTest
   opt-in.
 - Future OpenTelemetry strategy if the deployment topology requires cross-service trace propagation.
 - V5.B.4 planned auth, Kubernetes / Helm, release and rollback hardening.
+  V5.B.4.3 K8s / Helm Foundation completed; V5.B.4.4 Release / Rollback Foundation completed
+  (see `docs/deploy/RELEASE_ROLLBACK_FOUNDATION.md`).
+  Prometheus profile remains opt-in in K8s manifests; release review confirms opt-in status.

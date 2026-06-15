@@ -52,11 +52,17 @@ class RagProductionPathCompletionDocsTest {
     void docsMarkV5ACompletedAndV5BPlanned() throws IOException {
         String docs = combinedDocs();
 
-        assertThat(projectText("README.md") + "\n" + projectText("version-updates/V4_FACTS.md")).contains(
-                "V5.A RAG Production Path Completion",
+        // V5.A completion details are in V4_FACTS.md; README is a clean intro without version tracking
+        String v4Facts = projectText("version-updates/V4_FACTS.md");
+        assertThat(v4Facts).contains(
                 "V5.A completed the RAG production path foundation",
-                V5_A_COMPLETION,
-                V5_A_SUMMARY);
+                "V5.A.1",
+                "V5.A.2",
+                "V5.A.3",
+                "V5.A.4 docs / completion record closure");
+        // Completion records exist
+        assertThat(PROJECT_ROOT.resolve(V5_A_COMPLETION)).exists();
+        assertThat(PROJECT_ROOT.resolve(V5_A_SUMMARY)).exists();
         assertThat(projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md")).contains(
                 "V5.A RAG production path foundation completed",
                 "V5.A.4 docs / completion record 已完成",

@@ -71,8 +71,9 @@ class PrometheusOptInDocsTest {
         String readme = projectText("README.md");
 
         assertThat(readme).contains(
-                "[V5.B.3.3 Prometheus Opt-in Exposure](" + BOUNDARY_DOC + ")",
-                "[V5.B.3.3 Completion Record](" + COMPLETED_PLAN + ")");
+                "Prometheus",
+                "Micrometer",
+                "Observability");
     }
 
     @Test

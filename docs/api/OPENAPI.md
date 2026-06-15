@@ -51,6 +51,18 @@ The decision record for this boundary is
 recorded in `docs/decisions/DECISION_PROJECT_REVIEW_ASYNC_STREAMING_BATCH_API.md`. `search_aftersale_policy` remains a
 LOW-risk read-only ToolRegistry tool, not a public RAG HTTP endpoint.
 
+## Production Auth / RBAC Boundary
+
+V5.B.4.1 documents the production auth / RBAC boundary for the existing API surface. V5.B.4.2 adds opt-in Spring
+Security API key foundation through `security-api-key`; JWT, OAuth2 / OIDC, session login, full production RBAC
+enforcement, Kubernetes / Helm, release automation, rollback automation, and production deployment remain outside the
+current scope.
+
+Swagger UI is local or internal API documentation, not a public production developer portal. Under `security-api-key`,
+Swagger UI and `/v3/api-docs` require `ADMIN` or `SUPERVISOR`. ToolRegistry direct access is never public,
+`search_aftersale_policy` remains a LOW-risk read-only ToolRegistry tool, and RAG evidence remains evidence-only
+policy support rather than a business decision or business action.
+
 ## Ticket Flow
 
 Create a ticket with synthetic demo data, list tickets with bounded pagination, then read a ticket back by `ticketId`.

@@ -36,7 +36,7 @@ class JdbcPolicyVectorRepositoryDocsTest {
         String completion = projectText(COMPLETION_RECORD);
         String readme = projectText("README.md");
 
-        assertThat(readme).contains(COMPLETION_RECORD);
+        assertThat(readme).contains("PGvector", "PostgreSQL");
         assertThat(completion).contains(
                 "Status: Completed",
                 "JdbcPolicyVectorRepository Boundary",

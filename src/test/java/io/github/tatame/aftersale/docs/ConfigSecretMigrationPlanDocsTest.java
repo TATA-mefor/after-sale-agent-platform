@@ -132,12 +132,10 @@ class ConfigSecretMigrationPlanDocsTest {
         String correctionPlan = projectText("version-updates/EXEC_PLAN_PROJECT_REVIEW_CORRECTION_PLAN.md");
 
         assertThat(readme).contains(
-                PLAN_DOC,
-                DECISION_DOC,
-                COMPLETED_PLAN,
-                MIGRATION_DOC,
-                MIGRATION_COMPLETED_PLAN,
-                PROFILE_MATRIX_COMPLETED_PLAN);
+                "Deployment Hardening Roadmap",
+                "Production Config Template");
+        // PLAN_DOC (CONFIG_SECRET_MIGRATION_PLAN.md) referenced in other docs
+        assertThat(roadmap).contains(PLAN_DOC);
         assertThat(roadmap).contains(
                 "V5.B.2.1 Config + Secret Boundary 已完成文档基线",
                 "V5.B.2.2",

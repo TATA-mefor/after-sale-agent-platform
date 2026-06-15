@@ -946,4 +946,68 @@ class ArchitectureTest {
                 .allowEmptyShould(true)
                 .check(APPLICATION_CLASSES);
     }
+
+    @Test
+    void apiKeySecurityMustStayHttpBoundaryOnly() {
+        noClasses()
+                .that()
+                .resideInAnyPackage("..common.security..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "..agent..",
+                        "..tool..",
+                        "..policy.rag..",
+                        "..ticket..",
+                        "..approval..",
+                        "..trace..",
+                        "javax.sql..",
+                        "org.springframework.jdbc..",
+                        "org.springframework.ai..",
+                        "org.springframework.ai.vectorstore..")
+                .because("API key security must protect HTTP entrypoints without calling business or provider runtime.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+
+        noClasses()
+                .that()
+                .resideInAnyPackage("..common.security..")
+                .should()
+                .dependOnClassesThat()
+                .haveSimpleNameEndingWith("Repository")
+                .because("API key security must not read credentials from business repositories.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void businessRuntimeMustNotDependOnSpringSecurityOrSecurityFilterImplementation() {
+        noClasses()
+                .that()
+                .resideInAnyPackage(
+                        "..agent..",
+                        "..tool..",
+                        "..policy.rag..",
+                        "..approval.application..",
+                        "..approval.domain..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("org.springframework.security..", "..common.security..")
+                .because("Agent, Tool, RAG, and Approval runtime semantics must not depend on security filters.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
+
+    @Test
+    void oauth2OidcAndJwtRuntimePackagesMustNotBeIntroduced() {
+        noClasses()
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage(
+                        "org.springframework.security.oauth2..",
+                        "org.springframework.security.saml2..")
+                .because("V5.B.4.2 is API key auth foundation, not OAuth2, OIDC, SAML, or JWT integration.")
+                .allowEmptyShould(true)
+                .check(APPLICATION_CLASSES);
+    }
 }

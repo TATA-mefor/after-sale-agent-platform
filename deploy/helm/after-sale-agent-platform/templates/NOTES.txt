@@ -1,0 +1,27 @@
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "after-sale-agent-platform.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+Health probes:
+  - /actuator/health
+  - /actuator/health/liveness
+  - /actuator/health/readiness
+
+Active profiles: {{ include "after-sale-agent-platform.springProfiles" . }}
+
+⚠️  IMPORTANT SECURITY NOTES:
+  - This chart creates Secret placeholders only. Production MUST use external secret injection.
+  - Set existingSecret to use a pre-created Secret managed by your secret process.
+  - Ingress is disabled by default (ingress.enabled: false).
+  - Prometheus profile is NOT enabled by default (profiles.prometheus.enabled: false).
+  - Security API key profile is NOT enabled by default (profiles.securityApiKey.enabled: false).
+  - This is a Kubernetes / Helm foundation, NOT a production deployment.
+  - V5.B.4.4 Release / Rollback Foundation is still planned.

@@ -56,7 +56,7 @@ class AsyncStreamingBatchApiDecisionDocsTest {
                 "ToolRegistry / Planner Boundary",
                 "TASK_COMPLETE");
         assertThat(completion).contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(readme).contains(DECISION_DOC, COMPLETED_PLAN);
+        assertThat(readme).contains("OpenAPI", "API", "SPEC.md");
         assertThat(openApiDocs).contains(DECISION_DOC, "Stage 3.4 evaluates async AgentRun");
         assertThat(apiCompleteness).contains(DECISION_DOC, "阶段 3.4 已完成");
         assertThat(remediation).contains("阶段 3.4：已完成", DECISION_DOC);

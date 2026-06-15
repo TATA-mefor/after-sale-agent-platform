@@ -15,6 +15,7 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
 management:
   prometheus:
@@ -52,6 +53,14 @@ logging:
     level: "%5p correlationId=%X{correlationId:-} requestId=%X{requestId:-} ticketId=%X{ticketId:-} agentRunId=%X{agentRunId:-} subtaskId=%X{subtaskId:-} toolName=%X{toolName:-} approvalRequestId=%X{approvalRequestId:-}"
 
 agent:
+  security:
+    enabled: ${AFTERSALE_SECURITY_ENABLED:false}
+    api-key-header: ${AFTERSALE_SECURITY_API_KEY_HEADER:X-API-Key}
+    api-keys:
+      admin: ${AFTERSALE_SECURITY_ADMIN_API_KEY:}
+      supervisor: ${AFTERSALE_SECURITY_SUPERVISOR_API_KEY:}
+      operator: ${AFTERSALE_SECURITY_OPERATOR_API_KEY:}
+      system-service: ${AFTERSALE_SECURITY_SYSTEM_SERVICE_API_KEY:}
   rag:
     enabled: ${AFTERSALE_RAG_ENABLED:false}
     health:

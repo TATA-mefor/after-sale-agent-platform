@@ -51,11 +51,14 @@ class SchemaVersionBaselineDocsTest {
         String docs = combinedDocs();
 
         assertThat(projectText(COMPLETION_RECORD)).contains("Status: Completed", "TASK_COMPLETE");
-        assertThat(projectText("README.md") + "\n" + projectText("version-updates/V4_FACTS.md")).contains(
+        // V5.A.2 details are in V4_FACTS.md; README is a clean intro without version tracking
+        String v4Facts = projectText("version-updates/V4_FACTS.md");
+        assertThat(v4Facts).contains(
                 "V5.A.2",
                 "schema version baseline",
-                "2026-06-01-001",
-                COMPLETION_RECORD);
+                "2026-06-01-001");
+        // Completion record exists
+        assertThat(PROJECT_ROOT.resolve(COMPLETION_RECORD)).exists();
         assertThat(projectText("docs/demo/V4_PGVECTOR_LOCAL_SETUP.md")).contains(
                 "Schema Version Baseline",
                 "2026-06-01-001",
