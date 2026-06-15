@@ -113,6 +113,8 @@ mvn test -Dtest=ArchitectureTest
   directly exposed to public network.
 - V5.B.4.4 Release / Rollback Foundation completed (see `docs/deploy/RELEASE_ROLLBACK_FOUNDATION.md`).
   Release review confirms API key provisioning and role boundary before any future release.
+- V5.B Production Hardening current planned scope completed. See
+  `docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md`.
 
 ## Completion Signal
 

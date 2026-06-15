@@ -106,11 +106,11 @@ mvn test -Dtest=ArchitectureTest
 
 ## Follow-ups
 
-- V5.B.4: production auth / Kubernetes / Helm / release and rollback hardening.
-  V5.B.4.3 K8s / Helm Foundation completed (see `docs/deploy/K8S_HELM_FOUNDATION.md`).
-  V5.B.4.4 Release / Rollback Foundation completed (see `docs/deploy/RELEASE_ROLLBACK_FOUNDATION.md`).
-  Release review confirms readiness/liveness and correlation logging; Prometheus remains
-  opt-in; production monitoring backend remains future.
+- V5.B.4 current scope completed: auth/RBAC decision, API key auth runtime, K8s/Helm
+  templates, release/rollback governance.
+- V5.B Production Hardening current planned scope completed. See
+  `docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md`.
+  Production monitoring backend, release automation, and production deployment remain future.
 - Future observability hardening: production monitoring backend, dashboards, alerts, log aggregation, and
   OpenTelemetry evaluation.
 

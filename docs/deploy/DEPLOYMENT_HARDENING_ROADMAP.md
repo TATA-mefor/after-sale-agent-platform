@@ -2,15 +2,11 @@
 
 Date: 2026-06-01
 
-Status: Completed; V5.B.1 Container + CI foundation completed; V5.B.2.1 config / secret boundary completed;
-V5.B.2.2 Flyway migration foundation completed; V5.B.2.3 Profile Matrix Validation completed; V5.B.3 through V5.B.4
-roadmap remains in progress; V5.B.3.1 readiness / liveness actuator probe boundary completed; V5.B.3.2 Micrometer
-metrics foundation completed; V5.B.3.3 Prometheus opt-in exposure completed; V5.B.3.4 tracing / correlation boundary
-completed; V5.B.3.5 observability docs + completion record completed; V5.B.4 in progress overall; V5.B.4.1 Production
-Auth / RBAC Boundary Decision completed; V5.B.4.2 Spring Security / API Key Auth Foundation completed; V5.B.4.3 K8s /
-Helm Foundation completed; V5.B.4.4 Release / Rollback Foundation completed; V5.B.4 current scope
-completed. V5.B Production Hardening current planned scope completed. Production deployment,
-release automation, rollback automation, and production monitoring remain future work.
+Status: Completed. V5.B Production Hardening current planned scope completed.
+V5.B.1 Container + CI completed. V5.B.2 Config + Secret + Migration current scope completed.
+V5.B.3 Observability current scope completed. V5.B.4 Auth + K8s + Release/Rollback current
+scope completed. See `docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md` and
+`docs/exec-plans/completed/EXEC_PLAN_V5_B_PRODUCTION_HARDENING_COMPLETION.md`.
 
 ## 目的
 
@@ -64,10 +60,12 @@ Flyway migration foundation 已完成且默认关闭；V5.B.2.3 Profile Matrix V
 V5.B.2 current scope completed。V5.B.3.1 Readiness / Liveness Boundary 已完成最小 Actuator probe 边界。
 V5.B.3.2 Micrometer metrics foundation 已完成。V5.B.3.3 Prometheus opt-in exposure 已完成。V5.B.3.4
 tracing / correlation boundary 已完成。V5.B.3.5 observability docs + completion record 已完成。
-V5.B.4 Auth + Kubernetes / Helm + Release / Rollback 仍为 in progress overall；V5.B.4.1 Production Auth / RBAC
-Boundary Decision 已完成文档决策，V5.B.4.2 Spring Security / API Key Auth Foundation completed，V5.B.4.3 K8s /
-Helm Foundation completed，V5.B.4.4 Release / Rollback Foundation completed。Production monitoring backend、
+V5.B.3 current scope completed。V5.B.4.1 Production Auth / RBAC Boundary Decision 已完成文档决策，
+V5.B.4.2 Spring Security / API Key Auth Foundation completed，V5.B.4.3 K8s / Helm Foundation completed，
+V5.B.4.4 Release / Rollback Foundation completed。V5.B.4 current scope completed。
+V5.B Production Hardening current planned scope completed。Production monitoring backend、
 dashboards、alerting、log aggregation 和 OpenTelemetry 仍为 future / opt-in。
+Production deployment、release automation、rollback automation 和 registry push 仍未完成。
 
 ## V5.B.2.1 Config + Secret Boundary status
 
@@ -224,11 +222,13 @@ V5.B.4.1 已完成 production auth / RBAC boundary decision：
 V5.B.4.1 不实现 Spring Security、JWT、API key runtime、OAuth2 / OIDC、session login、runtime RBAC enforcement、
 Kubernetes / Helm、release automation、rollback automation、secret manager integration 或 production deployment。
 V5.B.4.2 后续已完成 opt-in API key auth foundation。当前 API surface 如未启用 `security-api-key` profile，
-仍不应直接暴露到 public internet。V5.B.4 overall 仍未完成，后续拆分为：
+仍不应直接暴露到 public internet。V5.B.4 current scope completed：
 
-- V5.B.4.2 Spring Security / API Key Auth Foundation completed。
-- V5.B.4.3 K8s / Helm Foundation completed。
-- V5.B.4.4 Release / Rollback Foundation completed。
+- V5.B.4.1 Production Auth / RBAC Boundary Decision completed（documentation-only）。
+- V5.B.4.2 Spring Security / API Key Auth Foundation completed（opt-in runtime）。
+- V5.B.4.3 K8s / Helm Foundation completed（manifest/chart templates）。
+- V5.B.4.4 Release / Rollback Foundation completed（governance/runbook）。
+- Production IAM、release automation、rollback automation 和 production deployment 仍未完成。
 
 ## V5.B.4.2 Spring Security / API Key Auth Foundation status
 

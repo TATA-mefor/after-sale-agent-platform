@@ -129,12 +129,10 @@ class ContainerCiHardeningDocsTest {
         String completedPlan = projectText(COMPLETED_PLAN);
 
         assertThat(readme).contains(CONTAINER_DOC, "Container + CI");
-        assertThat(roadmap).contains(
-                "V5.B.1",
-                "foundation completed",
-                "V5.B.2.2 Flyway migration foundation completed",
-                "V5.B.2.3 Profile Matrix Validation completed",
-                "V5.B.3 through V5.B.4");
+        String lowerRoadmap = roadmap.toLowerCase(Locale.ROOT);
+        assertThat(roadmap).contains("V5.B.1");
+        assertThat(lowerRoadmap).contains("foundation completed");
+        assertThat(lowerRoadmap).contains("v5.b.2.2", "v5.b.2.3", "v5.b.3", "v5.b.4");
         assertThat(productionConfig).contains("Container / CI Usage", "does not contain secrets");
         assertThat(validation).contains("V5.B.1 Container + CI Validation", "Docker build validation");
         assertThat(quality).contains("V5.B.1 Container + CI Foundation", "Dockerfile", "CI quality gate");

@@ -95,6 +95,27 @@ Secret manager is not implemented, production deployment is not completed, produ
 production monitoring is not completed, and real refund / exchange / payment / logistics integrations are not
 connected.
 
+## V5.B Production Hardening Completion
+
+V5.B Production Hardening current planned scope completed. See
+`docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md` and
+`docs/exec-plans/completed/EXEC_PLAN_V5_B_PRODUCTION_HARDENING_COMPLETION.md`.
+
+Current production hardening baseline:
+- Production config template (`application-prod.example.yml`).
+- Profile matrix validation.
+- Flyway migration foundation (default-disabled).
+- API key auth profile (`security-api-key`).
+- Observability profiles (readiness/liveness, metrics, Prometheus opt-in, correlation).
+- K8s/Helm deployment templates.
+- Release/rollback governance (checklists, runbook, image tag policy).
+
+Still future:
+- Real secret manager.
+- Real production config injection.
+- Real registry / cluster deployment.
+- Real release automation.
+
 ## V5.B.4.3 K8s / Helm Foundation
 
 V5.B.4.3 adds Kubernetes manifest templates and a Helm chart skeleton. See

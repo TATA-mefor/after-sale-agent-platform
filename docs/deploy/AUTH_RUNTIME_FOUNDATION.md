@@ -143,6 +143,8 @@ external network.
   K8s manifests use `security-api-key` profile placeholder.
 - V5.B.4.4: Release / Rollback Foundation (completed; see `docs/deploy/RELEASE_ROLLBACK_FOUNDATION.md`).
   Release review confirms API keys are provisioned via env/secret source; release automation remains future.
+- V5.B Production Hardening current planned scope completed. See
+  `docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md`.
 - Future: OAuth2 / OIDC or JWT resource server, secret manager, rate limit, audit hardening and tenant isolation.
 
 ## Completion Signal

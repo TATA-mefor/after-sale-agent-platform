@@ -22,7 +22,8 @@ exposure 只包含 health。V5.B.3.4 完成 local HTTP tracing / correlation bou
 Kubernetes / Helm、secret manager、production auth、production monitoring、Prometheus 或 OpenTelemetry 集成。
 V5.B.4 in progress overall；V5.B.4.1 完成 Production Auth / RBAC Boundary Decision，V5.B.4.2 Spring Security /
 API Key Auth Foundation completed，V5.B.4.3 K8s / Helm Foundation completed，V5.B.4.4 Release / Rollback Foundation
-completed。V5.B.4 current scope completed。V5.B Production Hardening current planned scope completed。
+completed。V5.B.4 current scope completed。V5.B Production Hardening current planned scope completed。详见
+`docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md`。
 
 ## 总体结论
 

@@ -21,10 +21,11 @@ AfterSale-Agent 是一个基于 Java Spring Boot 的智能电商售后工单 Age
 项目采用模块化单体架构，以 Harness Engineering 文档、ArchUnit 架构测试、Checkstyle / SpotBugs
 代码检查和 JUnit 测试作为工程护栏。
 
-> **当前状态**：项目已完成 Agent、RAG、Tool / Skill、Spring AI、PGvector、健康检查、
-> OpenAPI、容器化、CI、可观测性、API Key 认证、K8s / Helm 基础和 Release / Rollback
-> 治理基础。真实退款、换货、支付、物流、生产级 IAM、生产监控、release / rollback
-> 自动化和生产部署仍未完成。
+> **当前状态**：V4 完成 Agent / RAG / Tool / Skill / Spring AI / PGvector 基础。
+> V5.A 完成 RAG production path foundation。V5.B Production Hardening current planned
+> scope completed（容器、CI、配置、migration、可观测性、API Key 认证、K8s / Helm、
+> Release / Rollback 治理）。真实生产部署、registry push、release/rollback 自动化、
+> 生产级 IAM、生产监控和外部业务集成仍未完成。
 >
 > 详细版本路线请见 [部署加固路线图](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md) 和
 > [项目整改方案](docs/quality/PROJECT_REMEDIATION_PLAN.md)。
@@ -103,6 +104,8 @@ Redis、真实 embedding provider、Spring AI live call 或外部网络。
 | [Observability](docs/OBSERVABILITY.md) | 可观测性总览 |
 | [Project Remediation Plan](docs/quality/PROJECT_REMEDIATION_PLAN.md) | 项目整改方案 |
 | [Deployment Hardening Roadmap](docs/deploy/DEPLOYMENT_HARDENING_ROADMAP.md) | 部署加固路线图 |
+| [Production Hardening Summary](docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md) | V5.B 完成总结 |
+| [V5.B Completion Record](docs/exec-plans/completed/EXEC_PLAN_V5_B_PRODUCTION_HARDENING_COMPLETION.md) | V5.B 完成记录 |
 | [Production Config Template](docs/deploy/PRODUCTION_CONFIG_TEMPLATE.md) | 生产配置模板 |
 | [Container + CI Hardening](docs/deploy/CONTAINER_CI_HARDENING.md) | 容器与 CI 基础 |
 | [Auth / RBAC Boundary](docs/deploy/AUTH_RBAC_BOUNDARY.md) | 认证授权边界 |

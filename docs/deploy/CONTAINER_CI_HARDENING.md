@@ -10,7 +10,8 @@ V5.B.1 adds the container build foundation and CI quality gate for AfterSale-Age
 `io.github.tatame.aftersale`.
 
 This is production hardening foundation work. It is not a production deployment, not a CD pipeline, and not a registry
-release process.
+release process. V5.B Production Hardening current planned scope completed; see
+`docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md`.
 
 ## Dockerfile Boundary
 

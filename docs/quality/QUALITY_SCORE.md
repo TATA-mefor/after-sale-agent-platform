@@ -2182,12 +2182,19 @@ Known limitations:
   Helm, release / rollback hardening, or external business integrations.
 - Real refund / exchange / payment / logistics integrations are not connected.
 
+### V5.B Production Hardening (current planned scope completed)
+
+Status: V5.B Production Hardening current planned scope completed. V5.B.1 Container + CI,
+V5.B.2 Config + Secret + Migration, V5.B.3 Observability, and V5.B.4 Auth + K8s +
+Release/Rollback all completed. Production deployment, release automation, rollback
+automation, production monitoring backend, secret manager, and external IAM remain future work.
+See `docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md`.
+
 ### V5.B.4.1 Production Auth / RBAC Boundary Decision (completed)
 
-Status: completed for documentation-only auth / RBAC boundary decision. V5.B.4 planned auth / Kubernetes / release
-hardening remains in progress overall. V5.B.4.2 Spring Security / API Key Auth Foundation completed. V5.B.4.3 K8s /
-Helm Foundation completed. V5.B.4.4 Release / Rollback Foundation completed. V5.B.4
-current scope completed.
+Status: completed for documentation-only auth / RBAC boundary decision. V5.B.4.2 Spring
+Security / API Key Auth Foundation completed. V5.B.4.3 K8s / Helm Foundation completed.
+V5.B.4.4 Release / Rollback Foundation completed. V5.B.4 current scope completed.
 
 Current V5.B.4.1 quality status:
 

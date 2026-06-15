@@ -149,6 +149,12 @@ real LLMs, real embedding providers, or external network.
 - No live PGvector validation is included.
 - No real refund / exchange / payment / logistics integrations.
 
+## V5.B Production Hardening Status
+
+V5.B Production Hardening current planned scope completed. See
+`docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md` and
+`docs/exec-plans/completed/EXEC_PLAN_V5_B_PRODUCTION_HARDENING_COMPLETION.md`.
+
 ## Release / Rollback Governance
 
 Release / rollback governance foundation is completed (V5.B.4.4). See

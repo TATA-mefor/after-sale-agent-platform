@@ -784,7 +784,7 @@ V5.B.4 planned auth / Kubernetes / release hardening remains future work.
 
 V5.B.4.3 K8s / Helm Foundation completed. V5.B.4.4 Release / Rollback Foundation
 completed. V5.B.4 current scope completed. V5.B Production Hardening current planned scope
-completed.
+completed. See `docs/deploy/PRODUCTION_HARDENING_COMPLETION_SUMMARY.md`.
 
 ## V5.B.4.3 K8s / Helm Foundation Validation
 
@@ -849,6 +849,27 @@ V5.B.4.4 does NOT implement GitHub release workflow, image registry push,
 semantic-release, automated version bump, Helm install/upgrade automation,
 kubectl apply automation, production deployment, real rollback execution,
 secret manager, Argo CD/Flux, or Terraform.
+
+## V5.B Production Hardening Completion Validation
+
+V5.B Production Hardening current planned scope completed. V5.B.1 (Container + CI),
+V5.B.2 (Config + Secret + Migration), V5.B.3 (Observability), and V5.B.4 (Auth + K8s +
+Release/Rollback) all completed their current scopes. This is production hardening
+foundation — NOT full production deployment.
+
+Targeted docs harness:
+
+```bash
+mvn test -Dtest=ProductionHardeningCompletionDocsTest
+```
+
+The docs harness is file-based only. It reads the V5.B completion record, summary,
+and all B1-B4 completion records. It does NOT start Spring, call HTTP endpoints,
+connect to databases, start Docker, call real LLMs, or access external network.
+
+Production deployment, registry push, release automation, rollback automation,
+secret manager, external IAM, production monitoring backend, and SBOM/signing
+remain future work.
 
 Default Maven gate remains unchanged:
 
